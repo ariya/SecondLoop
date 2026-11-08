@@ -1,7 +1,7 @@
 # Atom
 
 A `def` fixes a value when you type it. An atom holds a value that can change
-while the robot runs, and every REPL connection and every loop sees the change.
+while the robot runs, and every connection and every loop sees the change.
 That is what makes live tuning possible.
 
 `(atom x)` creates one, and `def` gives it a name:

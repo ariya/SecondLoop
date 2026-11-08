@@ -165,7 +165,8 @@ user=> ((comp (partial * 2) inc) 3)   ; (* 2 (inc 3))
 8.0
 ```
 
-Both are written in the REPL language in `Prelude`, so you can redefine them.
+Both are written in the same Lisp you type, in `Prelude`, so you can redefine
+them.
 
 `apply` spreads a collection as arguments:
 
@@ -202,4 +203,4 @@ expression (see [Gamepad](../robot/gamepad.md)):
     (clamp -1 1))
 ```
 
-Each step is a plain call, so you can try any of them separately at the REPL.
+Each step is a plain call, so you can type any of them on its own to try it.

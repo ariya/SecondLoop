@@ -23,8 +23,9 @@ user=> (str "x" nil)
 
 ## println, pr-str and prn
 
-`println` prints its arguments separated by spaces and adds a newline; the REPL
-shows the string without quotes because it is not returning one:
+`println` prints its arguments separated by spaces and adds a newline. The text
+appears without quotes because `println` prints it rather than returning a
+string:
 
 ```clojure
 user=> (println "power" 0.54)

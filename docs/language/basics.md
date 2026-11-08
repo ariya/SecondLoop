@@ -90,7 +90,7 @@ user=> (if nil "yes" "no")
 
 ## Printing
 
-The REPL prints values readably: strings keep their quotes, and `nil` prints as
+Each result is printed readably: strings keep their quotes, and `nil` prints as
 `nil`.
 
 ```clojure
