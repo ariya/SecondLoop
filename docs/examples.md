@@ -25,10 +25,10 @@ together, so the robot still moves in the direction you asked for:
 ```clojure
 (defn mecanum-drive [forward strafe rotate]
   (let [d           (max (+ (abs forward) (abs strafe) (abs rotate)) 1)
-        front-left  (/ (+ forward strafe rotate) d)
-        front-right (/ (- forward strafe rotate) d)
-        back-left   (/ (+ (- forward strafe) rotate) d)
-        back-right  (/ (- (+ forward strafe) rotate) d)]
+        front-left  (/ (- (+ forward strafe) rotate) d)
+        front-right (/ (+ (- forward strafe) rotate) d)
+        back-left   (/ (- forward strafe rotate) d)
+        back-right  (/ (+ forward strafe rotate) d)]
     (motor/set-power "front_left_drive" front-left)
     (motor/set-power "front_right_drive" front-right)
     (motor/set-power "back_left_drive" back-left)
@@ -43,21 +43,21 @@ Now drive the robot by hand, one move at a time.
 First, drive forward slowly, then stop by setting everything to 0:
 
 ```clojure
-user=> (mecanum-drive 0.2 0 0)
-[0.2 0.2 0.2 0.2]
+user=> (mecanum-drive 0.3 0 0)
+[0.3 0.3 0.3 0.3]
 user=> (mecanum-drive 0 0 0)
 [0.0 0.0 0.0 0.0]
 ```
 
 Each vector is what `mecanum-drive` returns: the power it gave each wheel, in
 the order front left, front right, back left, back right. Driving forward sets
-all four wheels to 0.2, and stopping sets them all to 0.0.
+all four wheels to 0.3, and stopping sets them all to 0.0.
 
 Move sideways to the right, then stop:
 
 ```clojure
-user=> (mecanum-drive 0 0.2 0)
-[0.2 -0.2 -0.2 0.2]
+user=> (mecanum-drive 0 0.3 0)
+[0.3 -0.3 -0.3 0.3]
 user=> (mecanum-drive 0 0 0)
 [0.0 0.0 0.0 0.0]
 ```
@@ -65,8 +65,8 @@ user=> (mecanum-drive 0 0 0)
 Turn right on the spot, then stop:
 
 ```clojure
-user=> (mecanum-drive 0 0 0.2)
-[0.2 -0.2 0.2 -0.2]
+user=> (mecanum-drive 0 0 0.3)
+[-0.3 0.3 -0.3 0.3]
 user=> (mecanum-drive 0 0 0)
 [0.0 0.0 0.0 0.0]
 ```
@@ -78,7 +78,7 @@ and try again.
 
 Instead of typing each move, let a control loop make them in order. This one
 drives forward, strafes right, drives backward, then strafes left, each for 3
-seconds at power 0.2, so the robot ends up roughly where it started:
+seconds at power 0.3, so the robot ends up roughly where it started:
 
 ```clojure
 (defn drive-square []
@@ -86,10 +86,10 @@ seconds at power 0.2, so the robot ends up roughly where it started:
     (loop []
       (let [t (- (time/elapsed) start)]             ; seconds since start
         (when (< t 12)
-          (cond (< t 3) (mecanum-drive 0.2 0 0)     ; forward
-                (< t 6) (mecanum-drive 0 0.2 0)     ; strafe right
-                (< t 9) (mecanum-drive -0.2 0 0)    ; backward
-                :else   (mecanum-drive 0 -0.2 0))   ; strafe left
+          (cond (< t 3) (mecanum-drive 0.3 0 0)     ; forward
+                (< t 6) (mecanum-drive 0 0.3 0)     ; strafe right
+                (< t 9) (mecanum-drive -0.3 0 0)    ; backward
+                :else   (mecanum-drive 0 -0.3 0))   ; strafe left
           (time/sleep 0.02)
           (recur))))
     (mecanum-drive 0 0 0)))                         ; stop
@@ -147,7 +147,8 @@ robot: forward is the way it faces.
 ## Speed adjustment
 
 At full power, the robot can be hard to steer in a tight space. Keep a speed
-factor in an [atom](language/atom.md), and multiply the forward and strafe values by it:
+factor in an [atom](language/atom.md), and multiply the forward, strafe and
+rotate values by it:
 
 ```clojure
 (defonce speed (atom 0.5))
@@ -157,7 +158,7 @@ factor in an [atom](language/atom.md), and multiply the forward and strafe value
     (let [pad     (gamepad 1)
           forward (* @speed (- (:left-stick-y pad)))
           strafe  (* @speed (:left-stick-x pad))
-          rotate  (:right-stick-x pad)]
+          rotate  (* @speed (:right-stick-x pad))]
       (mecanum-drive forward strafe rotate))
     (time/sleep 0.02)
     (recur)))
