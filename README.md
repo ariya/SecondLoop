@@ -23,3 +23,5 @@ user=> (motor/set-power "flywheel" 0.8)
 Want a faster flywheel, a gentler turn, or a different gamepad mapping? Change
 it while the robot runs and see the result in seconds, with **no waiting** to
 rebuild, redeploy, and restart.
+
+See the [documentation](docs/index.md) for the full manual.
