@@ -1,26 +1,13 @@
 # IMU
 
-The Control Hub has an IMU, a sensor that tells which way the robot faces. The
-robot configuration names it `"imu"`, and the `imu/*` functions use that name.
-Angles are in radians, as `Math/sin` and `Math/cos` expect; `Math/toDegrees`
-turns one into degrees, and `Math/toRadians` turns degrees back into radians.
+The Control Hub has an
+[IMU](https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html)
+(Inertial Measurement Unit), a sensor that tells which way the robot faces.
 
-| Function | Does |
-| --- | --- |
-| `(imu/init logo usb)` | Tells the IMU how the hub is mounted. Call it once, before the others. |
-| `(imu/reset-yaw)` | Makes the way the robot faces now the yaw of 0. |
-| `(imu/angles)` | A map of `:yaw`, `:pitch` and `:roll`, read at the same moment. |
+![Control Hub lying flat, REV logo up, USB ports towards the back](up-backward.jpg){ align=right }
 
-`:yaw` is the heading: turning left (counter-clockwise) increases it, from -π
-to π (-180° to 180°). `:pitch` is the nose tilting up or down, and `:roll` the robot leaning
-to one side. Most programs only need the yaw.
-
-## Setup
-
-The IMU measures the hub, not the robot, so it needs to know how the hub sits
-on the robot. Give the direction the REV logo faces, then the direction the
-USB ports face, each one of `:up`, `:down`, `:left`, `:right`, `:forward` or
-`:backward`. For a hub lying flat with the USB ports towards the back:
+Before reading it, tell the IMU how the hub is mounted. For a hub lying flat,
+REV logo up, with the USB ports towards the back of the robot:
 
 ```clojure
 user=> (imu/init :up :backward)
@@ -30,6 +17,58 @@ nil
 user=> (:yaw (imu/angles))
 0.0
 ```
+
+Angles are in radians, as `Math/sin` and `Math/cos` expect; `Math/toDegrees`
+turns one into degrees, and `Math/toRadians` turns degrees back into radians.
+
+## init
+
+`(imu/init logo usb)` tells the IMU how the hub sits on the robot. The IMU
+measures the hub, not the robot, so call it once, before the other `imu/*`
+functions.
+
+`logo` is the direction the REV logo faces, and `usb` the direction the USB
+ports face. Each is one of:
+
+| Value | Faces |
+| --- | --- |
+| `:up` | Up, towards the ceiling |
+| `:down` | Down, towards the floor |
+| `:left` | The robot's left side |
+| `:right` | The robot's right side |
+| `:forward` | The front of the robot |
+| `:backward` | The back of the robot |
+
+The logo and the USB ports cannot face along the same axis, such as `:up` and
+`:down`; that is an error.
+
+Reading before `imu/init` is an error too, rather than an angle measured the
+wrong way round:
+
+```clojure
+user=> (imu/angles)
+Execution error: The IMU is not set up: first call imu/init with the way the hub is mounted, e.g. (imu/init :up :backward)
+```
+
+## reset-yaw
+
+`(imu/reset-yaw)` makes the way the robot faces now the yaw of 0. Call it with
+the robot pointing where headings should be measured from, for example at the
+start of a match:
+
+```clojure
+user=> (imu/reset-yaw)
+nil
+```
+
+## angles
+
+`(imu/angles)` is a map of `:yaw`, `:pitch` and `:roll`, all read at the same
+moment.
+
+`:yaw` is the heading: turning left (counter-clockwise) increases it, from -π
+to π (-180° to 180°). `:pitch` is the nose tilting up or down, and `:roll` the
+robot leaning to one side. Most programs only need the yaw.
 
 Turn the robot a quarter turn to the left by hand, and the yaw follows. A
 quarter turn is π/2, about 1.57 radians; `Math/toDegrees` shows it in degrees:
@@ -47,36 +86,3 @@ To show it on the Driver Hub, round it too:
 user=> (telemetry/add-line (format "Yaw %.1f°" (Math/toDegrees (:yaw (imu/angles)))))
 nil
 ```
-
-Reading before `imu/init` is an error, rather than an angle measured the wrong
-way round:
-
-```clojure
-user=> (imu/angles)
-Execution error: The IMU is not set up: first call imu/init with the way the hub is mounted, e.g. (imu/init :up :backward)
-```
-
-The logo and the USB ports cannot face along the same axis, such as `:up` and
-`:down`; that is an error too.
-
-## Turning
-
-The difference between the yaw and the heading you want tells which way to
-turn and how hard. `wrap-radians` keeps it within -π to π, so the robot turns
-the short way round:
-
-```clojure
-(defn turn-power
-  "Rotate power that turns the robot towards heading, in radians."
-  [heading]
-  (* 0.6 (clamp (wrap-radians (- (:yaw (imu/angles)) heading)) -1 1)))
-```
-
-A heading in degrees is converted first, e.g.
-`(turn-power (Math/toRadians 90))` to face a quarter turn left of where
-`imu/reset-yaw` was called.
-
-A positive power turns right, which lowers the yaw. Pass it as the `rotate` of
-`mecanum-drive` (see the [Examples](../examples.md)), or as
-opposite powers to the left and right motors. Near the heading the power gets
-small, so the robot slows down as it arrives.

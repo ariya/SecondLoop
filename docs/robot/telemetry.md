@@ -1,9 +1,11 @@
 # Telemetry
 
-Telemetry is the quickest way to see Second Loop working on real hardware: it
-needs only a Control Hub and the Driver Hub, with no motors, servos or
-sensors configured. (`LocalRepl` cannot show it, because `telemetry/*` needs the
-FTC SDK.)
+[Telemetry](https://ftc-docs.firstinspires.org/en/latest/glossary/glossary.html#term-Telemetry)
+is the data sent to the Driver Hub, where it appears as lines of text. It is the
+primary way to see what a program is doing, which makes it useful for logging
+and troubleshooting.
+
+## add-line
 
 `(telemetry/add-line ...)` shows a line below Second Loop's own status line.
 Like `println`, it takes any number of values and joins them with spaces:
@@ -23,7 +25,7 @@ user=> (telemetry/add-line (format "heading %.1f" 12.34))
 nil
 ```
 
-## Clearing
+## clear
 
 `(telemetry/clear)` removes every line that was added:
 
@@ -31,9 +33,3 @@ nil
 user=> (telemetry/clear)
 nil
 ```
-
-## Quick start
-
-Connect after INIT and add a line; nothing else needs to be
-configured. The [overview](../index.md) has
-a short walkthrough, including a counter that updates itself.

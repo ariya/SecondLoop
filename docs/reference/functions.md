@@ -23,7 +23,7 @@ These are evaluated by the interpreter and cannot be passed as values.
 | `quote` | The form itself, not its value. | [Syntax](../language/basics.md) |
 | `loop` `recur` | A loop that does not grow the stack. | [Loop](../language/loops.md) |
 | `while` `dotimes` `doseq` | Repeat while a test holds, a fixed count, or per item. | [Loop](../language/loops.md) |
-| `future` | Run forms on another thread. | [Futures](../robot/futures.md) |
+| `future` | Run forms on another thread. | [Futures](../language/futures.md) |
 | `try` | `catch` and `finally`. | [Exceptions](../language/exceptions.md) |
 | `time` | Print how long an expression took. | [Time](../robot/time.md) |
 | `doc` | Print a function's arities and doc string. | [Functions](../language/functions.md#doc-strings) |

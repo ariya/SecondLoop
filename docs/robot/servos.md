@@ -4,49 +4,54 @@ A servo is named by the string it has in the robot configuration on the
 Driver Hub, such as `"claw"` or `"wrist"`. As with [motors](motors.md),
 every `servo/*` function takes that name.
 
-| Function | Does |
-| --- | --- |
-| `(servo/set-position name p)` | Moves the servo to position `p`, from 0.0 to 1.0. |
-| `(servo/position name)` | The position it was last given. |
-| `(servo/set-direction name d)` | `:forward` or `:reverse`: which end of its travel 0.0 is. |
-| `(servo/direction name)` | `:forward` or `:reverse`. |
-
-Each `servo/set-*` function returns the value it was given, so you can see at
-the prompt what was sent to the servo. The `crservo/set-*` functions below do
-the same.
-
-These are for standard servos, configured as *Servo*. A servo configured as
-*Continuous Rotation Servo* has its own functions; see
-[Continuous rotation servos](#continuous-rotation-servos).
-
-## Position
+This program moves the claw as far as the right trigger on gamepad 1 is
+pressed:
 
 ```clojure
-user=> (servo/set-position "claw" 0.3)
-0.3
-user=> (servo/position "claw")
-0.3
+(defn grip []
+  (loop []
+    (servo/set-position "claw" (:right-trigger (gamepad 1)))
+    (time/sleep 0.02)
+    (recur)))
+
+(control/start grip)
 ```
 
-0.0 and 1.0 are the two ends of the servo's travel, and 0.5 is the middle.
-`servo/set-position` returns at once, while the servo is still on its way; it
-then holds that position until it is given another. A servo stays limp until it
-is first given a position.
+The trigger reads from 0.0 when released to 1.0 when fully pressed, which is
+exactly the range of a servo position. Stop it with `(control/stop)` (see
+[Control Loops](control-loops.md)).
 
-A servo cannot tell where it is, so `servo/position` is only what it was last
-told, not a measurement. If something blocks the arm, the two differ.
+The `servo/*` functions are for standard servos, configured as *Servo*. A servo
+configured as *Continuous Rotation Servo* turns round and round, like a small
+motor, which suits an intake roller or a turntable. It has its own `crservo/*`
+functions, and is given a power instead of a position. There is no encoder, so
+there is no velocity to set or read.
 
-Anything outside 0.0 to 1.0 is an error rather than being cut down silently:
+A typo in a name, or a device of the wrong kind, is reported with the name:
 
 ```clojure
-user=> (servo/set-position "claw" 1.5)
-Execution error: servo/set-position expects a position from 0.0 to 1.0, got: 1.5
+user=> (servo/set-position "clow" 0.3)
+Execution error: No servo named "clow" in the robot configuration
+user=> (crservo/set-power "claw" 0.5)
+Execution error: No continuous rotation servo named "claw" in the robot configuration
 ```
 
-Use `clamp` to limit a computed position on purpose, e.g.
-`(servo/set-position "claw" (clamp p 0 1))`.
+## direction
 
-## Direction
+`(servo/direction name)` is `:forward` or `:reverse`: which end of its travel
+0.0 is. `(crservo/direction name)` is which way a positive power turns it.
+
+```clojure
+user=> (servo/direction "left claw")
+:forward
+user=> (crservo/direction "intake")
+:forward
+```
+
+## set-direction
+
+`(servo/set-direction name d)` and `(crservo/set-direction name d)` set the
+direction to `:forward` or `:reverse`, and return it.
 
 Two servos that mirror each other, such as the two sides of a claw, turn the
 opposite way for the same position. Reverse one, and the same position moves
@@ -60,91 +65,73 @@ user=> (servo/direction "left claw")
 ```
 
 Reversed, a position `p` moves the servo to where `1 - p` would move it
-forward.
+forward. A reversed continuous rotation servo turns the other way for the same
+power:
 
-## Continuous rotation servos
+```clojure
+user=> (crservo/set-direction "intake" :reverse)
+:reverse
+```
 
-A continuous rotation servo turns round and round, like a small motor, so it is
-given a power instead of a position. It suits an intake roller or a turntable:
+## position
 
-| Function | Does |
-| --- | --- |
-| `(crservo/set-power name p)` | Runs it at power `p`, from -1.0 to 1.0. 0 stops it. |
-| `(crservo/power name)` | The power it was last given. |
-| `(crservo/set-direction name d)` | `:forward` or `:reverse`: which way a positive power turns. |
-| `(crservo/direction name)` | `:forward` or `:reverse`. |
+`(servo/position name)` is the position the servo was last given:
+
+```clojure
+user=> (servo/position "claw")
+0.3
+```
+
+A servo cannot tell where it is, so this is only what it was last told, not a
+measurement. If something blocks the arm, the two differ.
+
+## set-position
+
+`(servo/set-position name p)` moves the servo to position `p`, from 0.0 to 1.0,
+and returns it, so you can see at the prompt what was sent to the servo.
+
+```clojure
+user=> (servo/set-position "claw" 0.3)
+0.3
+```
+
+0.0 and 1.0 are the two ends of the servo's travel, and 0.5 is the middle.
+`servo/set-position` returns at once, while the servo is still on its way; it
+then holds that position until it is given another. A servo stays limp until it
+is first given a position.
+
+Anything outside 0.0 to 1.0 is an error rather than being cut down silently:
+
+```clojure
+user=> (servo/set-position "claw" 1.5)
+Execution error: servo/set-position expects a position from 0.0 to 1.0, got: 1.5
+```
+
+Use `clamp` to limit a computed position on purpose, e.g.
+`(servo/set-position "claw" (clamp p 0 1))`.
+
+## power
+
+This applies only to continuous rotation servos; a standard servo has a
+[position](#position) instead. `(crservo/power name)` is the power it was last
+given:
+
+```clojure
+user=> (crservo/power "intake")
+0.5
+```
+
+## set-power
+
+This applies only to continuous rotation servos; a standard servo is moved with
+[set-position](#set-position) instead. `(crservo/set-power name p)` runs it at
+power `p`, from
+-1.0 to 1.0, and returns it. 0 stops it. As with `motor/set-power`, a power
+outside -1.0 to 1.0 is an error.
 
 ```clojure
 user=> (crservo/set-power "intake" 0.5)
 0.5
-user=> (crservo/power "intake")
-0.5
 user=> (crservo/set-power "intake" 0)
 0.0
 ```
-
-As with `motor/set-power`, a power outside -1.0 to 1.0 is an error. There is no
-encoder, so there is no velocity to set or read.
-
-## Unknown names
-
-A typo in a name, or a device of the wrong kind, is reported with the name:
-
-```clojure
-user=> (servo/set-position "clow" 0.3)
-Execution error: No servo named "clow" in the robot configuration
-user=> (crservo/set-power "claw" 0.5)
-Execution error: No continuous rotation servo named "claw" in the robot configuration
-```
-
-## Testing
-
-Before a claw or an arm can be programmed, you need its positions: where the
-claw is open, where it is closed. This loop moves one servo, named `"servo"`,
-from the gamepad and shows where it is. D-pad up and down move it by 0.01, the
-bumpers by 0.1, and A and B pick the direction:
-
-```clojure
-(def servo-name "servo")
-(defonce position (atom 0.5))      ; change it from the REPL too: (reset! position 0.25)
-
-(defn pressed?
-  "True when button k is down now but was up in the previous snapshot."
-  [prev pad k]
-  (and (k pad) (not (k prev))))
-
-(defn nudge [d]
-  (swap! position (fn [p] (clamp (+ p d) 0 1))))
-
-(defn step [prev pad]
-  (when (pressed? prev pad :a) (servo/set-direction servo-name :forward))
-  (when (pressed? prev pad :b) (servo/set-direction servo-name :reverse))
-  (when (pressed? prev pad :dpad-up) (nudge 0.01))
-  (when (pressed? prev pad :dpad-down) (nudge -0.01))
-  (when (pressed? prev pad :right-bumper) (nudge 0.1))
-  (when (pressed? prev pad :left-bumper) (nudge -0.1))
-  (servo/set-position servo-name @position)
-  (telemetry/clear)
-  (telemetry/add-line "Servo" servo-name)
-  (telemetry/add-line "Direction" (servo/direction servo-name))
-  (telemetry/add-line (format "Position %5.2f" @position)))
-
-(defn control-loop []
-  (loop [prev (gamepad 1)]
-    (let [pad (gamepad 1)]
-      (step prev pad)
-      (time/sleep 0.02)
-      (recur pad))))
-```
-
-Send it, then start the loop with
-`(control/start control-loop)` and stop it with `(control/stop)` (see
-[Control Loops](control-loops.md)).
-
-- **Start in the middle.** The servo jumps to 0.5 as soon as the loop starts,
-  so make sure nothing is in the way. If the mechanism can only travel part of
-  the servo's range, `(reset! position ...)` to a safe value before starting.
-- **Note the numbers.** Move the servo to each position you need and write down
-  what the Driver Hub shows; those go into your program.
-- **Nothing to clean up.** Unlike the motor tester, there is no `finally`: a
-  servo that stops getting new positions simply stays where it is.

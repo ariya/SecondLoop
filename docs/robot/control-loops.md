@@ -1,148 +1,43 @@
 # Control Loops
 
-A robot program is usually one central loop: read something, act on it, and
-repeat. The forms inside the loop are part of the language, covered in
+A robot program is usually one central loop: read the world, act on it, sleep,
+and repeat. The forms inside the loop are part of the language, covered in
 [Loop](../language/loops.md); this page is about running one on the robot.
 
-`loop`/`recur` repeats without growing the stack (see
-[Loop](../language/loops.md#loop-and-recur)), so a loop
-can run for a whole match. Start with the smallest loop that does something
-visible. It runs three rounds and ends on its own:
+This loop needs no robot hardware. Once a second it puts the match time (see
+[Time](time.md#elapsed)) on the Driver Hub (see [Telemetry](telemetry.md)), and
+it repeats until it is stopped:
 
 ```clojure
-user=> (loop [i 0]
-         (when (< i 3)
-           (println "tick" i)
-           (time/sleep 1)
-           (recur (inc i))))
-tick 0.0
-tick 1.0
-tick 2.0
-nil
-```
-
-That keeps the REPL busy until it finishes, which is fine for three seconds and
-wrong for a whole match.
-
-## Elapsed time
-
-This one needs no robot hardware. Once a second it puts the time since it
-started on the Driver Hub (see [Telemetry](telemetry.md)), and it repeats
-until you stop it:
-
-```clojure
-(defn control-loop []
-  (let [start (time/elapsed)]                  ; read once, before the loop
-    (loop []
-      (let [elapsed (- (time/elapsed) start)]
-        (telemetry/clear)
-        (telemetry/add-line (format "elapsed %.1f s" elapsed))
-        (time/sleep 1)                         ; one round a second
-        (recur)))))
-```
-
-The Driver Hub shows `elapsed 0.0 s`, then `elapsed 1.0 s`, and so on.
-`start` stays fixed while `elapsed` is recomputed from the clock every round.
-That is the shape of every control loop: read the world, act, sleep, repeat.
-
-## Background
-
-Calling `(control-loop)` at the prompt would keep that connection busy until
-STOP. Start it with `control/start` instead: it runs `(f)` on its own thread and
-returns at once, so the REPL stays free.
-
-```clojure
-user=> (control/start control-loop)
-#<Future pending>
-```
-
-The elapsed-time lines appear on the Driver Hub, not in the `nc` window.
-`(control/running?)` reports whether the loop is still going, and
-`(control/stop)` ends it:
-
-```clojure
-user=> (control/running?)
-true
-user=> (control/stop)
-true
-```
-
-`control/start` stops any loop it started earlier first, so after editing
-`control-loop` you can just run `(control/start control-loop)` again. The loop is
-shared by every connection, so any of them can stop it.
-
-## Gamepad
-
-On the robot the same shape reads the controls. `(gamepad 1)` returns a snapshot
-of controller 1 as a map (see [Gamepad](gamepad.md)); this loop reads the right
-trigger fifty times a second and prints the power it would send:
-
-```clojure
-(defn control-loop []
+(defn sample-loop []
   (loop []
-    (let [pad (gamepad 1)]
-      (when (> (:right-trigger pad) 0.5)
-        (println "power" (* 0.6 (:right-trigger pad)))))
-    (time/sleep 0.02)                     ; about 50 rounds a second
+    (telemetry/clear)
+    (telemetry/add-line "elapsed" (time/elapsed))
+    (time/sleep 1)                             ; one round a second
     (recur)))
 ```
 
-`when` there is the ordinary one from
-[Branching](../language/branching.md#when); `cond` and
-`case` work in the loop body in the same way.
+The Driver Hub shows a line such as `elapsed 5.012`, then `elapsed 6.014`, and
+so on. The clock is read again every round.
 
-`println` goes back to the connection that started the loop, which is handy
-while testing. On the robot, show the value on the Driver Hub instead:
-
-```clojure
-(let [pad (gamepad 1)]
-  (telemetry/clear)
-  (telemetry/add-line (format "power %.2f" (* 0.6 (:right-trigger pad)))))
-```
-
-Start and stop it with `control/start` and `control/stop`, as above. The numbers
-are hard-coded here, so every round does the same thing; an
-[atom](../language/atom.md) lets you change them while the loop runs.
-
+- **It can run for a whole match.** `loop`/`recur` repeats without growing the
+  stack ([Loop](../language/loops.md#loop-and-recur)).
+- **There is only one control loop.** It is shared by every connection, so any
+  of them can check on it or stop it.
 - **`recur` must be last.** It starts the next round, so it is the last thing
-  each round does; anything after it is a syntax error
-  ([Loop](../language/loops.md#loop-and-recur)).
-- **Errors are reported at once.** If a round fails, for example by dividing by
-  zero, the connection that started the loop prints `Future failed.` and the
-  error. See [Errors](errors.md#futures).
+  each round does; anything after it is a syntax error.
+- **Sleep every round.** A short `time/sleep` sets the pace, for example
+  `(time/sleep 0.02)` for about 50 rounds a second (see [Time](time.md#sleep)).
+- **Errors end the loop.** If a round fails, for example by dividing by zero,
+  the loop stops and the connection that started it prints `Future failed.`
+  and the error. See [Errors](../language/errors.md#future-failed).
 
-## Stopping
-
-Stopping has to be prompt: the OpMode, the connections and every running future
-stop together, and a loop cannot take one more step after a stop request.
-
-| Action | Control loop | Definitions |
-| --- | --- | --- |
-| `(control/stop)` | ends | kept |
-| STOP on the Driver Hub | ends | lost on the next INIT |
-| Closing `nc` | keeps running | kept |
-
-Closing `nc` does **not** stop a loop that is already running: reconnect and
-call `(control/stop)`. Calling `(control-loop)` directly, without
-`control/start`, keeps that REPL busy until STOP instead of returning.
-
-Pressing STOP also ends the OpMode, so everything you defined is gone on the
-next INIT; `(control/stop)` keeps it. A running form ends with
-`Execution error: Interrupted`, and a stopped loop prints no `Future failed.`
-line, because it was cancelled rather than broken.
-
-A stop request is never caught, not even by `(catch Throwable e ...)`, so an
-error handler cannot keep a stopped loop running. The classes are on
-[Exceptions](../language/exceptions.md).
-
-## Cleanup
-
-When a loop ends, by `control/stop`, STOP or an error, whatever it set last
-stays set: a motor keeps its last power. Wrap the loop in `try` with a `finally`
-to put things back:
+When the loop ends, by `control/stop`, STOP or an error, whatever it set last
+stays set: a motor keeps its last power. Wrap the loop in `try` with a
+`finally` to put things back:
 
 ```clojure
-(defn control-loop []
+(defn sample-loop []
   (try
     (loop []
       ;; read the gamepad, drive...
@@ -155,5 +50,87 @@ to put things back:
 
 The `finally` runs to the end even when the loop is being stopped, so it can use
 a short `time/sleep` if it needs to. Cleanup is never cut short.
-[Exceptions](../language/exceptions.md)
-covers `try`, `catch` and `finally` in general.
+[Exceptions](../language/exceptions.md) covers `try`, `catch` and `finally` in
+general.
+
+Calling `(sample-loop)` directly keeps that connection busy until STOP on the
+Driver Hub. The `control/*` functions run the loop in the background instead.
+
+## start
+
+`(control/start f)` runs `(f)` in the background as a
+[future](../language/futures.md) and returns at once. This
+program uses `mecanum-drive` from [Examples](../examples.md) to move the robot
+forward for three seconds and then stop:
+
+```clojure
+(defn drive-forward []
+  (mecanum-drive 0.7 0 0)                      ; move forward
+  (time/sleep 3)                               ; for 3 seconds
+  (mecanum-drive 0 0 0))                       ; then stop
+```
+
+Calling `(drive-forward)` directly makes the prompt wait the full three seconds
+before you can type again. `control/start` hands the program off to run on its
+own and gives the prompt back right away:
+
+```clojure
+user=> (control/start drive-forward)
+#<Future pending>
+user=> (control/running?)
+true
+```
+
+While the robot drives, you can keep typing: check it with `control/running?`,
+read the [IMU](imu.md), or end the run early with `control/stop`. After an early
+stop the wheels keep their last power, so put the final `(mecanum-drive 0 0 0)`
+in a `finally` as shown above. `println` inside the program goes back to the
+connection that started it, which is handy while testing.
+
+`control/start` stops any program it started earlier first, so after editing
+`drive-forward` you can just run `(control/start drive-forward)` again.
+
+## running?
+
+`(control/running?)` reports whether the loop is still going:
+
+```clojure
+user=> (control/running?)
+true
+```
+
+It is `false` before the first `control/start`, after `control/stop`, and after
+a round fails with an error.
+
+## stop
+
+`(control/stop)` ends the loop:
+
+```clojure
+user=> (control/stop)
+true
+```
+
+It returns `true` if a loop was running. Any connection can stop it, not only
+the one that started it. Stopping is prompt: the loop cannot take one more step
+after a stop request. A stopped loop prints no `Future failed.` line, because
+it was cancelled rather than broken.
+
+| Action | Control loop | Definitions |
+| --- | --- | --- |
+| `(control/stop)` | ends | kept |
+| STOP on the Driver Hub | ends | lost on the next INIT |
+| Closing the connection | keeps running | kept |
+
+Closing the connection does **not** stop a loop that is already running:
+reconnect and call `(control/stop)`. Pressing STOP ends the OpMode and
+everything running in it, so everything you defined is gone on the next INIT;
+`(control/stop)` keeps it.
+
+STOP also interrupts a form running at the prompt, such as `(sample-loop)`
+called directly, and every `time/sleep`. That form ends with
+`Execution error: Interrupted`.
+
+A stop request is never caught, not even by `(catch Throwable e ...)`, so an
+error handler cannot keep a stopped loop running. The classes are on
+[Exceptions](../language/exceptions.md).

@@ -1,7 +1,7 @@
 # Exceptions
 
 An error in a form arrives as an exception, and `try` decides which ones you
-catch. [Errors](../robot/errors.md) is the message you see when nothing does.
+catch. [Errors](errors.md) is the message you see when nothing does.
 
 `catch` names a class, and there are three:
 
@@ -43,7 +43,7 @@ Execution error: boom
 
 Nothing cuts a `finally` short, so it is the place to undo what the body did. In
 a loop it runs when the loop stops, by `(control/stop)`, by STOP or by an error;
-see [Control Loops](../robot/control-loops.md#cleanup).
+see [Control Loops](../robot/control-loops.md).
 
 ## recur and try
 
