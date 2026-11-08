@@ -8,11 +8,11 @@ It is easy to set up: a single OpMode file, `SecondLoop.java`, uploaded through
 [OnBot Java](https://ftc-docs.firstinspires.org/en/latest/programming_resources/onbot_java/OnBot-Java-Tutorial.html),
 with no Android Studio and no Gradle.
 
-You talk to the robot from your laptop with [Netcat](https://nc110.sourceforge.io),
-it acts on each command **right away**:
+You talk to the robot from your laptop with [`secondloop.py`](secondloop.py),
+and it acts on each command **right away**:
 
 ```console
-$ nc 192.168.43.1 9001
+$ ./secondloop.py
 Second Loop REPL
 user=> (battery/voltage)
 12.84
