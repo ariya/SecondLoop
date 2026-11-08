@@ -1,0 +1,10 @@
+.md-typeset img.three-quarters {
+  width: 75%;
+}
+
+/* Phone form factor: use the full column width */
+@media screen and (max-width: 44.984375em) {
+  .md-typeset img.three-quarters {
+    width: 100%;
+  }
+}

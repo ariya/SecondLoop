@@ -1,5 +1,7 @@
 # Gamepad
 
+![Gamepad](gamepad.jpg){ .three-quarters }
+
 `(gamepad 1)` and `(gamepad 2)` each return a snapshot of the controller's
 current state as a map. The keys are the FTC SDK's `Gamepad` field names,
 written as kebab-case keywords:
