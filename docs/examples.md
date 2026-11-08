@@ -7,23 +7,15 @@ have other names, change the examples to match.
 ## Drivetrain
 
 A [mecanum drivetrain](https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html)
-has four motors. The two on the left are mounted the other way round, so
-reverse them first:
-
-```clojure
-user=> (motor/set-direction "front_left_drive" :reverse)
-:reverse
-user=> (motor/set-direction "back_left_drive" :reverse)
-:reverse
-```
-
-Next, define a function that turns three numbers into four wheel powers: how
-fast to drive forward, strafe right and turn right, each from -1.0 to 1.0. If
-the three numbers add up to more than 1, all four powers are scaled down
-together, so the robot still moves in the direction you asked for:
+has four motors. Define a function that turns three numbers into four wheel
+powers: how fast to drive forward, strafe right and turn right, each from -1.0
+to 1.0. If the three numbers add up to more than 1, all four powers are scaled
+down together, so the robot still moves in the direction you asked for:
 
 ```clojure
 (defn mecanum-drive [forward strafe rotate]
+  (motor/set-direction "front_left_drive" :reverse)
+  (motor/set-direction "back_left_drive" :reverse)
   (let [d           (max (+ (abs forward) (abs strafe) (abs rotate)) 1)
         front-left  (/ (- (+ forward strafe) rotate) d)
         front-right (/ (+ (- forward strafe) rotate) d)
@@ -35,6 +27,9 @@ together, so the robot still moves in the direction you asked for:
     (motor/set-power "back_right_drive" back-right)
     [front-left front-right back-left back-right]))
 ```
+
+The two motors on the left are mounted the other way round, so the function
+reverses them first.
 
 Paste it at the prompt.
 

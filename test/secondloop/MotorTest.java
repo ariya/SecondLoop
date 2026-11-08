@@ -43,18 +43,17 @@ public final class MotorTest {
             "      (motor/set-power motor-name 0))))\n";
 
     private static final String MECANUM_DRIVE =
-            "(motor/set-direction \"front_left_drive\" :reverse)\n" +
-            "(motor/set-direction \"back_left_drive\" :reverse)\n" +
-            "\n" +
             "(defn mecanum-drive\n" +
             "  \"Sets the four wheel powers and returns them. If the inputs add up to more\n" +
             "  than 1, the powers are scaled down together.\"\n" +
             "  [forward strafe rotate]\n" +
+            "  (motor/set-direction \"front_left_drive\" :reverse)\n" +
+            "  (motor/set-direction \"back_left_drive\" :reverse)\n" +
             "  (let [d           (max (+ (abs forward) (abs strafe) (abs rotate)) 1)\n" +
-            "        front-left  (/ (+ forward strafe rotate) d)\n" +
-            "        front-right (/ (- forward strafe rotate) d)\n" +
-            "        back-left   (/ (+ (- forward strafe) rotate) d)\n" +
-            "        back-right  (/ (- (+ forward strafe) rotate) d)]\n" +
+            "        front-left  (/ (- (+ forward strafe) rotate) d)\n" +
+            "        front-right (/ (+ (- forward strafe) rotate) d)\n" +
+            "        back-left   (/ (- forward strafe rotate) d)\n" +
+            "        back-right  (/ (+ forward strafe rotate) d)]\n" +
             "    (motor/set-power \"front_left_drive\" front-left)\n" +
             "    (motor/set-power \"front_right_drive\" front-right)\n" +
             "    (motor/set-power \"back_left_drive\" back-left)\n" +
@@ -251,15 +250,15 @@ public final class MotorTest {
         t.devices.put("back_left_drive", lb);
         t.devices.put("back_right_drive", rb);
         String drive = MECANUM_DRIVE;
-        t.check(":reverse\n:reverse\n#'user/mecanum-drive\n#'user/drive-with-gamepad", drive);
+        t.check("#'user/mecanum-drive\n#'user/drive-with-gamepad", drive);
+        t.check("[0.3 0.3 0.3 0.3]", "(mecanum-drive 0.3 0 0)");
         check("REVERSE FORWARD REVERSE FORWARD", lf.direction + " " + rf.direction + " " + lb.direction + " " + rb.direction,
                 "the left motors are reversed");
-        t.check("[0.3 0.3 0.3 0.3]", "(mecanum-drive 0.3 0 0)");
         check("0.30 0.30 0.30 0.30", powers(lf, rf, lb, rb), "forward");
         t.check("[0.3 -0.3 -0.3 0.3]", "(mecanum-drive 0 0.3 0)");
         check("0.30 -0.30 -0.30 0.30", powers(lf, rf, lb, rb), "strafe right");
-        t.check("[0.3 -0.3 0.3 -0.3]", "(mecanum-drive 0 0 0.3)");
-        check("0.30 -0.30 0.30 -0.30", powers(lf, rf, lb, rb), "turn right");
+        t.check("[-0.3 0.3 -0.3 0.3]", "(mecanum-drive 0 0 0.3)");
+        check("-0.30 0.30 -0.30 0.30", powers(lf, rf, lb, rb), "turn right");
         t.check("[1.0 0.0 0.0 1.0]", "(mecanum-drive 1 1 0)");
         check("1.00 0.00 0.00 1.00", powers(lf, rf, lb, rb), "diagonal is scaled to 1");
         t.check("[0.0 0.0 0.0 0.0]", "(mecanum-drive 0 0 0)");
