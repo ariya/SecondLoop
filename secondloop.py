@@ -30,6 +30,7 @@ Windows.
 
 import argparse
 import codecs
+import json
 import os
 import shutil
 import socket
@@ -37,9 +38,12 @@ import sys
 import threading
 import time
 import unicodedata
+import urllib.error
+import urllib.request
 
 DEFAULT_HOST = "192.168.43.1"
 DEFAULT_PORT = 9001
+RC_INFO_URL = "http://%s:8080/js/rcInfo.json"
 HISTORY_FILE = os.path.join(os.path.expanduser("~"), ".secondloop_history")
 HISTORY_LIMIT = 1000
 
@@ -154,6 +158,11 @@ class Colors:
     FAILED = "31"     # red
     MATCH = "1;4"     # bold underlined
     NOTE = "2"        # dim
+    DEVICE = "1;36"   # bold cyan
+    VERSION = "36"    # cyan
+    CONFIG = "1;35"   # bold magenta
+    HINT = "33"       # yellow
+    HINT_NAME = "1;33"  # bold yellow
 
     ERRORS = ("Syntax error", "Execution error", "Future failed.")
 
@@ -178,6 +187,24 @@ class Colors:
             if line.startswith(self.ERRORS):
                 lines[i] = self.paint(line, self.ERROR)
         return "\n".join(lines)
+
+
+def enable_ansi():
+    """Lets the Windows console understand ANSI escapes; True when it does.
+
+    Consoles older than Windows 10 refuse, and then get no colors.
+    """
+    if not WINDOWS:
+        return True
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.GetStdHandle(-11)
+        mode = ctypes.c_uint32()
+        kernel32.GetConsoleMode(handle, ctypes.byref(mode))
+        return bool(kernel32.SetConsoleMode(handle, mode.value | 0x0004))
+    except Exception:
+        return False
 
 
 def color_wanted():
@@ -282,17 +309,8 @@ class WindowsKeys:
         self.ansi = False
 
     def __enter__(self):
-        # Let the console understand the ANSI escapes used for redrawing.
-        # Consoles older than Windows 10 refuse, and then get no colors.
-        try:
-            import ctypes
-            kernel32 = ctypes.windll.kernel32
-            handle = kernel32.GetStdHandle(-11)
-            mode = ctypes.c_uint32()
-            kernel32.GetConsoleMode(handle, ctypes.byref(mode))
-            self.ansi = bool(kernel32.SetConsoleMode(handle, mode.value | 0x0004))
-        except Exception:
-            pass
+        # Redrawing needs the console to understand ANSI escapes.
+        self.ansi = enable_ansi()
         return self
 
     def __exit__(self, *exc):
@@ -707,11 +725,60 @@ class Editor:
 # Connection
 
 
-def connect(host, port):
+def connect(host, port, colors):
+    """Connects to the REPL, or exits with a hint to start it on the robot.
+
+    The robot controller has answered by then, so a failure here almost
+    always means the Second Loop TeleOp isn't running.
+    """
     try:
         return socket.create_connection((host, port), timeout=5)
     except OSError as e:
-        sys.exit("Could not connect to %s:%d: %s" % (host, port, e))
+        error = "Could not connect to %s:%d: %s" % (host, port, e)
+        def styled(*parts):  # alternates plain text and names to stand out
+            return "".join(colors.paint(part, Colors.HINT_NAME if i % 2 else Colors.HINT)
+                           for i, part in enumerate(parts))
+        hint = (styled("On your Driver Hub, select the ", "Second Loop", " TeleOp,") + "\n"
+                + styled("press ", "INIT", " and then ", "START", ". Then try again."))
+        sys.stderr.write("\n%s\n%s\n" % (colors.paint(error, Colors.ERROR), hint))
+        sys.exit(1)
+
+
+def fetch_rc_info(host):
+    """The robot controller's rcInfo.json as a dict, or None if it isn't JSON.
+
+    Exits when the robot doesn't answer with HTTP 200.
+    """
+    url = RC_INFO_URL % ("[%s]" % host if ":" in host else host)
+    try:
+        with urllib.request.urlopen(url, timeout=5) as response:
+            status = response.status
+            body = response.read()
+    except urllib.error.HTTPError as e:
+        status, body = e.code, b""
+    except (OSError, ValueError) as e:
+        sys.exit("Could not get %s: %s" % (url, e))
+    if status != 200:
+        sys.exit("Could not get %s: HTTP %d" % (url, status))
+    try:
+        info = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return None
+    return info if isinstance(info, dict) else None
+
+
+def describe_rc(info, colors):
+    """The lines that introduce the robot controller described by info."""
+    def value(key, style):
+        return colors.paint(str(info.get(key) or "?"), style)
+
+    lines = ["Connected to %s using RC version %s (SDK v%s)" % (
+        value("deviceName", Colors.DEVICE),
+        value("rcVersion", Colors.VERSION),
+        value("sdkVersion", Colors.VERSION))]
+    if info.get("activeConfigName") is not None:
+        lines.append("Active configuration is %s" % value("activeConfigName", Colors.CONFIG))
+    return "\n".join(lines)
 
 
 def pump(sock, emit):
@@ -729,13 +796,63 @@ def pump(sock, emit):
             emit(text)
 
 
-def run_piped(sock):
-    """Sends stdin as it is and prints the replies: what nc does."""
-    def emit(text):
-        sys.stdout.write(text)
-        sys.stdout.flush()
+class Splitter:
+    """Prints what the robot sends to stdout, except its errors, which go to stderr.
 
-    reader = threading.Thread(target=pump, args=(sock, emit))
+    Errors are single lines, but without an echo of the input they come right
+    after the prompt, as in "user=> Execution error: Divide by zero".
+    """
+
+    PROMPT = "user=> "
+
+    def __init__(self, colors):
+        self.colors = colors
+        self.pending = ""
+
+    def out(self, text):
+        if text:
+            sys.stdout.write(text)
+            sys.stdout.flush()
+
+    def err(self, line):
+        sys.stdout.flush()
+        sys.stderr.write(self.colors.paint(line.rstrip("\n"), Colors.ERROR) + "\n")
+        sys.stderr.flush()
+
+    def skip_prompts(self, text):
+        while text.startswith(self.PROMPT):
+            self.out(self.PROMPT)
+            text = text[len(self.PROMPT):]
+        return text
+
+    def line(self, text):
+        text = self.skip_prompts(text)
+        if text.startswith(Colors.ERRORS):
+            self.err(text)
+        else:
+            self.out(text)
+
+    def feed(self, text):
+        lines = (self.pending + text.replace("\r\n", "\n")).split("\n")
+        self.pending = lines.pop()
+        for line in lines:
+            self.line(line + "\n")
+        # Show an unfinished line, such as the prompt, unless it may become an error.
+        self.pending = self.skip_prompts(self.pending)
+        if not any(e.startswith(self.pending) or self.pending.startswith(e)
+                   for e in Colors.ERRORS):
+            self.out(self.pending)
+            self.pending = ""
+
+    def close(self):
+        self.line(self.pending)
+        self.pending = ""
+
+
+def run_piped(sock, color):
+    """Sends stdin as it is and prints the replies: what nc does."""
+    splitter = Splitter(Colors(color))
+    reader = threading.Thread(target=pump, args=(sock, splitter.feed))
     reader.daemon = True
     reader.start()
     try:
@@ -750,6 +867,7 @@ def run_piped(sock):
     except OSError:
         pass
     reader.join()
+    splitter.close()
     sys.stdout.write("\n")
 
 
@@ -772,7 +890,7 @@ def run_interactive(sock, history, color):
     reader = threading.Thread(target=receive)
     reader.daemon = True
     with keys:
-        editor.colors = Colors(color and keys.ansi and color_wanted())
+        editor.colors = Colors(color and keys.ansi)
         reader.start()
         try:
             while not closed.is_set():
@@ -808,13 +926,27 @@ def main():
             except ValueError:
                 parser.error("bad port: %s" % text)
 
-    sock = connect(host, port)
+    # The robot controller answers even before the REPL runs, so its details
+    # are shown first, also when the REPL turns out to be unreachable.
+    interactive = sys.stdin.isatty() and sys.stdout.isatty()
+    if interactive:
+        info_out = sys.stdout
+        color = not args.no_color and color_wanted() and enable_ansi()
+    else:
+        info_out = sys.stderr  # stdout is kept for what the robot sends
+        color = not args.no_color and not WINDOWS and sys.stderr.isatty() and color_wanted()
+    rc_info = fetch_rc_info(host)
+    if rc_info:
+        info_out.write(describe_rc(rc_info, Colors(color)) + "\n")
+        info_out.flush()
+
+    sock = connect(host, port, Colors(color and sys.stderr.isatty()))
     sock.settimeout(None)
     sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-    if sys.stdin.isatty() and sys.stdout.isatty():
-        run_interactive(sock, History(args.history), not args.no_color)
+    if interactive:
+        run_interactive(sock, History(args.history), color)
     else:
-        run_piped(sock)
+        run_piped(sock, color)
 
 
 if __name__ == "__main__":
