@@ -49,7 +49,7 @@ These are evaluated by the interpreter and cannot be passed as values.
 | Futures | `future-cancel future-done? future-cancelled? future?` |
 | Output | `println prn` |
 | Time | `time/elapsed time/sleep` |
-| Robot hardware | `gamepad motor/set-power motor/power motor/set-velocity motor/velocity motor/set-direction motor/direction servo/set-position servo/position servo/set-direction servo/direction crservo/set-power crservo/power crservo/set-direction crservo/direction battery/voltage imu/init imu/reset-yaw imu/angles telemetry/add-line telemetry/clear` |
+| Robot hardware | `gamepad motor/set-power motor/power motor/set-velocity motor/velocity motor/set-direction motor/direction servo/set-position servo/position servo/set-direction servo/direction crservo/set-power crservo/power crservo/set-direction crservo/direction battery/voltage imu/init imu/reset-yaw imu/angles pinpoint/init pinpoint/pose pinpoint/velocity pinpoint/reset pinpoint/status telemetry/add-line telemetry/clear` |
 
 `future` is a special form and `deref` is an ordinary function; both appear in
 the row for the area where you will reach for them.

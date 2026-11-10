@@ -9,11 +9,11 @@ so the robot only needs a single upload.
 | Path | Contents |
 | --- | --- |
 | `src/secondloop/` | The interpreter. Plain Java, no FTC dependency. |
-| `src/ftc/` | Modules that use the FTC SDK, such as `GamepadModule`, `MotorModule`, `ServoModule`, `BatteryModule`, `ImuModule` and `TelemetryModule`. |
+| `src/ftc/` | Modules that use the FTC SDK, such as `GamepadModule`, `MotorModule`, `ServoModule`, `BatteryModule`, `ImuModule`, `PinpointModule` and `TelemetryModule`. |
 | `src/SecondLoop.java` | The OpMode template. The sources are inserted at `// @@SECONDLOOP_SOURCES@@`. |
 | `tools/amalgamate.py` | Merges everything into `build/SecondLoop.java`. |
 | `secondloop.py` | A terminal client with line editing and history, used instead of `nc`. |
-| `test/secondloop/` | `ReplTest`, `GamepadTest`, `MotorTest`, `ServoTest`, `BatteryTest`, `ImuTest` and `TelemetryTest`, plus `LocalRepl`. |
+| `test/secondloop/` | `ReplTest`, `GamepadTest`, `MotorTest`, `ServoTest`, `BatteryTest`, `ImuTest`, `PinpointTest` and `TelemetryTest`, plus `LocalRepl`. |
 | `test/ftc-stubs/` | Minimal stand-ins for the FTC SDK classes, used only for compiling and testing. |
 | `docs/` | This documentation, built with Zensical. |
 
@@ -89,7 +89,8 @@ $ nc localhost 9001                                    # in another terminal
 ```
 
 It has the interpreter and the prelude, but not `gamepad`, `motor/*`, `servo/*`,
-`crservo/*`, `battery/voltage`, `imu/*` or `telemetry/*`, which need the FTC SDK.
+`crservo/*`, `battery/voltage`, `imu/*`, `pinpoint/*` or `telemetry/*`, which need
+the FTC SDK.
 
 !!! tip "Try forms here first"
 

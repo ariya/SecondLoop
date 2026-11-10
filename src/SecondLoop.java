@@ -11,6 +11,7 @@ import secondloop.Env;
 import secondloop.GamepadModule;
 import secondloop.ImuModule;
 import secondloop.MotorModule;
+import secondloop.PinpointModule;
 import secondloop.ReplServer;
 import secondloop.ServoModule;
 import secondloop.TelemetryModule;
@@ -40,6 +41,7 @@ public class SecondLoop extends LinearOpMode {
         ServoModule.install(globals, this);
         BatteryModule.install(globals, this);
         ImuModule.install(globals, this);
+        PinpointModule.install(globals, this);
         telemetryModule.install(globals);
         ReplServer server = new ReplServer(globals, PORT);
         try {

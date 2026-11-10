@@ -173,3 +173,65 @@ user=> (reset! speed 0.3)
 user=> (reset! speed 1)
 1.0
 ```
+
+## Location tracking
+
+If the robot has a [goBILDA Pinpoint](robot/pinpoint.md) odometry computer,
+the driving loop can also show where the robot is, which way it faces and how
+fast it is moving:
+
+```clojure
+(defonce speed (atom 0.5))
+
+(defn drive-with-gamepad []
+  (pinpoint/init :swingarm -3.3 -6.6 :forward :reverse) ; set up once, robot still
+  (loop [n 0]
+    (let [pad     (gamepad 1)
+          forward (* @speed (- (:left-stick-y pad)))
+          strafe  (* @speed (:left-stick-x pad))
+          rotate  (* @speed (:right-stick-x pad))]
+      (mecanum-drive forward strafe rotate))
+    (when (and (zero? (mod n 25))                      ; twice a second
+               (= :ready (pinpoint/status)))
+      (let [p (pinpoint/pose)
+            v (pinpoint/velocity)]
+        (println (format "xy = (%6.1f, %6.1f)  vx,vy = (%5.1f, %5.1f) in/s  %4.0f°"
+                         (:x p) (:y p) (:x v) (:y v)
+                         (Math/toDegrees (:heading p))))))
+    (time/sleep 0.02)
+    (recur (inc n))))
+```
+
+`pinpoint/init` runs only once, before the loop, because it resets the position
+to 0 and calibrates the IMU. Keep the robot still when you start the loop.
+
+The arguments `:swingarm -3.3 -6.6 :forward :reverse` describe one particular
+robot: its type of odometry pods, where they are mounted, and which way each
+pod counts. On this robot the Y pod is reversed, because `y` went down instead
+of up when the robot strafed left. Change them to match your robot, as
+explained under [init](robot/pinpoint.md#init) on the Pinpoint page.
+
+The loop still runs fifty times a second, but it counts its rounds in `n` and
+prints on every 25th round only, so the output stays readable. Each number in
+the format has a fixed width, such as `%6.1f` (at least 6 characters, 1 after
+the decimal point), so the columns stay lined up even when a value grows or
+turns negative. The width fits a position up to ±999.9 inches and a speed up to
+±99.9 inches per second:
+
+```clojure
+user=> (control/start drive-with-gamepad)
+#<Future pending>
+xy = (   0.0,    0.0)  vx,vy = (  0.0,   0.0) in/s     0°
+xy = (   3.2,    0.1)  vx,vy = ( 11.8,   0.2) in/s     1°
+xy = (   9.5,   -0.3)  vx,vy = ( 12.4,  -0.4) in/s     2°
+...
+```
+
+The position is in inches, measured from where the robot was when the loop
+started: `x` is forward and `y` is to the left. `vx` and `vy` are the speeds
+along `x` and `y`, in inches per second. The last number is the heading, which
+increases as the robot turns left.
+
+The loop prints only while `pinpoint/status` is `:ready`. On a robot without a
+Pinpoint, `pinpoint/init` and `pinpoint/status` return `:not-configured`, so
+the loop just drives, as before.
