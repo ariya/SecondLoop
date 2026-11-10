@@ -33,7 +33,7 @@ automatically:
 $ ./secondloop.py
 Connected to 30618-RC using RC version 12.0 (SDK v12.0.0)
 Active configuration is biobuzz
-Second Loop REPL
+Second Loop version 1.1.9
 user=>
 ```
 

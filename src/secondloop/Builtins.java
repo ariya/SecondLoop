@@ -22,6 +22,7 @@ public final class Builtins {
         MathBuiltins.install(globals);
         StringBuiltins.install(globals);
         TimeModule.install(globals);
+        Version.install(globals);
         Prelude.load(globals);
         return globals;
     }

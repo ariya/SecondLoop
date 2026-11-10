@@ -105,7 +105,7 @@ public final class ReplServer {
             client.setTcpNoDelay(true);
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream(), "UTF-8"));
             PrintWriter out = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), "UTF-8"));
-            out.println("Second Loop REPL");
+            out.println(Version.greeting(Version.COMMIT));
             new Repl(globals, out).run(in);
         } catch (IOException e) {
             // The client disconnected.

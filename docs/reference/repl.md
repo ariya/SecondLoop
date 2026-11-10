@@ -43,6 +43,18 @@ explains this and everything else you can type.
   prompt free, start loops with `(control/start f)` instead; see
   [Control Loops](../robot/control-loops.md).
 
+## Version
+
+`(version)` tells which Second Loop is on the robot, which helps after you
+upload a new `SecondLoop.java`:
+
+```clojure
+user=> (version)
+{:version "1.1.9", :major 1.0, :minor 1.0, :patch 9.0, :commit "main"}
+```
+
+`:commit` is `"main"` for a development build.
+
 ## secondloop.py
 
 Download `secondloop.py` from the [Second Loop repository](https://github.com/ariya/SecondLoop).
@@ -121,7 +133,7 @@ client as the problem:
 
 ```console
 $ nc 192.168.43.1 9001
-Second Loop REPL
+Second Loop version 1.1.9
 user=> (+ 1 2)
 3.0
 ```
