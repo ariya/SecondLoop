@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A terminal client for the Second Loop REPL, a friendlier stand-in for nc.
 
-    python3 secondloop.py                    # connects to 192.168.43.1:9001
+    python3 secondloop.py                    # tries 192.168.43.1, then 192.168.49.1
     python3 secondloop.py 192.168.49.1
     python3 secondloop.py localhost 9001
     python3 secondloop.py < robot.clj        # send a file, like nc
@@ -41,7 +41,8 @@ import unicodedata
 import urllib.error
 import urllib.request
 
-DEFAULT_HOST = "192.168.43.1"
+# A Control Hub's WiFi address, then a phone's WiFi Direct address.
+DEFAULT_HOSTS = ("192.168.43.1", "192.168.49.1")
 DEFAULT_PORT = 9001
 RC_INFO_URL = "http://%s:8080/js/rcInfo.json"
 HISTORY_FILE = os.path.join(os.path.expanduser("~"), ".secondloop_history")
@@ -744,10 +745,14 @@ def connect(host, port, colors):
         sys.exit(1)
 
 
+class Unreachable(Exception):
+    """The robot controller didn't answer with HTTP 200."""
+
+
 def fetch_rc_info(host):
     """The robot controller's rcInfo.json as a dict, or None if it isn't JSON.
 
-    Exits when the robot doesn't answer with HTTP 200.
+    Raises Unreachable when the robot doesn't answer with HTTP 200.
     """
     url = RC_INFO_URL % ("[%s]" % host if ":" in host else host)
     try:
@@ -757,9 +762,9 @@ def fetch_rc_info(host):
     except urllib.error.HTTPError as e:
         status, body = e.code, b""
     except (OSError, ValueError) as e:
-        sys.exit("Could not get %s: %s" % (url, e))
+        raise Unreachable("Could not get %s: %s" % (url, e))
     if status != 200:
-        sys.exit("Could not get %s: HTTP %d" % (url, status))
+        raise Unreachable("Could not get %s: HTTP %d" % (url, status))
     try:
         info = json.loads(body.decode("utf-8"))
     except (UnicodeDecodeError, ValueError):
@@ -906,8 +911,9 @@ def run_interactive(sock, history, color):
 
 def main():
     parser = argparse.ArgumentParser(description="Connect to the Second Loop REPL on a robot.")
-    parser.add_argument("host", nargs="?", default=DEFAULT_HOST,
-                        help="robot address, optionally HOST:PORT (default %s)" % DEFAULT_HOST)
+    parser.add_argument("host", nargs="?", default=None,
+                        help="robot address, optionally HOST:PORT (default %s)"
+                        % ", then ".join(DEFAULT_HOSTS))
     parser.add_argument("port", nargs="?", type=int, default=None,
                         help="port (default %d)" % DEFAULT_PORT)
     parser.add_argument("--history", default=HISTORY_FILE,
@@ -919,7 +925,7 @@ def main():
     host, port = args.host, args.port
     if port is None:
         port = DEFAULT_PORT
-        if host.count(":") == 1:
+        if host is not None and host.count(":") == 1:
             host, _, text = host.partition(":")
             try:
                 port = int(text)
@@ -935,7 +941,17 @@ def main():
     else:
         info_out = sys.stderr  # stdout is kept for what the robot sends
         color = not args.no_color and not WINDOWS and sys.stderr.isatty() and color_wanted()
-    rc_info = fetch_rc_info(host)
+    errors = []
+    for candidate in ([host] if host is not None else DEFAULT_HOSTS):
+        try:
+            rc_info = fetch_rc_info(candidate)
+        except Unreachable as e:
+            errors.append(str(e))
+            continue
+        host = candidate
+        break
+    else:
+        sys.exit("\n".join(errors))
     if rc_info:
         info_out.write(describe_rc(rc_info, Colors(color)) + "\n")
         info_out.flush()

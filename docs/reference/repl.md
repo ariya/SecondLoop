@@ -62,7 +62,7 @@ It needs only Python 3 and its standard library, and it runs on Linux, macOS
 and Windows.
 
 ```console
-$ ./secondloop.py                  # connects to 192.168.43.1:9001
+$ ./secondloop.py                  # tries 192.168.43.1, then 192.168.49.1
 $ ./secondloop.py 192.168.49.1     # another address
 $ ./secondloop.py localhost 9001   # an address and a port
 $ ./secondloop.py localhost:9001   # the same, as HOST:PORT
