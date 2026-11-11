@@ -1,8 +1,11 @@
 # Development
 
-Second Loop keeps its sources in normal Java files and combines them into one file
-for [OnBot Java](https://ftc-docs.firstinspires.org/en/latest/programming_resources/onbot_java/OnBot-Java-Tutorial.html),
-so the robot only needs a single upload.
+Second Loop keeps its sources in normal Java files and combines them into one file,
+so the robot only needs a single upload through
+[OnBot Java](https://ftc-docs.firstinspires.org/en/latest/programming_resources/onbot_java/OnBot-Java-Tutorial.html)
+or a single file added to an
+[Android Studio](https://ftc-docs.firstinspires.org/en/latest/programming_resources/android_studio_java/opmode/opmode.html)
+project.
 
 ## Layout
 

@@ -7,7 +7,7 @@ hide:
 [FTC robot](https://www.firstinspires.org/programs/ftc/), built for rapid
 iteration.
 
-Setup is simple: no Android Studio, no Java coding, no Gradle, nothing complicated.
+Setup takes [just 5 minutes](setup.md), with no Java coding.
 You talk to the robot from your laptop, and it acts on each command **right
 away**.
 
@@ -19,16 +19,8 @@ practice session.
 
 ![Setup with a laptop and the robot](setup.jpg){ width="850" }
 
-On a computer with a working Internet connection, download `SecondLoop.java`
-and `secondloop.py` from the [Second Loop repository](https://github.com/ariya/SecondLoop).
-
-Next, connect the computer directly to the robot's Control Hub. Use
-[OnBot Java](https://ftc-docs.firstinspires.org/en/latest/programming_resources/onbot_java/OnBot-Java-Tutorial.html)
-to upload the Java file, then press **Build**. When the build finishes, select
-the **Second Loop** TeleOp program on the Driver Hub and press **INIT**, then
-**START**.
-
-The telemetry on the Driver Hub shows the address to connect to:
+Once Second Loop is running, the telemetry on the Driver Hub shows the address
+to connect to:
 
 ```
 Ready at 192.168.43.1:9001 (0 clients)

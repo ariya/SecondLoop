@@ -4,9 +4,7 @@
 [FTC robot](https://www.firstinspires.org/programs/ftc/), built for rapid
 iteration.
 
-Setup is simple: no Android Studio, no Java coding, no Gradle, nothing
-complicated. Just upload a single OpMode file, `SecondLoop.java`, through
-[OnBot Java](https://ftc-docs.firstinspires.org/en/latest/programming_resources/onbot_java/OnBot-Java-Tutorial.html).
+Setup takes [just 5 minutes](https://secondloop.io/setup), with no Java coding.
 
 You talk to the robot from your laptop with [`secondloop.py`](secondloop.py),
 and it acts on each command **right away**:
