@@ -32,6 +32,7 @@ import argparse
 import codecs
 import json
 import os
+import re
 import shutil
 import socket
 import sys
@@ -786,6 +787,52 @@ def describe_rc(info, colors):
     return "\n".join(lines)
 
 
+REPL_PROMPT = "user=> "
+VERSION_FIELD = re.compile(r':([a-z-]+) (?:"((?:[^"\\]|\\.)*)"|([^,}\s]+))')
+
+
+def read_until_prompt(sock, decoder, text=""):
+    """Reads until the robot shows the prompt, and returns all of it."""
+    while not text.endswith(REPL_PROMPT):
+        data = sock.recv(4096)
+        if not data:
+            raise OSError("connection closed")
+        text += decoder.decode(data)
+    return text
+
+
+def fetch_version(sock):
+    """Asks the robot for (version) before the REPL starts.
+
+    Returns what the robot sent first (the greeting and the prompt), so the
+    REPL can still show it, and the version as a dict, or None if the robot
+    doesn't answer or is too old to know (version).
+    """
+    decoder = codecs.getincrementaldecoder("utf-8")("replace")
+    greeting = ""
+    sock.settimeout(5)
+    try:
+        greeting = read_until_prompt(sock, decoder)
+        sock.sendall(b"(version)\n")
+        reply = read_until_prompt(sock, decoder)[:-len(REPL_PROMPT)].strip()
+    except OSError:
+        return greeting, None
+    finally:
+        sock.settimeout(None)
+    if not (reply.startswith("{") and reply.endswith("}")):
+        return greeting, None
+    version = {}
+    for key, text, number in VERSION_FIELD.findall(reply):
+        if number:
+            try:
+                version[key] = float(number)
+            except ValueError:
+                version[key] = number
+        else:
+            version[key] = text
+    return greeting, version or None
+
+
 def pump(sock, emit):
     """Passes everything the robot sends to emit, until it disconnects."""
     decoder = codecs.getincrementaldecoder("utf-8")("replace")
@@ -808,8 +855,6 @@ class Splitter:
     after the prompt, as in "user=> Execution error: Divide by zero".
     """
 
-    PROMPT = "user=> "
-
     def __init__(self, colors):
         self.colors = colors
         self.pending = ""
@@ -825,9 +870,9 @@ class Splitter:
         sys.stderr.flush()
 
     def skip_prompts(self, text):
-        while text.startswith(self.PROMPT):
-            self.out(self.PROMPT)
-            text = text[len(self.PROMPT):]
+        while text.startswith(REPL_PROMPT):
+            self.out(REPL_PROMPT)
+            text = text[len(REPL_PROMPT):]
         return text
 
     def line(self, text):
@@ -854,9 +899,10 @@ class Splitter:
         self.pending = ""
 
 
-def run_piped(sock, color):
+def run_piped(sock, color, greeting):
     """Sends stdin as it is and prints the replies: what nc does."""
     splitter = Splitter(Colors(color))
+    splitter.feed(greeting)
     reader = threading.Thread(target=pump, args=(sock, splitter.feed))
     reader.daemon = True
     reader.start()
@@ -876,7 +922,7 @@ def run_piped(sock, color):
     sys.stdout.write("\n")
 
 
-def run_interactive(sock, history, color):
+def run_interactive(sock, history, color, greeting):
     closed = threading.Event()
 
     def send(text):
@@ -896,6 +942,7 @@ def run_interactive(sock, history, color):
     reader.daemon = True
     with keys:
         editor.colors = Colors(color and keys.ansi)
+        editor.output(greeting)
         reader.start()
         try:
             while not closed.is_set():
@@ -957,12 +1004,13 @@ def main():
         info_out.flush()
 
     sock = connect(host, port, Colors(color and sys.stderr.isatty()))
-    sock.settimeout(None)
     sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    # Kept for checking compatibility with the robot later; nothing uses it yet.
+    greeting, robot_version = fetch_version(sock)
     if interactive:
-        run_interactive(sock, History(args.history), color)
+        run_interactive(sock, History(args.history), color, greeting)
     else:
-        run_piped(sock, color)
+        run_piped(sock, color, greeting)
 
 
 if __name__ == "__main__":
