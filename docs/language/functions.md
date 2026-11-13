@@ -178,8 +178,16 @@ user=> ((comp (partial * 2) inc) 3)   ; (* 2 (inc 3))
 8.0
 ```
 
-Both are written in the same Lisp you type, in `Prelude`, so you can redefine
-them.
+`constantly` makes a function that ignores its arguments and always gives the
+same value:
+
+```clojure
+user=> (map (constantly 0) [1 2 3])
+(0.0 0.0 0.0)
+```
+
+All three are written in the same Lisp you type, in `Prelude`, so you can
+redefine them.
 
 `apply` spreads a collection as arguments:
 

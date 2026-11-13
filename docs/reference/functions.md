@@ -42,7 +42,7 @@ These are evaluated by the interpreter and cannot be passed as values.
 | Reading collections | `count empty? seq first second last rest next nth get get-in contains? keys vals peek` |
 | Changing collections | `conj cons pop assoc assoc-in dissoc disj update update-in into merge` |
 | Sequences | `concat reverse sort map filter reduce apply some every?` |
-| Functions | `partial comp` |
+| Functions | `partial comp constantly` |
 | Strings | `str format subs pr-str parse-double str/join str/split str/replace str/trim str/upper-case str/lower-case str/blank? str/includes? str/starts-with? str/ends-with?` |
 | Atoms | `atom deref reset! swap!` |
 | Errors | `throw ex-info ex-message ex-data` |
@@ -57,10 +57,10 @@ the row for the area where you will reach for them.
 
 ## Robot helpers
 
-`clamp`, `deadband`, `lerp`, `wrap-degrees`, `wrap-radians`, `partial`, `comp`
-and the `control/*` functions are written in the REPL language itself, in
-`src/secondloop/Prelude.java`. They are ordinary definitions, so you can read
-them with `(doc name)` and redefine them from the REPL.
+`clamp`, `deadband`, `lerp`, `wrap-degrees`, `wrap-radians`, `partial`, `comp`,
+`constantly` and the `control/*` functions are written in the REPL language
+itself, in `src/secondloop/Prelude.java`. They are ordinary definitions, so you
+can read them with `(doc name)` and redefine them from the REPL.
 
 ```clojure
 user=> (clamp 1.3 -1 1)

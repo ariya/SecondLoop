@@ -534,6 +534,11 @@ public final class ReplTest {
         t.check("Syntax error: Nested #()s are not allowed", "#(map #(* 2 %) %)");
         t.check("#'user/%", "(def % 5)");
         t.check("5.0", "%");
+        t.check("5.0", "((constantly 5))");
+        t.check("5.0", "((constantly 5) 1 2 3)");
+        t.check("nil", "((constantly nil) 1)");
+        t.check("(0.0 0.0 0.0)", "(map (constantly 0) [1 2 3])");
+        t.check("0.5", "(do (def speed (atom 0.5)) ((comp deref (constantly speed))))");
 
         // Math
         t.check("1.0", "(mod 7 3)");
