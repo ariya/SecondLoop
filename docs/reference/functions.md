@@ -41,7 +41,7 @@ These are evaluated by the interpreter and cannot be passed as values.
 | Collection types | `list? seq? vector? map? set? coll?` |
 | Reading collections | `count empty? seq first second last rest next nth get get-in contains? keys vals peek` |
 | Changing collections | `conj cons pop assoc assoc-in dissoc disj update update-in into merge` |
-| Sequences | `concat reverse map filter reduce apply some every?` |
+| Sequences | `concat reverse sort map filter reduce apply some every?` |
 | Functions | `partial comp` |
 | Strings | `str format subs pr-str parse-double str/join str/split str/replace str/trim str/upper-case str/lower-case str/blank? str/includes? str/starts-with? str/ends-with?` |
 | Atoms | `atom deref reset! swap!` |

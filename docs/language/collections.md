@@ -171,6 +171,18 @@ user=> (reverse [1 2 3])
 (3.0 2.0 1.0)
 ```
 
+`sort` puts numbers, strings or keywords in order. Give it a function such as
+`>` to choose another order. A map is sorted by its keys:
+
+```clojure
+user=> (sort [3 -1 2])
+(-1.0 2.0 3.0)
+user=> (sort > [3 -1 2])
+(3.0 2.0 -1.0)
+user=> (sort {:right 0.4 :left 0.5})
+([:left 0.5] [:right 0.4])
+```
+
 Because keywords are functions, `map` can pull one key out of every map. This
 is the usual way to summarise robot state:
 

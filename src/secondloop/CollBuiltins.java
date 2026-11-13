@@ -2,6 +2,8 @@ package secondloop;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /** Functions on lists, vectors, maps and sets. They never modify their arguments. */
@@ -17,6 +19,46 @@ public final class CollBuiltins {
             return Coll.assoc(coll, key, value);
         }
         return Coll.assoc(coll, key, assocIn(Coll.get(coll, key, null), keys, i + 1, value));
+    }
+
+    /** The natural order of sort: numbers, strings or keywords, and vectors of them item by item, shorter first. */
+    static int compareValues(Object a, Object b) {
+        if (a instanceof Double && b instanceof Double) {
+            return Double.compare((Double) a, (Double) b);
+        }
+        if (a instanceof String && b instanceof String) {
+            return ((String) a).compareTo((String) b);
+        }
+        if (a instanceof Keyword && b instanceof Keyword) {
+            return ((Keyword) a).name.compareTo(((Keyword) b).name);
+        }
+        if (a instanceof FormVector && b instanceof FormVector) {
+            List<?> x = (List<?>) a;
+            List<?> y = (List<?>) b;
+            if (x.size() != y.size()) {
+                return x.size() < y.size() ? -1 : 1;
+            }
+            for (int i = 0; i < x.size(); i++) {
+                int c = compareValues(x.get(i), y.get(i));
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return 0;
+        }
+        throw new ScriptError("sort cannot compare " + Printer.print(a) + " and " + Printer.print(b));
+    }
+
+    /** A comparator gives a number, like compare in Clojure, or true when a goes first, like <. */
+    static int compareWith(Interp interp, Object comp, Object a, Object b) {
+        Object result = interp.apply(comp, new Object[] {a, b});
+        if (result instanceof Double) {
+            return (int) Math.signum((Double) result);
+        }
+        if (Interp.isTruthy(result)) {
+            return -1;
+        }
+        return Interp.isTruthy(interp.apply(comp, new Object[] {b, a})) ? 1 : 0;
     }
 
     /** (f old extra...) as used by update and update-in. */
@@ -442,6 +484,26 @@ public final class CollBuiltins {
                     result.add(items.get(i));
                 }
                 return result;
+            }
+        });
+        Builtins.define(env, new Builtin("sort") {
+            @Override
+            public Object invoke(final Interp interp, Object[] args) {
+                checkArity(args, 1, 2);
+                List<Object> items = Coll.items(args[args.length - 1], "sort");
+                final Object comp = args.length == 2 ? args[0] : null;
+                try {
+                    // Stable, so equal items keep their order.
+                    Collections.sort(items, new Comparator<Object>() {
+                        @Override
+                        public int compare(Object a, Object b) {
+                            return comp == null ? compareValues(a, b) : compareWith(interp, comp, a, b);
+                        }
+                    });
+                } catch (IllegalArgumentException e) {
+                    throw new ScriptError("sort got a comparator that does not give a consistent order");
+                }
+                return new FormList(items);
             }
         });
         Builtins.define(env, new Builtin("map") {

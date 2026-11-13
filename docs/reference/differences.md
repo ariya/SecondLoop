@@ -31,6 +31,8 @@ faithfulness to Clojure and staying small conflict, it stays small.
   `:as` in maps, but not `:strs` or `:syms`.
 - **`doseq`** takes one or more bindings but not the `:when`, `:while` or `:let`
   modifiers.
+- **`sort`** compares numbers, strings, keywords and vectors of them, but not
+  `nil` or a mix of types. There is no `compare` or `sort-by`.
 
 ## Numbers and time
 

@@ -437,6 +437,22 @@ public final class ReplTest {
         t.check("()", "()");
         t.check("true", "(list? (list 1 2))");
         t.check("(3.0 2.0 1.0)", "(reverse [1 2 3])");
+        t.check("(-1.0 2.0 3.0)", "(sort [3 -1 2])");
+        t.check("(\"a\" \"b\")", "(sort #{\"b\" \"a\"})");
+        t.check("(:a :b :c)", "(sort '(:c :a :b))");
+        t.check("([:a 2.0] [:b 1.0])", "(sort {:b 1 :a 2})");
+        t.check("([1.0] [1.0 2.0] [1.0 3.0])", "(sort [[1 3] [1] [1 2]])");
+        t.check("()", "(sort [])");
+        t.check("()", "(sort nil)");
+        t.check("(3.0 2.0 1.0)", "(sort > [1 3 2])");
+        t.check("(3.0 2.0 1.0)", "(sort (fn [a b] (- b a)) [1 3 2])");
+        t.check("([1.0 :x] [1.0 :y] [0.0 :z])", "(sort (fn [a b] (> (first a) (first b))) [[1 :x] [0 :z] [1 :y]])");
+        t.check("[3.0 1.0 2.0]", "(let [v [3 1 2]] (sort v) v)");
+        t.check("Execution error: sort cannot compare \"a\" and 1.0", "(sort [1 \"a\"])");
+        t.check("Execution error: sort cannot compare nil and nil", "(sort [nil nil])");
+        t.check("Execution error: sort expects a collection, got: 1.0", "(sort 1)");
+        t.check("Execution error: Wrong number of args (3) passed to: sort", "(sort < [1] [2])");
+        t.check("Execution error: Divide by zero", "(sort (fn [a b] (/ 1 0)) [1 2])");
         t.check("(1.0 2.0 3.0 4.0)", "(concat [1 2] '(3) [4])");
         t.check("Execution error: contains? not supported on: (1.0)", "(contains? '(1) 0)");
 
