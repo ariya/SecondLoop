@@ -36,7 +36,7 @@ These are evaluated by the interpreter and cannot be passed as values.
 | Comparison and logic | `= not= < > <= >= not zero? pos? neg? even? odd?` |
 | `java.lang.Math` | `Math/PI Math/E Math/abs Math/sin Math/cos Math/tan Math/asin Math/acos Math/atan Math/atan2 Math/hypot Math/sqrt Math/cbrt Math/pow Math/exp Math/log Math/log10 Math/floor Math/ceil Math/round Math/signum Math/min Math/max Math/toRadians Math/toDegrees` |
 | Robot helpers | `clamp deadband lerp wrap-degrees wrap-radians control/start control/stop control/running?` |
-| Types | `nil? some? true? false? boolean boolean? number? string? keyword keyword? symbol symbol? name fn?` |
+| Types | `nil? some? true? false? boolean boolean? number? string? keyword keyword? symbol symbol? name fn? atom?` |
 | Building collections | `list vector hash-map hash-set vec set range` |
 | Collection types | `list? seq? vector? map? set? coll?` |
 | Reading collections | `count empty? seq first second last rest next nth get get-in contains? keys vals peek` |

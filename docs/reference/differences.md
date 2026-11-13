@@ -47,6 +47,7 @@ faithfulness to Clojure and staying small conflict, it stays small.
 
 ## Atoms and futures
 
+- **`atom?`** tells whether a value is an atom; Clojure has no such function.
 - **Atoms** have no watches or validators, and no `add-watch`. To react to a
   change, read the atom in the loop, which already does that once per round.
 - **`future-cancel` waits** (up to a second) for the future's thread to end, so

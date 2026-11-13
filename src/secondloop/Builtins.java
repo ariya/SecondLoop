@@ -394,6 +394,7 @@ public final class Builtins {
         define(env, new TypePredicate("keyword?", Keyword.class));
         define(env, new TypePredicate("symbol?", Symbol.class));
         define(env, new TypePredicate("fn?", Fn.class));
+        define(env, new TypePredicate("atom?", Atom.class));
         define(env, new Builtin("keyword") {
             @Override
             public Object invoke(Interp interp, Object[] args) {

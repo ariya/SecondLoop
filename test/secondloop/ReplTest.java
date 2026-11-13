@@ -733,6 +733,8 @@ public final class ReplTest {
         t.check("true", "(= 'foo (symbol \"foo\"))");
         t.check("false", "(symbol? :foo)");
         t.check("true", "(fn? +)");
+        t.check("true", "(atom? (atom 1))");
+        t.check("false", "(atom? 1)");
         t.check("true", "(string? \"a\")");
         t.check("true", "(number? 1)");
         t.check("5.0", "(count \"hello\")");
