@@ -521,6 +521,19 @@ public final class ReplTest {
         t.check("3.0", "((comp inc inc) 1)");
         t.check("7.0", "((comp) 7)");
         t.check("\"3.0\"", "((comp str +) 1 2)");
+        t.check("6.0", "(#(* 2 %) 3)");
+        t.check("(2.0 4.0)", "(map #(* 2 %) [1 2])");
+        t.check("7.0", "(#(+ %1 %2) 3 4)");
+        t.check("2.0", "(#(- %3 %1) 1 99 3)");
+        t.check("5.0", "(#(+ % %1) 2.5)");
+        t.check("6.0", "(#(apply + %&) 1 2 3)");
+        t.check("[1.0 (2.0 3.0)]", "(#(vector % %&) 1 2 3)");
+        t.check("0.5", "(do (def speed (atom 0.5)) (#(deref speed)))");
+        t.check("()", "(#())");
+        t.check("Execution error: Wrong number of args (1) passed to: fn", "(#(deref speed) 1)");
+        t.check("Syntax error: Nested #()s are not allowed", "#(map #(* 2 %) %)");
+        t.check("#'user/%", "(def % 5)");
+        t.check("5.0", "%");
 
         // Math
         t.check("1.0", "(mod 7 3)");

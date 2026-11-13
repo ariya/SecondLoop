@@ -154,6 +154,19 @@ user=> (map (fn [x] (* x 2)) [1 2 3])
 (2.0 4.0 6.0)
 ```
 
+`#(...)` is a shorter way to write a small `fn`. Inside it, `%` is the
+argument; with more than one, use `%1`, `%2` and so on, and `%&` for the rest:
+
+```clojure
+user=> (map #(* % 2) [1 2 3])
+(2.0 4.0 6.0)
+user=> (#(+ %1 %2) 3 4)
+7.0
+```
+
+The body is one call, so `#(@speed)` would call the atom's value. Write
+`#(deref speed)` instead. A `#()` cannot hold another `#()`.
+
 `partial` fills in the first arguments, and `comp` chains right to left:
 
 ```clojure

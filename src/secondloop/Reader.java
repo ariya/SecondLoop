@@ -10,6 +10,10 @@ public final class Reader {
 
     private final String src;
     private int pos;
+    /** While reading #(...): the highest %N seen, and whether %& was seen. */
+    private boolean inFnLiteral;
+    private int argCount;
+    private boolean restArg;
 
     private Reader(String src) {
         this.src = src;
@@ -72,6 +76,10 @@ public final class Reader {
                     pos++;
                     return readSet();
                 }
+                if (src.charAt(pos) == '(') {
+                    pos++;
+                    return readFnLiteral();
+                }
                 throw new SyntaxError("Unsupported syntax: #" + src.charAt(pos));
             case ')':
             case ']':
@@ -118,6 +126,53 @@ public final class Reader {
             }
             items.add(read());
         }
+    }
+
+    /** #(f % %2) becomes (fn [%1 %2] (f %1 %2)), as in Clojure. */
+    private FormList readFnLiteral() {
+        if (inFnLiteral) {
+            throw new SyntaxError("Nested #()s are not allowed");
+        }
+        inFnLiteral = true;
+        argCount = 0;
+        restArg = false;
+        FormList body;
+        try {
+            body = readSequence(')', new FormList());
+        } finally {
+            inFnLiteral = false;
+        }
+        FormVector params = new FormVector();
+        for (int i = 1; i <= argCount; i++) {
+            params.add(Symbol.of("%" + i));
+        }
+        if (restArg) {
+            params.add(Symbol.of("&"));
+            params.add(Symbol.of("%&"));
+        }
+        FormList fn = new FormList();
+        fn.add(Symbol.of("fn"));
+        fn.add(params);
+        fn.add(body);
+        return fn;
+    }
+
+    /** % and %1 to %9 inside #(...), counted so the fn gets enough parameters. */
+    private Object fnLiteralArg(String token) {
+        if (token.equals("%&")) {
+            restArg = true;
+            return Symbol.of(token);
+        }
+        int n;
+        if (token.equals("%")) {
+            n = 1;
+        } else if (token.length() == 2 && token.charAt(1) >= '1' && token.charAt(1) <= '9') {
+            n = token.charAt(1) - '0';
+        } else {
+            return Symbol.of(token);
+        }
+        argCount = Math.max(argCount, n);
+        return Symbol.of("%" + n);
     }
 
     private FormMap readMap() {
@@ -204,6 +259,9 @@ public final class Reader {
                 throw new SyntaxError("Invalid number: " + token);
             }
             return Double.parseDouble(token);
+        }
+        if (inFnLiteral && token.startsWith("%")) {
+            return fnLiteralArg(token);
         }
         return Symbol.of(token);
     }

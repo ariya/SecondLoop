@@ -50,6 +50,7 @@ its arguments. Arguments are evaluated inside-out: `(* 2 3)` first, then `+`.
 | Map | `{:name "Bolt" :speed 0.5}` | Keys keep insertion order. |
 | Set | `#{1 2 3}` | No duplicates, keeps insertion order. |
 | Atom | `@kp` | The atom's current value. |
+| Function | `#(* 2 %)` | Short for `(fn [x] (* 2 x))`; see [Functions](functions.md#higher-order-functions). |
 | Comment | `; anything` | From `;` to the end of the line. |
 
 Two details surprise newcomers:
