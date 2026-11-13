@@ -9,9 +9,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * (imu/init :up :backward), (imu/reset-yaw) and (imu/angles): the IMU in the
- * Control Hub, which the robot configuration names "imu". imu/angles reads yaw,
- * pitch and roll together, so the three come from the same moment. Angles are
+ * (imu/init :up :backward), (imu/reset-yaw), (imu/angles) and (imu/yaw),
+ * (imu/pitch), (imu/roll): the IMU in the Control Hub, which the robot
+ * configuration names "imu". imu/angles reads yaw, pitch and roll together, so
+ * the three come from the same moment; imu/yaw and the others read just one. Angles are
  * in radians, ready for Math/sin and Math/cos; Math/toDegrees converts them.
  */
 public final class ImuModule {
@@ -66,6 +67,24 @@ public final class ImuModule {
                 m.put(Keyword.of("pitch"), angles.getPitch(AngleUnit.RADIANS));
                 m.put(Keyword.of("roll"), angles.getRoll(AngleUnit.RADIANS));
                 return m;
+            }
+        });
+        defineAngle(env, opMode, initialized, "yaw");
+        defineAngle(env, opMode, initialized, "pitch");
+        defineAngle(env, opMode, initialized, "roll");
+    }
+
+    /** imu/yaw, imu/pitch or imu/roll: one angle, for a field or a quick look. */
+    private static void defineAngle(Env env, final OpMode opMode, final AtomicBoolean initialized, final String angle) {
+        Builtins.define(env, new Builtin("imu/" + angle) {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 0, 0);
+                YawPitchRollAngles angles = ready(opMode, initialized).getRobotYawPitchRollAngles();
+                if (angle.equals("yaw")) {
+                    return angles.getYaw(AngleUnit.RADIANS);
+                }
+                return angle.equals("pitch") ? angles.getPitch(AngleUnit.RADIANS) : angles.getRoll(AngleUnit.RADIANS);
             }
         });
     }

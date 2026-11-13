@@ -86,3 +86,25 @@ To show it on the Driver Hub, round it too:
 user=> (telemetry/add-line (format "Yaw %.1f°" (Math/toDegrees (:yaw (imu/angles)))))
 nil
 ```
+
+For one angle, `imu/yaw`, `imu/pitch` and `imu/roll` are shorter. To use two or
+three together, read `imu/angles` once, so they all come from the same moment.
+
+## yaw
+
+`(imu/yaw)` is the heading, the same as `(:yaw (imu/angles))`:
+
+```clojure
+user=> (imu/yaw)
+1.5655603390389137
+```
+
+## pitch
+
+`(imu/pitch)` is the nose tilting up or down, the same as
+`(:pitch (imu/angles))`.
+
+## roll
+
+`(imu/roll)` is the robot leaning to one side, the same as
+`(:roll (imu/angles))`.

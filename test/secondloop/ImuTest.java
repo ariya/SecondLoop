@@ -87,6 +87,7 @@ public final class ImuTest {
         t.devices.put("imu", imu);
         t.check(notSetUp, "(imu/angles)");
         t.check(notSetUp, "(imu/reset-yaw)");
+        t.check(notSetUp, "(imu/yaw)");
 
         t.check("Execution error: imu/init expects the logo direction as :up, :down, :left, :right, :forward or :backward, got: :top",
                 "(imu/init :top :backward)");
@@ -108,6 +109,10 @@ public final class ImuTest {
         imu.roll = 0.125;
         t.check("{:yaw 0.5, :pitch -0.25, :roll 0.125}", "(imu/angles)");
         t.check("0.5", "(:yaw (imu/angles))");
+        t.check("0.5", "(imu/yaw)");
+        t.check("-0.25", "(imu/pitch)");
+        t.check("0.125", "(imu/roll)");
+        t.check("Execution error: Wrong number of args (1) passed to: imu/roll", "(imu/roll 1)");
         t.check("nil", "(imu/reset-yaw)");
         t.check("{:yaw 0.0, :pitch -0.25, :roll 0.125}", "(imu/angles)");
         imu.heading = 0.5 + Math.PI / 2;
