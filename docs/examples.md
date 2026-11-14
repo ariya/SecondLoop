@@ -102,16 +102,18 @@ The robot drives the square, but you have to wait the full 12 seconds. The
 result and the next prompt appear only after the robot stops, and you can't
 type anything in the meantime.
 
-To keep typing while the robot drives, use `control/start` instead. It runs
+To keep typing while the robot drives, use `task/start` instead. It runs
 the function in the background and returns at once:
 
 ```clojure
-user=> (control/start drive-square)
+user=> (task/start drive-square)
 #<Future pending>
 ```
 
 `#<Future pending>` means the work hasn't finished yet: the robot is still
 driving the square, and you can type the next command while it does.
+[Control Loops](control-loops.md) explains how to write, stop and clean up
+loops like this one.
 
 ## Driver control
 
@@ -131,7 +133,7 @@ stick turns:
     (recur)))
 ```
 
-Start it with `(control/start drive-with-gamepad)` and end it with `(control/stop)`.
+Start it with `(task/start drive-with-gamepad)` and end it with `(task/stop)`.
 The wheels keep their last power after the loop ends, so stop them with
 `(mecanum-drive 0 0 0)`. Pressing STOP on the Driver Hub stops them too.
 
@@ -159,8 +161,8 @@ rotate values by it:
     (recur)))
 ```
 
-Paste it, then run `(control/start drive-with-gamepad)` again. A running loop
-keeps the old definition, and `control/start` stops it before starting the new
+Paste it, then run `(task/start drive-with-gamepad)` again. A running loop
+keeps the old definition, and `task/start` stops it before starting the new
 one.
 
 Now change the speed at the prompt while you drive:
@@ -183,21 +185,21 @@ fast it is moving:
 
 (defn drive-with-gamepad []
   (pinpoint/init :swingarm -3.3 -6.6 :forward :reverse) ; set up once, robot still
-  (loop [n 0]
+  (loop []
     (let [pad     (gamepad 1)
           forward (* @speed (- (:left-stick-y pad)))
           strafe  (* @speed (:left-stick-x pad))
           rotate  (* @speed (:right-stick-x pad))]
       (mecanum-drive forward strafe rotate))
-    (when (and (zero? (mod n 25))                      ; twice a second
-               (= :ready (pinpoint/status)))
+    (when (= :ready (pinpoint/status))
       (let [p (pinpoint/pose)
             v (pinpoint/velocity)]
-        (println (format "xy = (%6.1f, %6.1f)  vx,vy = (%5.1f, %5.1f) in/s  %4.0f°"
-                         (:x p) (:y p) (:x v) (:y v)
-                         (Math/toDegrees (:heading p))))))
+        (telemetry/clear)
+        (telemetry/add-line (format "xy    = (%6.1f, %6.1f) in" (:x p) (:y p)))
+        (telemetry/add-line (format "vx,vy = (%6.1f, %6.1f) in/s" (:x v) (:y v)))
+        (telemetry/add-line (format "heading %4.0f°" (Math/toDegrees (:heading p))))))
     (time/sleep 0.02)
-    (recur (inc n))))
+    (recur)))
 ```
 
 `pinpoint/init` runs only once, before the loop, because it resets the position
@@ -209,27 +211,17 @@ pod counts. On this robot the Y pod is reversed, because `y` went down instead
 of up when the robot strafed left. Change them to match your robot, as
 explained under [init](robot/pinpoint.md#init) on the Pinpoint page.
 
-The loop still runs fifty times a second, but it counts its rounds in `n` and
-prints on every 25th round only, so the output stays readable. Each number in
-the format has a fixed width, such as `%6.1f` (at least 6 characters, 1 after
-the decimal point), so the columns stay lined up even when a value grows or
-turns negative. The width fits a position up to ±999.9 inches and a speed up to
-±99.9 inches per second:
+Every round, the loop clears the [telemetry](robot/telemetry.md) and adds
+three fresh lines, so the Driver Hub always shows the latest values in place.
+After `(task/start drive-with-gamepad)`, the Driver Hub shows something like:
 
-```clojure
-user=> (control/start drive-with-gamepad)
-#<Future pending>
-xy = (   0.0,    0.0)  vx,vy = (  0.0,   0.0) in/s     0°
-xy = (   3.2,    0.1)  vx,vy = ( 11.8,   0.2) in/s     1°
-xy = (   9.5,   -0.3)  vx,vy = ( 12.4,  -0.4) in/s     2°
-...
+```
+xy    = (   9.5,   -0.3) in
+vx,vy = (  12.4,   -0.4) in/s
+heading    2°
 ```
 
 The position is in inches, measured from where the robot was when the loop
 started: `x` is forward and `y` is to the left. `vx` and `vy` are the speeds
-along `x` and `y`, in inches per second. The last number is the heading, which
-increases as the robot turns left.
-
-The loop prints only while `pinpoint/status` is `:ready`. On a robot without a
-Pinpoint, `pinpoint/init` and `pinpoint/status` return `:not-configured`, so
-the loop just drives, as before.
+along `x` and `y`, in inches per second. The heading increases as the robot
+turns left.

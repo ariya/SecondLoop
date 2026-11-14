@@ -49,7 +49,7 @@ faithfulness to Clojure and staying small conflict, it stays small.
 
 - **`atom?`** tells whether a value is an atom; Clojure has no such function.
 - **`name` also takes a function** and gives the name it was defined with, or
-  `nil` for an unnamed one. `control/start` uses it to tell loops apart.
+  `nil` for an unnamed one. `task/start` uses it to tell tasks apart.
 - **Atoms** have no watches or validators, and no `add-watch`. To react to a
   change, read the atom in the loop, which already does that once per round.
 - **`future-cancel` waits** (up to a second) for the future's thread to end, so

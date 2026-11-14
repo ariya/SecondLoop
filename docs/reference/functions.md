@@ -35,7 +35,7 @@ These are evaluated by the interpreter and cannot be passed as values.
 | Arithmetic | `+ - * / inc dec mod rem quot abs min max` |
 | Comparison and logic | `= not= < > <= >= not zero? pos? neg? even? odd?` |
 | `java.lang.Math` | `Math/PI Math/E Math/abs Math/sin Math/cos Math/tan Math/asin Math/acos Math/atan Math/atan2 Math/hypot Math/sqrt Math/cbrt Math/pow Math/exp Math/log Math/log10 Math/floor Math/ceil Math/round Math/signum Math/min Math/max Math/toRadians Math/toDegrees` |
-| Robot helpers | `clamp deadband lerp wrap-degrees wrap-radians control/start control/stop control/running?` |
+| Robot helpers | `clamp deadband lerp wrap-degrees wrap-radians task/start task/stop task/running?` |
 | Types | `nil? some? true? false? boolean boolean? number? string? keyword keyword? symbol symbol? name fn? atom?` |
 | Building collections | `list vector hash-map hash-set vec set range` |
 | Collection types | `list? seq? vector? map? set? coll?` |
@@ -59,7 +59,7 @@ the row for the area where you will reach for them.
 ## Robot helpers
 
 `clamp`, `deadband`, `lerp`, `wrap-degrees`, `wrap-radians`, `partial`, `comp`,
-`constantly`, the `control/*` functions and `publish/setup` are written in
+`constantly`, the `task/*` functions and `publish/setup` are written in
 the REPL language itself, in `src/secondloop/Prelude.java`. They are ordinary
 definitions, so you can read them with `(doc name)` and redefine them from the
 REPL.
@@ -75,8 +75,8 @@ user=> (lerp 0 10 0.5)
 5.0
 ```
 
-`control/start` and `control/stop` are covered in
-[Control Loops](../robot/control-loops.md).
+`task/start` and `task/stop` are covered in
+[Task](../robot/task.md).
 
 ## Argument checks
 

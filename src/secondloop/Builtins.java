@@ -443,7 +443,7 @@ public final class Builtins {
                 if (x instanceof Symbol) {
                     return ((Symbol) x).name;
                 }
-                // Not in Clojure: control/start uses it to tell loops apart.
+                // Not in Clojure: task/start uses it to tell loops apart.
                 if (x instanceof Closure) {
                     return ((Closure) x).named() ? ((Closure) x).name() : null;
                 }

@@ -60,8 +60,8 @@ Driver Hub as you press them:
       (recur))))
 ```
 
-Start it in the background with `(control/start show-gamepad)` and stop it with
-`(control/stop)`; see [Control Loops](control-loops.md). While it runs, the
+Start it in the background with `(task/start show-gamepad)` and stop it with
+`(task/stop)`; see [Task](task.md). While it runs, the
 Driver Hub updates as you press buttons:
 
 ```

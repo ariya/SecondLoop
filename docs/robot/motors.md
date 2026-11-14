@@ -14,12 +14,12 @@ pressed:
     (time/sleep 0.02)
     (recur)))
 
-(control/start spin)
+(task/start spin)
 ```
 
 The trigger reads from 0.0 when released to 1.0 when fully pressed, which is
-exactly the range of a motor power. Stop it with `(control/stop)` (see
-[Control Loops](control-loops.md)); pressing STOP on the Driver Hub also stops
+exactly the range of a motor power. Stop it with `(task/stop)` (see
+[Task](task.md)); pressing STOP on the Driver Hub also stops
 every motor.
 
 A typo in a name, or a device that isn't a DC motor, is reported with the name:

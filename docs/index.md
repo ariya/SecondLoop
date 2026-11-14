@@ -11,7 +11,7 @@ Setup takes [just 5 minutes](setup.md), with no Java coding.
 You talk to the robot from your laptop, and it acts on each command **right
 away**.
 
-Want to tune the launcher PID, debug AprilTag detection, or fix the odometry? Change it while the robot runs and see the result instantly, with **no waiting** to
+Want to tune the launcher PID, tweak the drivetrain, or fix the odometry? Change it while the robot runs and see the result instantly, with **no waiting** to
 rebuild, redeploy, and restart.
 
 You try ideas and tune your robot much faster, and get more out of every
@@ -55,7 +55,7 @@ user=> (battery/voltage)
 
 The answer comes from the robot itself, in volts.
 
-Next, show a message on the Driver Hub:
+Next, show some messages in the Driver Hub's [telemetry](robot/telemetry.md):
 
 ```clojure
 user=> (telemetry/add-line "Hello from my computer")
@@ -64,34 +64,22 @@ user=> (telemetry/add-line "Battery" (battery/voltage))
 nil
 ```
 
-The messages should appear in the Driver Hub's [telemetry](robot/telemetry.md). They stay there until you clear them:
-
-```clojure
-user=> (telemetry/clear)
-nil
-```
-
 If a [motor](robot/motors.md) is connected, such as a flywheel that launches artifacts, you can
 control it from the prompt. Assuming the motor is named `flywheel` in the robot
-configuration, this sets its direction and gives it power to spin:
+configuration, this sets its direction, spins it for three seconds, and then
+stops it:
 
 ```clojure
-user=> (motor/set-direction "flywheel" :reverse)
-:reverse
-user=> (motor/set-power "flywheel" 0.8)
-0.8
-```
-
-And this stops it:
-
-```clojure
-user=> (motor/set-power "flywheel" 0)
-0.0
+(let [power 0.8]
+  (motor/set-direction "flywheel" :reverse)
+  (motor/set-power "flywheel" power)           ; spin
+  (time/sleep 3)                               ; for 3 seconds
+  (motor/set-power "flywheel" 0))              ; then stop
 ```
 
 With a [tank drivetrain](https://gm0.org/en/latest/docs/common-mechanisms/drivetrains/tank.html), you can drive the whole robot from the gamepad. Assuming
 the two motors are named `left_drive` and `right_drive`, this loop sends each
-stick to its own side, fifty times a second:
+stick to its own side:
 
 ```clojure
 (defn drive-tank []
@@ -100,7 +88,7 @@ stick to its own side, fifty times a second:
     (let [pad (gamepad 1)]
       (motor/set-power "left_drive" (- (:left-stick-y pad)))
       (motor/set-power "right_drive" (- (:right-stick-y pad))))
-    (time/sleep 0.02)
+    (time/sleep 0.02)                          ;; 50 times/sec
     (recur)))
 ```
 

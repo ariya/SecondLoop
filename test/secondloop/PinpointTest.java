@@ -268,19 +268,19 @@ public final class PinpointTest {
         check("6", String.valueOf(p.updates - updates), "drive-forward reads the start, then the pose until it passes 24 inches");
         p.step = 0;
 
-        // docs/robot/pinpoint.md, Setup: print-pose prints until control/stop.
+        // docs/robot/pinpoint.md, Setup: print-pose prints until task/stop.
         t.check("#'user/print-pose", "(defn print-pose []\n  (loop []\n    (println (pinpoint/pose))\n    (time/sleep 0.1)\n    (recur)))");
         p.x = 1.5;
         p.y = 0;
         p.heading = 0;
         t.buffer.getBuffer().setLength(0);
-        t.repl.feed("(do (control/start print-pose) (time/sleep 0.25) (control/stop))");
+        t.repl.feed("(do (task/start print-pose) (time/sleep 0.25) (task/stop))");
         String printed = t.buffer.toString().trim();
         check("true", String.valueOf(printed.startsWith("{:x 1.5, :y 0.0, :heading 0.0}\n{:x 1.5, :y 0.0, :heading 0.0}\n")
-                && printed.endsWith("\ntrue")), "print-pose prints the pose until control/stop: " + printed);
+                && printed.endsWith("\ntrue")), "print-pose prints the pose until task/stop: " + printed);
         int stopped = p.updates;
         Thread.sleep(250);
-        check(String.valueOf(stopped), String.valueOf(p.updates), "print-pose reads nothing after control/stop");
+        check(String.valueOf(stopped), String.valueOf(p.updates), "print-pose reads nothing after task/stop");
 
         // docs/robot/pinpoint.md, Checking the offsets; between pose reads, the robot turns 1 radian.
         t.check("#'user/check-offsets", "(defn check-offsets []\n  (loop []\n    (let [p (pinpoint/pose)]\n"

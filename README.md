@@ -20,7 +20,7 @@ user=> (motor/set-power "flywheel" 0.8)
 0.8
 ```
 
-Want to tune the launcher PID, debug AprilTag detection, or fix the odometry?
+Want to tune the launcher PID, tweak the drivetrain, or fix the odometry?
 Change it while the robot runs and see the result instantly, with **no waiting** to
 rebuild, redeploy, and restart.
 

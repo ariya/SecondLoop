@@ -617,24 +617,24 @@ public final class ReplTest {
         t.check("nil", "(parse-double \"fast\")");
         t.check("Execution error: str/trim expects a string, got: 1.0", "(str/trim 1)");
 
-        // control/start and control/stop
-        t.check("false", "(control/running?)");
-        t.check("false", "(control/stop)");
+        // task/start and task/stop
+        t.check("false", "(task/running?)");
+        t.check("false", "(task/stop)");
         t.check("#'user/ticks", "(def ticks (atom 0))");
         t.check("#'user/ticker", "(defn ticker [] (loop [] (swap! ticks inc) (time/sleep 0.001) (recur)))");
-        t.check("#<Future pending>", "(control/start ticker)");
-        t.check("true", "(do (time/sleep 0.03) (control/running?))");
+        t.check("#<Future pending>", "(task/start ticker)");
+        t.check("true", "(do (time/sleep 0.03) (task/running?))");
         t.check("true", "(pos? @ticks)");
-        t.check("#'user/first-loop", "(def first-loop (control/start ticker))");
-        t.check("#<Future pending>", "(control/start ticker)");
+        t.check("#'user/first-loop", "(def first-loop (task/start ticker))");
+        t.check("#<Future pending>", "(task/start ticker)");
         t.check("true", "(future-cancelled? first-loop)");
-        t.check("true", "(control/stop)");
-        t.check("false", "(control/running?)");
+        t.check("true", "(task/stop)");
+        t.check("false", "(task/running?)");
         t.check("true", "(let [n @ticks] (time/sleep 0.03) (= n @ticks))");
-        t.check("false", "(control/stop)");
-        t.check(":finished", "(let [f (control/start (fn [] :finished))] (time/sleep 0.03) @f)");
-        t.check("false", "(do (control/start (fn [] (control/stop) (time/sleep 5))) (time/sleep 0.05) (control/running?))");
-        t.check("false", "(control/running?)");
+        t.check("false", "(task/stop)");
+        t.check(":finished", "(let [f (task/start (fn [] :finished))] (time/sleep 0.03) @f)");
+        t.check("false", "(do (task/start (fn [] (task/stop) (time/sleep 5))) (time/sleep 0.05) (task/running?))");
+        t.check("false", "(task/running?)");
 
         // several control loops, told apart by function name
         t.check("\"ticker\"", "(name ticker)");
@@ -644,29 +644,29 @@ public final class ReplTest {
         t.check("nil", "(name #(+ % 1))");
         t.check("#'user/tocks", "(def tocks (atom 0))");
         t.check("#'user/tocker", "(defn tocker [] (loop [] (swap! tocks inc) (time/sleep 0.001) (recur)))");
-        t.check("#'user/a-loop", "(def a-loop (control/start ticker))");
-        t.check("#'user/b-loop", "(def b-loop (control/start tocker))");
-        t.check("#'user/c-loop", "(def c-loop (control/start (fn [] (time/sleep 5))))");
-        t.check("[true true true]", "(do (time/sleep 0.03) [(control/running? ticker) (control/running? :tocker) (control/running? (fn [] 1))])");
-        t.check("true", "(control/stop ticker)");
-        t.check("[true false true true]", "[(future-cancelled? a-loop) (control/running? ticker) (control/running? \"tocker\") (control/running?)]");
-        t.check("false", "(control/stop 'ticker)");
-        t.check("#<Future pending>", "(control/start (fn [] (time/sleep 5)))");
-        t.check("[true true]", "[(future-cancelled? c-loop) (control/running? tocker)]");
-        t.check("true", "(control/stop 'tocker)");
+        t.check("#'user/a-loop", "(def a-loop (task/start ticker))");
+        t.check("#'user/b-loop", "(def b-loop (task/start tocker))");
+        t.check("#'user/c-loop", "(def c-loop (task/start (fn [] (time/sleep 5))))");
+        t.check("[true true true]", "(do (time/sleep 0.03) [(task/running? ticker) (task/running? :tocker) (task/running? (fn [] 1))])");
+        t.check("true", "(task/stop ticker)");
+        t.check("[true false true true]", "[(future-cancelled? a-loop) (task/running? ticker) (task/running? \"tocker\") (task/running?)]");
+        t.check("false", "(task/stop 'ticker)");
+        t.check("#<Future pending>", "(task/start (fn [] (time/sleep 5)))");
+        t.check("[true true]", "[(future-cancelled? c-loop) (task/running? tocker)]");
+        t.check("true", "(task/stop 'tocker)");
         t.check("true", "(let [n @tocks] (time/sleep 0.03) (= n @tocks))");
-        t.check("#<Future pending>", "(control/start (fn spin [] (time/sleep 5)))");
-        t.check("true", "(control/stop)");
-        t.check("[false false]", "[(control/running?) (control/running? :spin)]");
-        t.check("false", "(control/stop)");
-        t.check("Execution error: name expects a string, keyword, symbol or function, got: 1.0", "(control/stop 1)");
-        t.check("#'user/named", "(def named (control/start :spinner (fn [] (time/sleep 5))))");
-        t.check("#<Future pending>", "(control/start (fn [] (time/sleep 5)))");
-        t.check("[false true true]", "(do (time/sleep 0.03) [(future-cancelled? named) (control/running? \"spinner\") (control/running? (fn [] 1))])");
-        t.check("#<Future pending>", "(control/start 'spinner ticker)");
-        t.check("[true false]", "[(future-cancelled? named) (control/running? ticker)]");
-        t.check("true", "(control/stop :spinner)");
-        t.check("true", "(control/stop)");
+        t.check("#<Future pending>", "(task/start (fn spin [] (time/sleep 5)))");
+        t.check("true", "(task/stop)");
+        t.check("[false false]", "[(task/running?) (task/running? :spin)]");
+        t.check("false", "(task/stop)");
+        t.check("Execution error: name expects a string, keyword, symbol or function, got: 1.0", "(task/stop 1)");
+        t.check("#'user/named", "(def named (task/start :spinner (fn [] (time/sleep 5))))");
+        t.check("#<Future pending>", "(task/start (fn [] (time/sleep 5)))");
+        t.check("[false true true]", "(do (time/sleep 0.03) [(future-cancelled? named) (task/running? \"spinner\") (task/running? (fn [] 1))])");
+        t.check("#<Future pending>", "(task/start 'spinner ticker)");
+        t.check("[true false]", "[(future-cancelled? named) (task/running? ticker)]");
+        t.check("true", "(task/stop :spinner)");
+        t.check("true", "(task/stop)");
 
         // try/catch/finally
         t.check("3.0", "(try (+ 1 2))");
@@ -694,12 +694,12 @@ public final class ReplTest {
         t.check("Syntax error: Can only recur from tail position", "(loop [] (try (recur)))");
         t.check("3.0", "(loop [i 0] (if (< i 3) (do (try (/ 1 0) (catch Exception e nil)) (recur (inc i))) i))");
         t.check("#'user/stopped", "(def stopped (atom false))");
-        t.check("#<Future pending>", "(control/start (fn [] (try (loop [] (time/sleep 0.001) (recur)) (finally (time/sleep 0.02) (reset! stopped true)))))");
-        t.check("true", "(control/stop)");
+        t.check("#<Future pending>", "(task/start (fn [] (try (loop [] (time/sleep 0.001) (recur)) (finally (time/sleep 0.02) (reset! stopped true)))))");
+        t.check("true", "(task/stop)");
         t.check("true", "@stopped");
-        t.check("#<Future pending>", "(control/start (fn [] (loop [] (try (time/sleep 0.005) (catch Exception e :swallowed)) (recur))))");
-        t.check("true", "(control/stop)");
-        t.check("false", "(control/running?)");
+        t.check("#<Future pending>", "(task/start (fn [] (loop [] (try (time/sleep 0.005) (catch Exception e :swallowed)) (recur))))");
+        t.check("true", "(task/stop)");
+        t.check("false", "(task/running?)");
 
         // defonce
         t.check("#'user/gain", "(defonce gain (atom 0.5))");

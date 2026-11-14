@@ -4,12 +4,12 @@ A future runs some code in the background and hands back a value that stands
 for its result. The prompt comes back at once, so you can keep typing while the
 code runs, and ask for the result later.
 
-[`control/start`](../robot/control-loops.md#start) is built on a future and covers the
+[`task/start`](../robot/task.md#start) is built on a future and covers the
 usual case of one control loop. Reach for `future` directly for anything else,
 such as a one-off task that should not hold up the prompt.
 
 - **Output goes to the connection that started it.** That is why a `println`
-  in a control loop shows up on the connection that ran `control/start`.
+  in a control loop shows up on the connection that ran `task/start`.
 - **Failures are reported at once.** If the code fails, that connection prints
   `Future failed.` and the error as soon as it happens, without waiting for
   anyone to ask for the result. See [Errors](errors.md#future-failed).
@@ -76,12 +76,12 @@ true
 ```
 
 It never waits, so it is the way to check on a future without blocking.
-[`control/running?`](../robot/control-loops.md#running) is built on it.
+[`task/running?`](../robot/task.md#running) is built on it.
 
 ## future-cancelled?
 
 `(future-cancelled? f)` is `true` only if the future was stopped with
-`future-cancel`, `control/stop` or STOP:
+`future-cancel`, `task/stop` or STOP:
 
 ```clojure
 user=> (future-cancelled? g)

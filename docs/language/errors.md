@@ -16,9 +16,9 @@ user=> (+ 1 2)
   form runs, an execution error while it runs.
 - **`try` can catch it.** An error that runs into a `try` with a matching
   `catch` prints nothing. See [Exceptions](exceptions.md).
-- **A stop is not an error.** `control/stop`, `future-cancel` and STOP on the
+- **A stop is not an error.** `task/stop`, `future-cancel` and STOP on the
   Driver Hub cancel instead, and no handler can catch them. See
-  [Control Loops](../robot/control-loops.md#stop).
+  [Task](../robot/task.md#stop).
 
 ## Syntax error
 
@@ -68,7 +68,7 @@ Future failed. Execution error: Divide by zero
 ```
 
 The line can arrive between other output. Reporting it at once means a
-[control loop](../robot/control-loops.md) that died does not go unnoticed.
+[control loop](../control-loops.md) that died does not go unnoticed.
 `@bad` raises the same error again.
 
 A cancelled future prints no such line, because it was cancelled rather than

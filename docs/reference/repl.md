@@ -37,11 +37,11 @@ explains this and everything else you can type.
   disconnect and reconnect without losing your definitions.
 - Several laptops can connect at once and share the same definitions.
 - Pressing STOP on the Driver Hub ends the OpMode, and everything you
-  defined is gone on the next INIT. `(control/stop)` stops only the control
-  loops and keeps your definitions.
+  defined is gone on the next INIT. `(task/stop)` stops only the
+  tasks and keeps your definitions.
 - A long loop started at the prompt keeps that connection busy. To keep the
-  prompt free, start loops with `(control/start f)` instead; see
-  [Control Loops](../robot/control-loops.md).
+  prompt free, start loops with `(task/start f)` instead; see
+  [Control Loops](../control-loops.md).
 
 ## Version
 
@@ -152,4 +152,4 @@ If neither client connects:
 - If the prompt appears but nothing responds, a loop started at the prompt
   may be keeping that connection busy. Several connections can be open at
   once, so connect again from a second window, and start long loops with
-  `(control/start f)`; see [Control Loops](../robot/control-loops.md).
+  `(task/start f)`; see [Control Loops](../control-loops.md).

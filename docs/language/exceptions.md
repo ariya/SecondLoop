@@ -42,8 +42,8 @@ Execution error: boom
 ```
 
 Nothing cuts a `finally` short, so it is the place to undo what the body did. In
-a loop it runs when the loop stops, by `(control/stop)`, by STOP or by an error;
-see [Control Loops](../robot/control-loops.md).
+a loop it runs when the loop stops, by `(task/stop)`, by STOP or by an error;
+see [Cleanup](../control-loops.md#cleanup).
 
 ## recur and try
 

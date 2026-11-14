@@ -114,4 +114,4 @@ published on the old port.
 An error stops publishing. If a field fails on the first call, `publish/setup`
 itself fails. If a field fails later, the connection that ran `publish/setup`
 prints `Future failed.` and the error, the same way a
-[control loop](control-loops.md) does.
+[control loop](../control-loops.md) does.

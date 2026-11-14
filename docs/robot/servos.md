@@ -14,12 +14,12 @@ pressed:
     (time/sleep 0.02)
     (recur)))
 
-(control/start grip)
+(task/start grip)
 ```
 
 The trigger reads from 0.0 when released to 1.0 when fully pressed, which is
-exactly the range of a servo position. Stop it with `(control/stop)` (see
-[Control Loops](control-loops.md)).
+exactly the range of a servo position. Stop it with `(task/stop)` (see
+[Task](task.md)).
 
 The `servo/*` functions are for standard servos, configured as *Servo*. A servo
 configured as *Continuous Rotation Servo* turns round and round, like a small

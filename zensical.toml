@@ -9,7 +9,7 @@ nav = [
   { "Getting Started" = [
     { "Overview" = "index.md" },
     { "Examples" = "examples.md" },
-    { "Setup" = "setup.md" },
+    { "Control Loops" = "control-loops.md" },
   ] },
   { "Language" = [
     { "Syntax" = "language/basics.md" },
@@ -26,7 +26,7 @@ nav = [
   { "On the Robot" = [
     { "Telemetry" = "robot/telemetry.md" },
     { "Time" = "robot/time.md" },
-    { "Control Loops" = "robot/control-loops.md" },
+    { "Task" = "robot/task.md" },
     { "Gamepad" = "robot/gamepad.md" },
     { "Battery" = "robot/battery.md" },
     { "IMU" = "robot/imu.md" },
@@ -36,6 +36,7 @@ nav = [
     { "Publish" = "robot/publish.md" },
   ] },
   { "References" = [
+    { "Setup" = "setup.md" },
     { "Function Reference" = "reference/functions.md" },
     { "REPL" = "reference/repl.md" },
     { "Differences" = "reference/differences.md" },
