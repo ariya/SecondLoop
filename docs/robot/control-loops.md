@@ -22,8 +22,8 @@ so on. The clock is read again every round.
 
 - **It can run for a whole match.** `loop`/`recur` repeats without growing the
   stack ([Loop](../language/loops.md#loop-and-recur)).
-- **There is only one control loop.** It is shared by every connection, so any
-  of them can check on it or stop it.
+- **Loops are shared.** Every connection sees the same loops, so any of them
+  can check on a loop or stop it.
 - **`recur` must be last.** It starts the next round, so it is the last thing
   each round does; anything after it is a syntax error.
 - **Sleep every round.** A short `time/sleep` sets the pace, for example
@@ -87,15 +87,18 @@ stop the wheels keep their last power, so put the final `(mecanum-drive 0 0 0)`
 in a `finally` as shown above. `println` inside the program goes back to the
 connection that started it, which is handy while testing.
 
-`control/start` stops any program it started earlier first, so after editing
-`drive-forward` you can just run `(control/start drive-forward)` again.
+`control/start` first stops a program it started earlier with the same name, so
+after editing `drive-forward` you can just run `(control/start drive-forward)`
+again. Programs with other names keep running; see
+[Several loops](#several-loops).
 
 ## running?
 
-`(control/running?)` reports whether the loop is still going:
+`(control/running?)` reports whether any loop is still going, and
+`(control/running? f)` whether the loop of `f` is:
 
 ```clojure
-user=> (control/running?)
+user=> (control/running? drive-forward)
 true
 ```
 
@@ -104,7 +107,7 @@ a round fails with an error.
 
 ## stop
 
-`(control/stop)` ends the loop:
+`(control/stop)` ends every loop, and `(control/stop f)` only the loop of `f`:
 
 ```clojure
 user=> (control/stop)
@@ -118,7 +121,7 @@ it was cancelled rather than broken.
 
 | Action | Control loop | Definitions |
 | --- | --- | --- |
-| `(control/stop)` | ends | kept |
+| `(control/stop)` | all end | kept |
 | STOP on the Driver Hub | ends | lost on the next INIT |
 | Closing the connection | keeps running | kept |
 
@@ -134,3 +137,34 @@ called directly, and every `time/sleep`. That form ends with
 A stop request is never caught, not even by `(catch Throwable e ...)`, so an
 error handler cannot keep a stopped loop running. The classes are on
 [Exceptions](../language/exceptions.md).
+
+## Several loops
+
+Each function started with `control/start` gets its own loop, named after the
+function, so one loop can drive while another moves an arm:
+
+```clojure
+user=> (control/start drive)
+#<Future pending>
+user=> (control/start arm)
+#<Future pending>
+user=> (control/stop arm)
+true
+user=> (control/running? drive)
+true
+```
+
+- **The name picks the loop.** `control/stop` and `control/running?` take the
+  function itself, or its name as a keyword, string or symbol, so
+  `(control/stop arm)`, `(control/stop :arm)` and `(control/stop "arm")` are the
+  same.
+- **The same name replaces.** Starting `arm` again, even after redefining it,
+  stops the running `arm` loop first.
+- **A name can be given.** `(control/start :spin f)` names the loop `spin`
+  whatever the function is called.
+- **Unnamed functions share one loop.** `(fn [] ...)` and `#(...)` have no
+  name, so starting one stops the unnamed loop started before. To keep an
+  inline loop apart, give it a name: `(control/start :spin (fn [] ...))`, then
+  `(control/stop :spin)`.
+- **Loops must not fight.** Two loops that set the same motor take turns
+  overriding each other. Give each loop its own hardware.

@@ -38,7 +38,7 @@ explains this and everything else you can type.
 - Several laptops can connect at once and share the same definitions.
 - Pressing STOP on the Driver Hub ends the OpMode, and everything you
   defined is gone on the next INIT. `(control/stop)` stops only the control
-  loop and keeps your definitions.
+  loops and keeps your definitions.
 - A long loop started at the prompt keeps that connection busy. To keep the
   prompt free, start loops with `(control/start f)` instead; see
   [Control Loops](../robot/control-loops.md).

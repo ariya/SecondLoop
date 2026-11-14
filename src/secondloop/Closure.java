@@ -43,6 +43,11 @@ public final class Closure implements Fn {
         return name != null ? name.name : "fn";
     }
 
+    /** False for (fn [] ...) and #(...), which have no name of their own. */
+    public boolean named() {
+        return name != null;
+    }
+
     /** The doc string given to defn, or null. */
     public String doc() {
         return doc;

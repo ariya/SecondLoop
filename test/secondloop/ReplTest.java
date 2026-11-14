@@ -625,16 +625,48 @@ public final class ReplTest {
         t.check("#<Future pending>", "(control/start ticker)");
         t.check("true", "(do (time/sleep 0.03) (control/running?))");
         t.check("true", "(pos? @ticks)");
-        t.check("#'user/first-loop", "(def first-loop @control/current)");
+        t.check("#'user/first-loop", "(def first-loop (control/start ticker))");
         t.check("#<Future pending>", "(control/start ticker)");
         t.check("true", "(future-cancelled? first-loop)");
         t.check("true", "(control/stop)");
         t.check("false", "(control/running?)");
         t.check("true", "(let [n @ticks] (time/sleep 0.03) (= n @ticks))");
         t.check("false", "(control/stop)");
-        t.check(":finished", "(do (control/start (fn [] :finished)) (time/sleep 0.03) @@control/current)");
+        t.check(":finished", "(let [f (control/start (fn [] :finished))] (time/sleep 0.03) @f)");
         t.check("false", "(do (control/start (fn [] (control/stop) (time/sleep 5))) (time/sleep 0.05) (control/running?))");
         t.check("false", "(control/running?)");
+
+        // several control loops, told apart by function name
+        t.check("\"ticker\"", "(name ticker)");
+        t.check("\"inc\"", "(name inc)");
+        t.check("\"spin\"", "(name (fn spin [] 1))");
+        t.check("nil", "(name (fn [] 1))");
+        t.check("nil", "(name #(+ % 1))");
+        t.check("#'user/tocks", "(def tocks (atom 0))");
+        t.check("#'user/tocker", "(defn tocker [] (loop [] (swap! tocks inc) (time/sleep 0.001) (recur)))");
+        t.check("#'user/a-loop", "(def a-loop (control/start ticker))");
+        t.check("#'user/b-loop", "(def b-loop (control/start tocker))");
+        t.check("#'user/c-loop", "(def c-loop (control/start (fn [] (time/sleep 5))))");
+        t.check("[true true true]", "(do (time/sleep 0.03) [(control/running? ticker) (control/running? :tocker) (control/running? (fn [] 1))])");
+        t.check("true", "(control/stop ticker)");
+        t.check("[true false true true]", "[(future-cancelled? a-loop) (control/running? ticker) (control/running? \"tocker\") (control/running?)]");
+        t.check("false", "(control/stop 'ticker)");
+        t.check("#<Future pending>", "(control/start (fn [] (time/sleep 5)))");
+        t.check("[true true]", "[(future-cancelled? c-loop) (control/running? tocker)]");
+        t.check("true", "(control/stop 'tocker)");
+        t.check("true", "(let [n @tocks] (time/sleep 0.03) (= n @tocks))");
+        t.check("#<Future pending>", "(control/start (fn spin [] (time/sleep 5)))");
+        t.check("true", "(control/stop)");
+        t.check("[false false]", "[(control/running?) (control/running? :spin)]");
+        t.check("false", "(control/stop)");
+        t.check("Execution error: name expects a string, keyword, symbol or function, got: 1.0", "(control/stop 1)");
+        t.check("#'user/named", "(def named (control/start :spinner (fn [] (time/sleep 5))))");
+        t.check("#<Future pending>", "(control/start (fn [] (time/sleep 5)))");
+        t.check("[false true true]", "(do (time/sleep 0.03) [(future-cancelled? named) (control/running? \"spinner\") (control/running? (fn [] 1))])");
+        t.check("#<Future pending>", "(control/start 'spinner ticker)");
+        t.check("[true false]", "[(future-cancelled? named) (control/running? ticker)]");
+        t.check("true", "(control/stop :spinner)");
+        t.check("true", "(control/stop)");
 
         // try/catch/finally
         t.check("3.0", "(try (+ 1 2))");

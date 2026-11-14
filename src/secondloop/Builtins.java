@@ -443,7 +443,14 @@ public final class Builtins {
                 if (x instanceof Symbol) {
                     return ((Symbol) x).name;
                 }
-                throw new ScriptError("name expects a string, keyword or symbol, got: " + Printer.print(x));
+                // Not in Clojure: control/start uses it to tell loops apart.
+                if (x instanceof Closure) {
+                    return ((Closure) x).named() ? ((Closure) x).name() : null;
+                }
+                if (x instanceof Fn) {
+                    return ((Fn) x).name();
+                }
+                throw new ScriptError("name expects a string, keyword, symbol or function, got: " + Printer.print(x));
             }
         });
     }
