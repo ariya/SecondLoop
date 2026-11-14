@@ -26,6 +26,7 @@ java -cp build/classes secondloop.ServoTest
 java -cp build/classes secondloop.BatteryTest
 java -cp build/classes secondloop.ImuTest
 java -cp build/classes secondloop.PinpointTest
+java -cp build/classes secondloop.PublishTest
 
 "${JAVAC[@]}" -d build/check $STUBS build/SecondLoop.java
 echo "build/SecondLoop.java compiles."

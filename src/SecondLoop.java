@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import secondloop.BatteryModule;
 import secondloop.Builtins;
+import secondloop.PublishModule;
 import secondloop.Env;
 import secondloop.GamepadModule;
 import secondloop.ImuModule;
@@ -32,6 +33,7 @@ public class SecondLoop extends LinearOpMode {
     private static final long STATUS_MILLIS = 100;
 
     private final TelemetryModule telemetryModule = new TelemetryModule();
+    private final PublishModule publishModule = new PublishModule();
 
     @Override
     public void runOpMode() {
@@ -43,6 +45,7 @@ public class SecondLoop extends LinearOpMode {
         ImuModule.install(globals, this);
         PinpointModule.install(globals, this);
         telemetryModule.install(globals);
+        publishModule.install(globals);
         ReplServer server = new ReplServer(globals, PORT);
         try {
             server.start();
@@ -69,6 +72,7 @@ public class SecondLoop extends LinearOpMode {
             }
         } finally {
             server.stop();
+            publishModule.stop();
         }
     }
 

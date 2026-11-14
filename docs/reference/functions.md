@@ -51,6 +51,7 @@ These are evaluated by the interpreter and cannot be passed as values.
 | Time | `time/elapsed time/sleep` |
 | Version | [`version`](repl.md#version) |
 | Robot hardware | `gamepad motor/set-power motor/power motor/set-velocity motor/velocity motor/set-direction motor/direction servo/set-position servo/position servo/set-direction servo/direction crservo/set-power crservo/power crservo/set-direction crservo/direction battery/voltage imu/init imu/reset-yaw imu/angles imu/yaw imu/pitch imu/roll pinpoint/init pinpoint/pose pinpoint/velocity pinpoint/reset pinpoint/status telemetry/add-line telemetry/clear` |
+| Publish | [`publish/setup`](../robot/publish.md) |
 
 `future` is a special form and `deref` is an ordinary function; both appear in
 the row for the area where you will reach for them.
@@ -58,9 +59,10 @@ the row for the area where you will reach for them.
 ## Robot helpers
 
 `clamp`, `deadband`, `lerp`, `wrap-degrees`, `wrap-radians`, `partial`, `comp`,
-`constantly` and the `control/*` functions are written in the REPL language
-itself, in `src/secondloop/Prelude.java`. They are ordinary definitions, so you
-can read them with `(doc name)` and redefine them from the REPL.
+`constantly`, the `control/*` functions and `publish/setup` are written in
+the REPL language itself, in `src/secondloop/Prelude.java`. They are ordinary
+definitions, so you can read them with `(doc name)` and redefine them from the
+REPL.
 
 ```clojure
 user=> (clamp 1.3 -1 1)

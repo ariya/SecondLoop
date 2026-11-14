@@ -11,13 +11,15 @@ import java.io.PrintWriter;
  */
 public final class LocalRepl {
     public static void main(String[] args) throws Exception {
+        Env globals = Builtins.createGlobals();
+        new PublishModule().install(globals); // (publish/setup ...) serves on port 5599, like the robot
         if (args.length > 0 && args[0].equals("--stdin")) {
-            new Repl(Builtins.createGlobals(), new PrintWriter(System.out)).run(
+            new Repl(globals, new PrintWriter(System.out)).run(
                     new BufferedReader(new InputStreamReader(System.in, "UTF-8")));
             return;
         }
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 9001;
-        ReplServer server = new ReplServer(Builtins.createGlobals(), port);
+        ReplServer server = new ReplServer(globals, port);
         server.start();
         System.out.println(ReplServer.status(ReplServer.preferredAddress(ReplServer.localAddresses()), port, 0)
                 + ". Try: ./secondloop.py localhost " + port);

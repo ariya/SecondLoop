@@ -33,6 +33,7 @@ nav = [
     { "Motors" = "robot/motors.md" },
     { "Servos" = "robot/servos.md" },
     { "Pinpoint" = "robot/pinpoint.md" },
+    { "Publish" = "robot/publish.md" },
   ] },
   { "References" = [
     { "Function Reference" = "reference/functions.md" },
