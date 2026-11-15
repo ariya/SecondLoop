@@ -15,6 +15,7 @@ import java.util.Map;
  * (motor/set-power "left" 0.5), (motor/power "left"),
  * (motor/set-velocity "flywheel" 1200), (motor/velocity "flywheel"),
  * (motor/set-direction "left" :reverse), (motor/direction "left"),
+ * (motor/set-run-mode "left" :stop-and-reset-encoder), (motor/run-mode "left"),
  * (motor/set-pidf "flywheel" {:p 10 :f 14}) and (motor/pidf "flywheel"): DC
  * motors by their name in the robot configuration.
  * Unlike Telemetry, motor calls can come from any thread: the SDK already
@@ -116,6 +117,42 @@ public final class MotorModule {
                 return lookup(opMode, args[0], name()).getPower();
             }
         });
+        Builtins.define(env, new Builtin("motor/set-run-mode") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 2, 2);
+                DcMotor motor = lookup(opMode, args[0], name());
+                DcMotor.RunMode mode = null;
+                // Not RUN_TO_POSITION: the SDK refuses it until a target
+                // position is set, and there is no function for that yet.
+                for (DcMotor.RunMode m : new DcMotor.RunMode[] {DcMotor.RunMode.RUN_WITHOUT_ENCODER,
+                        DcMotor.RunMode.RUN_USING_ENCODER, DcMotor.RunMode.STOP_AND_RESET_ENCODER}) {
+                    if (runModeKeyword(m).equals(args[1])) {
+                        mode = m;
+                    }
+                }
+                if (mode == null) {
+                    throw new ScriptError(name()
+                            + " expects :run-without-encoder, :run-using-encoder or :stop-and-reset-encoder, got: "
+                            + Printer.print(args[1]));
+                }
+                // Always sent, even when unchanged: resetting the encoder
+                // twice must reset it twice. The cache is kept in step so
+                // that motor/set-power and motor/set-velocity still switch.
+                synchronized (modes) {
+                    modes.put((String) args[0], mode);
+                    motor.setMode(mode);
+                }
+                return args[1];
+            }
+        });
+        Builtins.define(env, new Builtin("motor/run-mode") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 1, 1);
+                return runModeKeyword(lookup(opMode, args[0], name()).getMode());
+            }
+        });
         Builtins.define(env, new Builtin("motor/set-direction") {
             @Override
             public Object invoke(Interp interp, Object[] args) {
@@ -153,6 +190,11 @@ public final class MotorModule {
         m.put(PIDF.get(2), d);
         m.put(PIDF.get(3), f);
         return m;
+    }
+
+    /** RUN_USING_ENCODER becomes :run-using-encoder. */
+    private static Keyword runModeKeyword(DcMotor.RunMode mode) {
+        return Keyword.of(mode.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-'));
     }
 
     private static void switchMode(Map<String, DcMotor.RunMode> modes, String name, DcMotor motor, DcMotor.RunMode mode) {

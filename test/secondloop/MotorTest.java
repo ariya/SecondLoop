@@ -1,6 +1,7 @@
 package secondloop;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -226,6 +227,35 @@ public final class MotorTest {
         t.check("Execution error: motor/set-pidf expects a map such as {:p 10 :i 3 :d 0 :f 14}, got: [1.0 2.0 3.0 4.0]",
                 "(motor/set-pidf \"left\" [1 2 3 4])");
         check("20.0", String.valueOf(left.pidf.p), "a rejected pidf changes nothing");
+
+        left.mode = DcMotor.RunMode.RUN_USING_ENCODER;
+        left.modeChanges = 0;
+        t.check(":run-using-encoder", "(motor/run-mode \"left\")");
+        t.check(":stop-and-reset-encoder", "(motor/set-run-mode \"left\" :stop-and-reset-encoder)");
+        check("STOP_AND_RESET_ENCODER 1", left.mode + " " + left.modeChanges, "run mode is set");
+        t.check(":stop-and-reset-encoder", "(motor/run-mode \"left\")");
+        t.check(":stop-and-reset-encoder", "(motor/set-run-mode \"left\" :stop-and-reset-encoder)");
+        check("2", String.valueOf(left.modeChanges), "the same run mode is sent again");
+        t.check("0.2", "(motor/set-power \"left\" 0.2)");
+        check("RUN_WITHOUT_ENCODER 3", left.mode + " " + left.modeChanges, "power switches out of a reset");
+        t.check(":run-without-encoder", "(motor/run-mode \"left\")");
+        t.check(":run-using-encoder", "(motor/set-run-mode \"left\" :run-using-encoder)");
+        t.check("0.0", "(motor/set-power \"left\" 0)");
+        check("RUN_WITHOUT_ENCODER 5", left.mode + " " + left.modeChanges, "power switches after set-run-mode");
+        t.check(":run-without-encoder", "(motor/set-run-mode \"left\" :run-without-encoder)");
+        t.check("0.0", "(motor/set-power \"left\" 0)");
+        check("6", String.valueOf(left.modeChanges), "set-run-mode keeps the cache in step");
+        left.mode = DcMotor.RunMode.RUN_TO_POSITION;
+        t.check(":run-to-position", "(motor/run-mode \"left\")");
+        t.check("Execution error: motor/set-run-mode expects :run-without-encoder, :run-using-encoder or "
+                + ":stop-and-reset-encoder, got: :run-to-position",
+                "(motor/set-run-mode \"left\" :run-to-position)");
+        t.check("Execution error: motor/set-run-mode expects :run-without-encoder, :run-using-encoder or "
+                + ":stop-and-reset-encoder, got: \"RUN_USING_ENCODER\"",
+                "(motor/set-run-mode \"left\" \"RUN_USING_ENCODER\")");
+        check("RUN_TO_POSITION", String.valueOf(left.mode), "a rejected run mode changes nothing");
+        t.check("Execution error: No motor named \"right\" in the robot configuration",
+                "(motor/run-mode \"right\")");
 
         t.check(":forward", "(motor/direction \"left\")");
         t.check(":reverse", "(motor/set-direction \"left\" :reverse)");

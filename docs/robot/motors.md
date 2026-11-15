@@ -54,6 +54,37 @@ user=> (motor/direction "left")
 :reverse
 ```
 
+## run-mode
+
+`(motor/run-mode name)` is the mode the motor controller is in:
+`:run-without-encoder`, `:run-using-encoder`, `:stop-and-reset-encoder` or
+`:run-to-position`.
+
+```clojure
+user=> (motor/run-mode "flywheel")
+:run-using-encoder
+```
+
+## set-run-mode
+
+`(motor/set-run-mode name m)` switches the motor to mode `m`, and returns it.
+For example, switch the flywheel to `:run-using-encoder` and read its speed:
+
+```clojure
+user=> (motor/set-run-mode "flywheel" :run-using-encoder)
+:run-using-encoder
+user=> (motor/velocity "flywheel")
+1187.0
+```
+
+`m` is one of these
+[`DcMotor.RunMode`](https://javadoc.io/doc/org.firstinspires.ftc/RobotCore/latest/com/qualcomm/robotcore/hardware/DcMotor.RunMode.html)
+values:
+
+- `:run-without-encoder`
+- `:run-using-encoder`
+- `:stop-and-reset-encoder`
+
 ## power
 
 `(motor/power name)` is the power the motor was last given:
