@@ -88,8 +88,11 @@ battery, IMU or telemetry functions:
 ```console
 $ java -cp build/classes secondloop.LocalRepl --stdin  # type directly
 $ java -cp build/classes secondloop.LocalRepl          # serve on port 9001
-$ nc localhost 9001                                    # in another terminal
+$ ./secondloop.py localhost                            # in another terminal
 ```
+
+When serving, it also answers `/js/rcInfo.json` on port 8080, as the robot
+controller does, so `secondloop.py` works against it unchanged.
 
 It has the interpreter and the prelude, but not `gamepad`, `motor/*`, `servo/*`,
 `crservo/*`, `battery/voltage`, `imu/*`, `pinpoint/*` or `telemetry/*`, which need
