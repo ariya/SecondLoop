@@ -82,6 +82,8 @@ public final class MotorTest {
         double power;
         double velocity;
         int modeChanges;
+        int targetPosition;
+        int currentPosition;
         RunMode pidfMode;
         PIDFCoefficients pidf = new PIDFCoefficients(10, 3, 0, 0);
 
@@ -135,6 +137,21 @@ public final class MotorTest {
         @Override
         public RunMode getMode() {
             return mode;
+        }
+
+        @Override
+        public void setTargetPosition(int position) {
+            this.targetPosition = position;
+        }
+
+        @Override
+        public int getTargetPosition() {
+            return targetPosition;
+        }
+
+        @Override
+        public int getCurrentPosition() {
+            return currentPosition;
         }
     }
 
@@ -247,15 +264,45 @@ public final class MotorTest {
         check("6", String.valueOf(left.modeChanges), "set-run-mode keeps the cache in step");
         left.mode = DcMotor.RunMode.RUN_TO_POSITION;
         t.check(":run-to-position", "(motor/run-mode \"left\")");
-        t.check("Execution error: motor/set-run-mode expects :run-without-encoder, :run-using-encoder or "
-                + ":stop-and-reset-encoder, got: :run-to-position",
+        t.check("Execution error: motor/set-run-mode needs a target first: call motor/set-target-position",
                 "(motor/set-run-mode \"left\" :run-to-position)");
-        t.check("Execution error: motor/set-run-mode expects :run-without-encoder, :run-using-encoder or "
-                + ":stop-and-reset-encoder, got: \"RUN_USING_ENCODER\"",
+        t.check("Execution error: motor/set-run-mode expects :run-without-encoder, :run-using-encoder, "
+                + ":run-to-position or :stop-and-reset-encoder, got: \"RUN_USING_ENCODER\"",
                 "(motor/set-run-mode \"left\" \"RUN_USING_ENCODER\")");
         check("RUN_TO_POSITION", String.valueOf(left.mode), "a rejected run mode changes nothing");
         t.check("Execution error: No motor named \"right\" in the robot configuration",
                 "(motor/run-mode \"right\")");
+
+        t.check("0.0", "(motor/target-position \"left\")");
+        t.check("300.0", "(motor/set-target-position \"left\" 300)");
+        check("300", String.valueOf(left.targetPosition), "target position is set");
+        t.check("300.0", "(motor/target-position \"left\")");
+        t.check("-807.0", "(motor/set-target-position \"left\" (* -1.5 537.7))");
+        check("-807", String.valueOf(left.targetPosition), "target position is rounded");
+        t.check("Execution error: motor/set-target-position expects a position in encoder ticks, got: ##NaN",
+                "(motor/set-target-position \"left\" (Math/sqrt -1))");
+        t.check("Execution error: motor/set-target-position expects a position in encoder ticks, got: 1.0E10",
+                "(motor/set-target-position \"left\" 1e10)");
+        t.check("Execution error: motor/set-target-position expects numbers, got: nil",
+                "(motor/set-target-position \"left\" nil)");
+        check("-807", String.valueOf(left.targetPosition), "a rejected target position changes nothing");
+        left.currentPosition = 1234;
+        t.check("1234.0", "(motor/current-position \"left\")");
+        t.check("Execution error: No motor named \"right\" in the robot configuration",
+                "(motor/current-position \"right\")");
+        t.check("Execution error: No motor named \"right\" in the robot configuration",
+                "(motor/set-target-position \"right\" 10)");
+
+        left.modeChanges = 0;
+        t.check(":run-to-position", "(motor/set-run-mode \"left\" :run-to-position)");
+        check("RUN_TO_POSITION 1", left.mode + " " + left.modeChanges, "run to position after a target");
+        t.check("0.3", "(motor/set-power \"left\" 0.3)");
+        t.check("400.0", "(motor/set-velocity \"left\" 400)");
+        check("RUN_TO_POSITION 1 0.30 400.0", left.mode + " " + left.modeChanges + " " + powers(left)
+                + " " + left.velocity, "power and velocity keep run to position");
+        t.check(":run-using-encoder", "(motor/set-run-mode \"left\" :run-using-encoder)");
+        t.check("0.0", "(motor/set-power \"left\" 0)");
+        check("RUN_WITHOUT_ENCODER 3", left.mode + " " + left.modeChanges, "power switches again after leaving it");
 
         t.check(":forward", "(motor/direction \"left\")");
         t.check(":reverse", "(motor/set-direction \"left\" :reverse)");

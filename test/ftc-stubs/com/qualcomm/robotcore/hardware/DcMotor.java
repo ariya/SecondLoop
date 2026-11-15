@@ -9,4 +9,10 @@ public interface DcMotor extends DcMotorSimple {
     void setMode(RunMode mode);
 
     RunMode getMode();
+
+    void setTargetPosition(int position);
+
+    int getTargetPosition();
+
+    int getCurrentPosition();
 }

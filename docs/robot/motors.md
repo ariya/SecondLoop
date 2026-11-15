@@ -83,7 +83,87 @@ values:
 
 - `:run-without-encoder`
 - `:run-using-encoder`
+- `:run-to-position`, after
+  [`motor/set-target-position`](#set-target-position)
 - `:stop-and-reset-encoder`
+
+## current-position
+
+`(motor/current-position name)` is where the encoder is, in encoder ticks
+counted from the last reset:
+
+```clojure
+user=> (motor/current-position "arm")
+412.0
+```
+
+To count from zero again, reset the encoder, then switch back to a mode that
+runs the motor:
+
+```clojure
+user=> (motor/set-run-mode "arm" :stop-and-reset-encoder)
+:stop-and-reset-encoder
+user=> (motor/current-position "arm")
+0.0
+user=> (motor/set-run-mode "arm" :run-using-encoder)
+:run-using-encoder
+```
+
+## target-position
+
+`(motor/target-position name)` is the position, in encoder ticks, that the
+motor was last asked to go to:
+
+```clojure
+user=> (motor/target-position "arm")
+0.0
+```
+
+## set-target-position
+
+`(motor/set-target-position name t)` sets the target position to `t` encoder
+ticks, and returns it. Ticks are whole numbers, so `t` is rounded, and the
+result shows what was sent:
+
+```clojure
+user=> (motor/set-target-position "arm" 300)
+300.0
+user=> (motor/set-target-position "arm" (* 1.5 537.7))
+807.0
+```
+
+The motor moves to the target only in the `:run-to-position` mode, and only
+with a power to move it. The power is the top speed on the way there, and the
+hub slows the motor down as it gets close. This lifts the arm to 300 ticks at
+30% power:
+
+```clojure
+user=> (motor/set-target-position "arm" 300)
+300.0
+user=> (motor/set-run-mode "arm" :run-to-position)
+:run-to-position
+user=> (motor/set-power "arm" 0.3)
+0.3
+user=> (motor/current-position "arm")
+298.0
+```
+
+The motor keeps holding the target, so move the arm again by giving it a new
+one. A [velocity](#set-velocity) also works as the top speed.
+
+`:run-to-position` without a target is an error:
+
+```clojure
+user=> (motor/set-run-mode "lift" :run-to-position)
+Execution error: motor/set-run-mode needs a target first: call motor/set-target-position
+```
+
+!!! warning "Start slow"
+
+    The motor pushes as hard as the power allows to reach the target. If the
+    target is past the end of the arm's travel, or the encoder isn't plugged
+    in, it keeps pushing. Try a small power first, and stop it with
+    `(motor/set-power name 0)`.
 
 ## power
 
@@ -119,7 +199,9 @@ To limit a computed power on purpose, use `clamp`, for example
 `(motor/set-power "flywheel" (clamp p 0 0.2))`.
 
 `motor/set-power` switches the motor to `RUN_WITHOUT_ENCODER`, so the power
-means the same thing whether or not an encoder is plugged in.
+means the same thing whether or not an encoder is plugged in. A motor in
+`:run-to-position` stays there, and the power is its top speed on the way to
+the [target](#set-target-position).
 
 ## velocity
 
@@ -152,7 +234,8 @@ The measured speed settles close to the target after a moment. A negative
 velocity turns the motor the other way.
 
 `motor/set-velocity` switches the motor to `RUN_USING_ENCODER`, and a later
-`motor/set-power` switches it back, so the two can be mixed on one motor.
+`motor/set-power` switches it back, so the two can be mixed on one motor. A
+motor in `:run-to-position` stays there, as with `motor/set-power`.
 
 !!! warning "Check the encoder cable first"
 

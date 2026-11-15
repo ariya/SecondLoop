@@ -8,14 +8,18 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * (motor/set-power "left" 0.5), (motor/power "left"),
  * (motor/set-velocity "flywheel" 1200), (motor/velocity "flywheel"),
  * (motor/set-direction "left" :reverse), (motor/direction "left"),
  * (motor/set-run-mode "left" :stop-and-reset-encoder), (motor/run-mode "left"),
+ * (motor/set-target-position "arm" 300), (motor/target-position "arm"),
+ * (motor/current-position "arm"),
  * (motor/set-pidf "flywheel" {:p 10 :f 14}) and (motor/pidf "flywheel"): DC
  * motors by their name in the robot configuration.
  * Unlike Telemetry, motor calls can come from any thread: the SDK already
@@ -29,6 +33,8 @@ public final class MotorModule {
         // The mode each motor was last switched to during this OpMode run, so
         // setMode, which talks to the hub, is only called when it changes.
         final Map<String, DcMotor.RunMode> modes = new HashMap<String, DcMotor.RunMode>();
+        // Motors given a target during this OpMode run, guarded by modes.
+        final Set<String> targeted = new HashSet<String>();
 
         Builtins.define(env, new Builtin("motor/set-power") {
             @Override
@@ -123,23 +129,23 @@ public final class MotorModule {
                 checkArity(args, 2, 2);
                 DcMotor motor = lookup(opMode, args[0], name());
                 DcMotor.RunMode mode = null;
-                // Not RUN_TO_POSITION: the SDK refuses it until a target
-                // position is set, and there is no function for that yet.
-                for (DcMotor.RunMode m : new DcMotor.RunMode[] {DcMotor.RunMode.RUN_WITHOUT_ENCODER,
-                        DcMotor.RunMode.RUN_USING_ENCODER, DcMotor.RunMode.STOP_AND_RESET_ENCODER}) {
+                for (DcMotor.RunMode m : DcMotor.RunMode.values()) {
                     if (runModeKeyword(m).equals(args[1])) {
                         mode = m;
                     }
                 }
                 if (mode == null) {
-                    throw new ScriptError(name()
-                            + " expects :run-without-encoder, :run-using-encoder or :stop-and-reset-encoder, got: "
-                            + Printer.print(args[1]));
+                    throw new ScriptError(name() + " expects :run-without-encoder, :run-using-encoder, "
+                            + ":run-to-position or :stop-and-reset-encoder, got: " + Printer.print(args[1]));
                 }
                 // Always sent, even when unchanged: resetting the encoder
                 // twice must reset it twice. The cache is kept in step so
                 // that motor/set-power and motor/set-velocity still switch.
                 synchronized (modes) {
+                    // The SDK throws an exception that doesn't say what to do.
+                    if (mode == DcMotor.RunMode.RUN_TO_POSITION && !targeted.contains(args[0])) {
+                        throw new ScriptError(name() + " needs a target first: call motor/set-target-position");
+                    }
                     modes.put((String) args[0], mode);
                     motor.setMode(mode);
                 }
@@ -151,6 +157,41 @@ public final class MotorModule {
             public Object invoke(Interp interp, Object[] args) {
                 checkArity(args, 1, 1);
                 return runModeKeyword(lookup(opMode, args[0], name()).getMode());
+            }
+        });
+        Builtins.define(env, new Builtin("motor/set-target-position") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 2, 2);
+                DcMotor motor = lookup(opMode, args[0], name());
+                double position = Builtins.toNumber(args[1], name());
+                // Also rejects NaN. The hub counts ticks in an int.
+                if (!(position >= Integer.MIN_VALUE && position <= Integer.MAX_VALUE)) {
+                    throw new ScriptError(name() + " expects a position in encoder ticks, got: "
+                            + Printer.print(args[1]));
+                }
+                // Rounded, so that a computed target such as (* 1.5 537.7)
+                // works; the result shows what was sent.
+                int ticks = (int) Math.round(position);
+                synchronized (modes) {
+                    motor.setTargetPosition(ticks);
+                    targeted.add((String) args[0]);
+                }
+                return (double) ticks;
+            }
+        });
+        Builtins.define(env, new Builtin("motor/target-position") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 1, 1);
+                return (double) lookup(opMode, args[0], name()).getTargetPosition();
+            }
+        });
+        Builtins.define(env, new Builtin("motor/current-position") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 1, 1);
+                return (double) lookup(opMode, args[0], name()).getCurrentPosition();
             }
         });
         Builtins.define(env, new Builtin("motor/set-direction") {
@@ -199,7 +240,11 @@ public final class MotorModule {
 
     private static void switchMode(Map<String, DcMotor.RunMode> modes, String name, DcMotor motor, DcMotor.RunMode mode) {
         synchronized (modes) {
-            if (modes.put(name, mode) != mode) {
+            DcMotor.RunMode current = modes.get(name);
+            // On the way to a target, the power or velocity is the top speed,
+            // so stay there until motor/set-run-mode leaves it.
+            if (current != mode && current != DcMotor.RunMode.RUN_TO_POSITION) {
+                modes.put(name, mode);
                 motor.setMode(mode);
             }
         }
