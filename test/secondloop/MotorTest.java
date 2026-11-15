@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -80,6 +81,19 @@ public final class MotorTest {
         double power;
         double velocity;
         int modeChanges;
+        RunMode pidfMode;
+        PIDFCoefficients pidf = new PIDFCoefficients(10, 3, 0, 0);
+
+        @Override
+        public void setPIDFCoefficients(RunMode mode, PIDFCoefficients pidf) {
+            this.pidfMode = mode;
+            this.pidf = pidf;
+        }
+
+        @Override
+        public PIDFCoefficients getPIDFCoefficients(RunMode mode) {
+            return pidf;
+        }
 
         @Override
         public void setVelocity(double velocity) {
@@ -195,6 +209,23 @@ public final class MotorTest {
                 "(motor/set-velocity \"left\" nil)");
         t.check("Execution error: No motor named \"right\" in the robot configuration",
                 "(motor/velocity \"right\")");
+
+        t.check("{:p 10.0, :i 3.0, :d 0.0, :f 0.0}", "(motor/pidf \"left\")");
+        t.check("{:p 20.0, :i 0.0, :d 0.0, :f 14.2}", "(motor/set-pidf \"left\" {:f 14.2 :p 20})");
+        check("20.0 0.0 0.0 14.2 RUN_USING_ENCODER", left.pidf.p + " " + left.pidf.i + " " + left.pidf.d + " "
+                + left.pidf.f + " " + left.pidfMode, "pidf is set on the velocity loop");
+        t.check("{:p 20.0, :i 0.0, :d 0.0, :f 14.2}", "(motor/pidf \"left\")");
+        t.check("Execution error: motor/set-pidf expects the keys :p :i :d :f, got: :kp",
+                "(motor/set-pidf \"left\" {:kp 1})");
+        t.check("Execution error: motor/set-pidf expects coefficients of 0 or more, got: -1.0",
+                "(motor/set-pidf \"left\" {:p -1})");
+        t.check("Execution error: motor/set-pidf expects coefficients of 0 or more, got: ##NaN",
+                "(motor/set-pidf \"left\" {:p (Math/sqrt -1)})");
+        t.check("Execution error: motor/set-pidf expects numbers, got: nil",
+                "(motor/set-pidf \"left\" {:p nil})");
+        t.check("Execution error: motor/set-pidf expects a map such as {:p 10 :i 3 :d 0 :f 14}, got: [1.0 2.0 3.0 4.0]",
+                "(motor/set-pidf \"left\" [1 2 3 4])");
+        check("20.0", String.valueOf(left.pidf.p), "a rejected pidf changes nothing");
 
         t.check(":forward", "(motor/direction \"left\")");
         t.check(":reverse", "(motor/set-direction \"left\" :reverse)");

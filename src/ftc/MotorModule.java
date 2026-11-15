@@ -4,14 +4,18 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * (motor/set-power "left" 0.5), (motor/power "left"),
  * (motor/set-velocity "flywheel" 1200), (motor/velocity "flywheel"),
- * (motor/set-direction "left" :reverse) and (motor/direction "left"): DC
+ * (motor/set-direction "left" :reverse), (motor/direction "left"),
+ * (motor/set-pidf "flywheel" {:p 10 :f 14}) and (motor/pidf "flywheel"): DC
  * motors by their name in the robot configuration.
  * Unlike Telemetry, motor calls can come from any thread: the SDK already
  * serialises every command it sends to a hub.
@@ -59,6 +63,45 @@ public final class MotorModule {
                 return velocity;
             }
         });
+        Builtins.define(env, new Builtin("motor/set-pidf") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 2, 2);
+                DcMotorEx motor = lookupEx(opMode, args[0], name());
+                if (!(args[1] instanceof Map)) {
+                    throw new ScriptError(name() + " expects a map such as {:p 10 :i 3 :d 0 :f 14}, got: "
+                            + Printer.print(args[1]));
+                }
+                Map<?, ?> given = (Map<?, ?>) args[1];
+                for (Object key : given.keySet()) {
+                    if (!PIDF.contains(key)) {
+                        throw new ScriptError(name() + " expects the keys :p :i :d :f, got: " + Printer.print(key));
+                    }
+                }
+                double[] k = new double[4];
+                for (int n = 0; n < 4; n++) {
+                    Object v = given.get(PIDF.get(n));
+                    k[n] = given.containsKey(PIDF.get(n)) ? Builtins.toNumber(v, name()) : 0;
+                    // The hub stores them as fixed point; a bad value would make the motor run away.
+                    if (!(k[n] >= 0) || Double.isInfinite(k[n])) {
+                        throw new ScriptError(name() + " expects coefficients of 0 or more, got: " + Printer.print(v));
+                    }
+                }
+                // Only the velocity loop: motor/set-velocity is the one function that uses it.
+                motor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,
+                        new PIDFCoefficients(k[0], k[1], k[2], k[3]));
+                return pidfMap(k[0], k[1], k[2], k[3]);
+            }
+        });
+        Builtins.define(env, new Builtin("motor/pidf") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 1, 1);
+                PIDFCoefficients c = lookupEx(opMode, args[0], name())
+                        .getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+                return pidfMap(c.p, c.i, c.d, c.f);
+            }
+        });
         Builtins.define(env, new Builtin("motor/velocity") {
             @Override
             public Object invoke(Interp interp, Object[] args) {
@@ -98,6 +141,18 @@ public final class MotorModule {
                 return Keyword.of(direction == DcMotorSimple.Direction.REVERSE ? "reverse" : "forward");
             }
         });
+    }
+
+    private static final List<Keyword> PIDF = Arrays.asList(
+            Keyword.of("p"), Keyword.of("i"), Keyword.of("d"), Keyword.of("f"));
+
+    private static FormMap pidfMap(double p, double i, double d, double f) {
+        FormMap m = new FormMap();
+        m.put(PIDF.get(0), p);
+        m.put(PIDF.get(1), i);
+        m.put(PIDF.get(2), d);
+        m.put(PIDF.get(3), f);
+        return m;
     }
 
     private static void switchMode(Map<String, DcMotor.RunMode> modes, String name, DcMotor motor, DcMotor.RunMode mode) {

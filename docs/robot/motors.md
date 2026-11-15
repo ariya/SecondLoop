@@ -128,3 +128,41 @@ velocity turns the motor the other way.
     The hub keeps raising the power until the encoder reports the target
     speed. If the encoder isn't plugged in, that never happens, and the motor
     runs at full power. Try a small velocity first and watch `(motor/velocity name)`.
+
+## pidf
+
+`(motor/pidf name)` is the set of gains the hub uses to hold a speed for
+[`motor/set-velocity`](#set-velocity):
+
+```clojure
+user=> (motor/pidf "flywheel")
+{:p 10.0, :i 3.0, :d 0.0, :f 0.0}
+```
+
+The numbers shown are typical defaults; yours depend on the motor.
+
+## set-pidf
+
+`(motor/set-pidf name gains)` changes those gains and returns the full set. A
+gain that is left out becomes 0:
+
+```clojure
+user=> (motor/set-pidf "flywheel" {:p 20 :f 14})
+{:p 20.0, :i 0.0, :d 0.0, :f 14.0}
+```
+
+Each gain must be 0 or more. `:f` gives power in proportion to the target
+speed, and `:p`, `:i` and `:d` correct the error between the target and the
+measured speed.
+
+Keep the gains you start with, so you can go back to them:
+
+```clojure
+user=> (def original (motor/pidf "flywheel"))
+#'user/original
+user=> (motor/set-pidf "flywheel" original)
+{:p 10.0, :i 3.0, :d 0.0, :f 0.0}
+```
+
+The hub does not keep the gains for good. After it restarts, they are back to
+the defaults.
