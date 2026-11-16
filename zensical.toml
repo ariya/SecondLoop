@@ -8,8 +8,16 @@ site_dir = "site"
 nav = [
   { "Getting Started" = [
     { "Overview" = "index.md" },
-    { "Examples" = "examples.md" },
+    { "Setup" = "setup.md" },
     { "Control Loops" = "control-loops.md" },
+  ] },
+  { "Examples" = [
+    { "Robot Heading" = "examples/heading.md" },
+    { "Launcher Motor" = "examples/launcher.md" },
+    { "Tank Drive" = "examples/tank-drive.md" },
+    { "Mecanum Drive" = "examples/mecanum-drive.md" },
+    { "Speed Adjustment" = "examples/speed-adjustment.md" },
+    { "Location Tracking" = "examples/location-tracking.md" },
   ] },
   { "Language" = [
     { "Syntax" = "language/basics.md" },
@@ -36,7 +44,6 @@ nav = [
     { "Publish" = "robot/publish.md" },
   ] },
   { "References" = [
-    { "Setup" = "setup.md" },
     { "Function Reference" = "reference/functions.md" },
     { "REPL" = "reference/repl.md" },
     { "Differences" = "reference/differences.md" },

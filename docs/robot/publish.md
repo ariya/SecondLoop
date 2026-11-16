@@ -71,7 +71,7 @@ their values at the rate that subscriber asked for, up to 100 times a second.
 When no one is subscribed, nothing is sampled.
 
 An atom is read on every sample. Here `speed` is the atom from
-[Speed adjustment](../examples.md#speed-adjustment). If any connection runs
+[Speed adjustment](../examples/speed-adjustment.md). If any connection runs
 `(reset! speed 0.3)`, subscribers see the new value in the next sample. Write
 `speed`, not `@speed`. `@speed` is read only once, when `publish/setup` runs:
 

@@ -55,7 +55,7 @@ user=>
 ```
 
 That's it! Head back to the [Overview](index.md) for a first tour, or browse
-the [Examples](examples.md).
+the [Examples](examples/heading.md).
 
 ## Android Studio
 
@@ -88,4 +88,4 @@ user=>
 ```
 
 That's it! Head back to the [Overview](index.md) for a first tour, or browse
-the [Examples](examples.md).
+the [Examples](examples/heading.md).

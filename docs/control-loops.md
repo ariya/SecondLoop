@@ -8,7 +8,7 @@ it in the background, and finally runs several loops side by side.
 ## One loop
 
 This loop drives with gamepad 1, using `mecanum-drive` from
-[Examples](examples.md#drivetrain):
+[Mecanum Drive](examples/mecanum-drive.md#wheel-powers):
 
 ```clojure
 (defn drive []

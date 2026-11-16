@@ -64,48 +64,10 @@ user=> (telemetry/add-line "Battery" (battery/voltage))
 nil
 ```
 
-If a [motor](robot/motors.md) is connected, such as a flywheel that launches artifacts, you can
-control it from the prompt. Assuming the motor is named `flywheel` in the robot
-configuration, this sets its direction, spins it for three seconds, and then
-stops it:
-
-```clojure
-(let [power 0.8]
-  (motor/set-direction "flywheel" :reverse)
-  (motor/set-power "flywheel" power)           ; spin
-  (time/sleep 3)                               ; for 3 seconds
-  (motor/set-power "flywheel" 0))              ; then stop
-```
-
-With a [tank drivetrain](https://gm0.org/en/latest/docs/common-mechanisms/drivetrains/tank.html), you can drive the whole robot from the gamepad. Assuming
-the two motors are named `left_drive` and `right_drive`, this loop sends each
-stick to its own side:
-
-```clojure
-(defn drive-tank []
-  (motor/set-direction "left_drive" :reverse)
-  (loop []
-    (let [pad (gamepad 1)]
-      (motor/set-power "left_drive" (- (:left-stick-y pad)))
-      (motor/set-power "right_drive" (- (:right-stick-y pad))))
-    (time/sleep 0.02)                          ;; 50 times/sec
-    (recur)))
-```
-
-The two motors face opposite ways, so one of them is reversed. If the robot
-spins in place or drives backward, reverse `right_drive` instead of
-`left_drive`. Pushing a stick forward gives a negative value, so the loop
-negates it.
-
-Paste the code at the prompt, then run it:
-
-```clojure
-user=> (drive-tank)
-```
-
-That's it: about ten lines of code, and the robot is ready to drive. The loop
-keeps going until you press STOP on the Driver Hub.
-
-Next, we move on to a more complex example with a real game loop: driving a
-mecanum drivetrain from the prompt, adjusting the driving speed on the fly, and
-more.
+From here, the examples build up step by step:
+[reading the robot heading](examples/heading.md),
+[spinning a launcher motor](examples/launcher.md), driving a
+[tank](examples/tank-drive.md) or [mecanum](examples/mecanum-drive.md)
+drivetrain from the gamepad, [adjusting the speed](examples/speed-adjustment.md)
+on the fly, and [tracking where the robot is](examples/location-tracking.md) on
+the field.
