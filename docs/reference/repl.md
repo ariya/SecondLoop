@@ -50,7 +50,7 @@ upload a new `SecondLoop.java`:
 
 ```clojure
 user=> (version)
-{:version "1.1.9", :major 1.0, :minor 1.0, :patch 9.0, :commit "main"}
+{:version "1.1.15", :major 1.0, :minor 1.0, :patch 15.0, :commit "main"}
 ```
 
 `:commit` is `"main"` for a development build.
@@ -133,7 +133,7 @@ client as the problem:
 
 ```console
 $ nc 192.168.43.1 9001
-Second Loop version 1.1.9
+Second Loop version 1.1.15
 user=> (+ 1 2)
 3.0
 ```

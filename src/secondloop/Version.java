@@ -8,7 +8,7 @@ package secondloop;
 public final class Version {
     public static final int MAJOR = 1;
     public static final int MINOR = 1;
-    public static final int PATCH = 9;
+    public static final int PATCH = 15;
     public static final String COMMIT = "main";
 
     private Version() {
@@ -18,7 +18,7 @@ public final class Version {
         return MAJOR + "." + MINOR + "." + PATCH;
     }
 
-    /** The first line a client sees, such as "Second Loop version 1.1.9 (commit ab123)". */
+    /** The first line a client sees, such as "Second Loop version 1.1.15 (commit ab123)". */
     public static String greeting(String commit) {
         String line = "Second Loop version " + number();
         return "main".equals(commit) ? line : line + " (commit " + commit + ")";
