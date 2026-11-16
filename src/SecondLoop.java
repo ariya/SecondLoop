@@ -17,6 +17,7 @@ import secondloop.ReplServer;
 import secondloop.ServoModule;
 import secondloop.TelemetryModule;
 import secondloop.TimeModule;
+import secondloop.Version;
 
 /**
  * Second Loop: a REPL for FTC robots.
@@ -50,6 +51,7 @@ public class SecondLoop extends LinearOpMode {
         try {
             server.start();
         } catch (IOException e) {
+            telemetry.addLine(Version.greeting(Version.COMMIT));
             telemetry.addData("Second Loop", "Cannot listen on port " + PORT + ": " + e.getMessage());
             telemetry.update();
             while (!isStopRequested()) {
@@ -77,6 +79,8 @@ public class SecondLoop extends LinearOpMode {
     }
 
     private void showStatus(ReplServer server, String address) {
+        // The version first, so a team can tell which copy of this file the robot runs.
+        telemetry.addLine(Version.greeting(Version.COMMIT));
         telemetry.addLine(ReplServer.status(address, PORT, server.clientCount()));
         telemetryModule.render(telemetry);
         telemetry.update();

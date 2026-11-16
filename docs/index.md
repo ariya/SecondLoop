@@ -23,6 +23,7 @@ Once Second Loop is running, the telemetry on the Driver Hub shows the address
 to connect to:
 
 ```
+Second Loop version 1.1.15
 Ready at 192.168.43.1:9001 (0 clients)
 ```
 

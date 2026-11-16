@@ -41,6 +41,7 @@ public final class LocalRepl {
             System.out.println("Could not serve rcInfo.json on port " + RC_PORT + ": " + e.getMessage()
                     + ". secondloop.py will not connect.");
         }
+        System.out.println(Version.greeting(Version.COMMIT));
         System.out.println(ReplServer.status(ReplServer.preferredAddress(ReplServer.localAddresses()), port, 0)
                 + ". Try: ./secondloop.py localhost" + (port == 9001 ? "" : ":" + port));
         Thread.currentThread().join();

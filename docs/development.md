@@ -75,8 +75,10 @@ so the display shows the current state rather than a history:
 (telemetry/add-line (format "heading %.1f" heading))
 ```
 
-`showStatus` adds one line above these, such as `Ready at 192.168.43.1:9001 (1
-client)`, so the address a laptop needs is on the Driver Hub from INIT. When
+`showStatus` adds two lines above these, the version such as `Second Loop
+version 1.1.15` and then the address such as `Ready at 192.168.43.1:9001 (1
+client)`, so the copy that runs and the address a laptop needs are on the
+Driver Hub from INIT. When
 the robot has several addresses, `ReplServer.preferredAddress` picks
 `192.168.43.1` or `192.168.49.1` if either is there.
 
