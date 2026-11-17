@@ -1,0 +1,135 @@
+package secondloop;
+
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+
+/**
+ * The goBILDA Pinpoint of RobotSimulator. Its pods roll with the robot without
+ * slipping, so it tracks the robot exactly, from where it was last reset:
+ * x forward, y to the left, heading counterclockwise. The simulated pods count
+ * the right way with :forward :forward; a pod set to :reverse flips its axis,
+ * as a wrongly set pod does on a real robot. Pod type and offsets are taken to
+ * be right. Its state is guarded by the robot's lock, which moves it.
+ */
+final class SimPinpoint extends GoBildaPinpointDriver {
+    private final SimRobot robot;
+    private double xSign = 1;
+    private double ySign = 1;
+    private double x;
+    private double y;
+    private double heading;
+    private double velX;
+    private double velY;
+    private double velHeading;
+
+    SimPinpoint(SimRobot robot) {
+        this.robot = robot;
+        robot.attach(this);
+    }
+
+    /** Called by the robot, under its lock, for each step it moves. */
+    void step(double forward, double left, double turn, double dt) {
+        double f = xSign * forward;
+        double l = ySign * left;
+        double mid = heading + turn / 2;
+        double dx = f * Math.cos(mid) - l * Math.sin(mid);
+        double dy = f * Math.sin(mid) + l * Math.cos(mid);
+        x += dx;
+        y += dy;
+        heading += turn;
+        velX = dx / dt;
+        velY = dy / dt;
+        velHeading = turn / dt;
+    }
+
+    @Override
+    public void update() {
+        robot.advance();
+    }
+
+    @Override
+    public void setOffsets(double xOffset, double yOffset, DistanceUnit distanceUnit) {
+    }
+
+    @Override
+    public void resetPosAndIMU() {
+        synchronized (robot) {
+            robot.advance();
+            x = 0;
+            y = 0;
+            heading = 0;
+        }
+    }
+
+    @Override
+    public void setEncoderDirections(EncoderDirection xEncoder, EncoderDirection yEncoder) {
+        synchronized (robot) {
+            robot.advance();
+            xSign = xEncoder == EncoderDirection.REVERSED ? -1 : 1;
+            ySign = yEncoder == EncoderDirection.REVERSED ? -1 : 1;
+        }
+    }
+
+    @Override
+    public void setEncoderResolution(GoBildaOdometryPods pods) {
+    }
+
+    @Override
+    public void setEncoderResolution(double ticksPerUnit, DistanceUnit distanceUnit) {
+    }
+
+    @Override
+    public DeviceStatus getDeviceStatus() {
+        return DeviceStatus.READY;
+    }
+
+    private static double distance(double inches, DistanceUnit unit) {
+        return unit == DistanceUnit.MM ? inches * 25.4 : inches;
+    }
+
+    @Override
+    public double getPosX(DistanceUnit distanceUnit) {
+        synchronized (robot) {
+            return distance(x, distanceUnit);
+        }
+    }
+
+    @Override
+    public double getPosY(DistanceUnit distanceUnit) {
+        synchronized (robot) {
+            return distance(y, distanceUnit);
+        }
+    }
+
+    @Override
+    public double getHeading(AngleUnit angleUnit) {
+        synchronized (robot) {
+            // Wrapped to -π..π, as the SDK does.
+            double h = Math.atan2(Math.sin(heading), Math.cos(heading));
+            return angleUnit == AngleUnit.DEGREES ? Math.toDegrees(h) : h;
+        }
+    }
+
+    @Override
+    public double getVelX(DistanceUnit distanceUnit) {
+        synchronized (robot) {
+            return distance(velX, distanceUnit);
+        }
+    }
+
+    @Override
+    public double getVelY(DistanceUnit distanceUnit) {
+        synchronized (robot) {
+            return distance(velY, distanceUnit);
+        }
+    }
+
+    @Override
+    public double getHeadingVelocity(UnnormalizedAngleUnit unnormalizedAngleUnit) {
+        synchronized (robot) {
+            return unnormalizedAngleUnit == UnnormalizedAngleUnit.DEGREES ? Math.toDegrees(velHeading) : velHeading;
+        }
+    }
+}

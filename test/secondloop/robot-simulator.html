@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Driver Station for Robot Simulator</title>
+<style>
+  /* The Driver Hub's telemetry: white monospace text on black. */
+  :root {
+    --page: #161616;
+    --bg: #000000;
+    --text: #ffffff;
+    --muted: #9e9e9e;
+    --line: #333333;
+    --border: #555555;
+    --cap: #2a2a2a;
+    --bad: #ff5252;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text);
+    font: 15px/1.45 "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .top { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; margin-bottom: 12px; }
+  #link { color: var(--muted); }
+  #link.down { color: var(--bad); }
+  #battery { font-variant-numeric: tabular-nums; }
+  #screen {
+    white-space: pre-wrap; overflow-wrap: anywhere; min-height: 40vh;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px;
+  }
+
+  .pad { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 12px; color: var(--muted); font-size: 12px; }
+  .pad-head { display: flex; justify-content: space-between; gap: 8px; }
+  .pad-source { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #help { margin: 8px 0 0; }
+  .pad.found #help { display: none; }
+
+  /* The controller, drawn in outline like the gamepad picture in the docs. */
+  #controller { display: block; width: 100%; max-width: 440px; margin: 8px auto 0; }
+  .pad:not(.found) #controller { opacity: 0.3; }
+  #controller .body, #controller .part { fill: var(--page); stroke: var(--text); stroke-width: 2; stroke-linejoin: round; }
+  #controller .cap { fill: var(--cap); stroke: var(--text); stroke-width: 2; }
+  #controller .fill { fill: var(--text); }
+  #controller text { fill: var(--text); font: bold 13px sans-serif; text-anchor: middle; dominant-baseline: central; }
+  #controller .icon { fill: none; stroke: var(--text); stroke-width: 1.5; }
+  #controller .on .part, #controller .on .cap { fill: var(--text); }
+  #controller .on text { fill: var(--page); }
+  #controller .on .icon { stroke: var(--page); }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><span id="link">connecting…</span><span id="battery" title="Robot battery"></span></div>
+  <div id="screen"></div>
+
+  <div class="pad" id="pad">
+    <div class="pad-head"><span>Gamepad 1</span><span class="pad-source" id="pad-source"></span></div>
+    <p id="help">No controller found. Connect one to this computer by USB or Bluetooth,
+      then press any button on it: browsers show a controller to a page only after a press.</p>
+
+    <svg id="controller" viewBox="0 0 400 270" role="img" aria-label="Gamepad 1">
+      <!-- Triggers: the white part rises as the trigger is pulled. -->
+      <clipPath id="lt-clip"><rect x="88" y="14" width="46" height="30" rx="8"/></clipPath>
+      <clipPath id="rt-clip"><rect x="266" y="14" width="46" height="30" rx="8"/></clipPath>
+      <rect class="part" x="88" y="14" width="46" height="30" rx="8"/>
+      <rect class="fill" id="lt" x="88" y="44" width="46" height="0" clip-path="url(#lt-clip)"/>
+      <rect class="part" x="266" y="14" width="46" height="30" rx="8"/>
+      <rect class="fill" id="rt" x="266" y="44" width="46" height="0" clip-path="url(#rt-clip)"/>
+
+      <!-- Bumpers -->
+      <g data-button="left_bumper"><path class="part" d="M56 86 C66 58 110 44 175 54 L175 62 C112 56 80 68 66 92 Z"/></g>
+      <g data-button="right_bumper"><path class="part" d="M344 86 C334 58 290 44 225 54 L225 62 C288 56 320 68 334 92 Z"/></g>
+
+      <!-- Body -->
+      <path class="body" d="M120 58 C150 50 250 50 280 58 C318 62 344 82 356 120 C370 166 386 214 372 240
+        C358 262 326 256 306 228 C292 208 278 198 256 198 L144 198 C122 198 108 208 94 228
+        C74 256 42 262 28 240 C14 214 30 166 44 120 C56 82 82 62 120 58 Z"/>
+
+      <!-- Guide (Xbox) button, View (back) and Menu (start) -->
+      <g data-button="guide"><circle class="part" cx="200" cy="84" r="13"/><circle class="icon" cx="200" cy="84" r="6"/></g>
+      <g data-button="back"><circle class="part" cx="172" cy="118" r="9"/>
+        <rect class="icon" x="166" y="113" width="7" height="6"/><rect class="icon" x="170" y="117" width="7" height="6"/></g>
+      <g data-button="start"><circle class="part" cx="228" cy="118" r="9"/>
+        <path class="icon" d="M223 114 H233 M223 118 H233 M223 122 H233"/></g>
+
+      <!-- Left stick, top left as on an Xbox controller -->
+      <g id="left-stick" data-button="left_stick_button">
+        <circle class="part" cx="112" cy="116" r="30"/>
+        <circle class="cap" cx="112" cy="116" r="19"/>
+      </g>
+
+      <!-- D-pad, lower left -->
+      <circle class="part" cx="152" cy="168" r="28"/>
+      <g data-button="dpad_up"><path class="part" d="M146 147 H158 V162 L152 168 L146 162 Z"/></g>
+      <g data-button="dpad_down"><path class="part" d="M146 189 H158 V174 L152 168 L146 174 Z"/></g>
+      <g data-button="dpad_left"><path class="part" d="M131 162 V174 H146 L152 168 L146 162 Z"/></g>
+      <g data-button="dpad_right"><path class="part" d="M173 162 V174 H158 L152 168 L158 162 Z"/></g>
+
+      <!-- Right stick, lower right -->
+      <g id="right-stick" data-button="right_stick_button">
+        <circle class="part" cx="248" cy="168" r="30"/>
+        <circle class="cap" cx="248" cy="168" r="19"/>
+      </g>
+
+      <!-- A, B, X and Y, in a diamond at the top right -->
+      <g data-button="y"><circle class="part" cx="290" cy="94" r="12"/><text x="290" y="94">Y</text></g>
+      <g data-button="x"><circle class="part" cx="267" cy="117" r="12"/><text x="267" y="117">X</text></g>
+      <g data-button="b"><circle class="part" cx="313" cy="117" r="12"/><text x="313" y="117">B</text></g>
+      <g data-button="a"><circle class="part" cx="290" cy="140" r="12"/><text x="290" y="140">A</text></g>
+    </svg>
+  </div>
+</main>
+
+<script>
+'use strict';
+
+const DEADZONE = 0.05; // so a resting stick that drifts a little reads 0
+
+// ---- Telemetry, polled from RobotSimulator ----
+
+async function poll() {
+  try {
+    const response = await fetch('/state', {cache: 'no-store'});
+    const state = await response.json();
+    document.getElementById('screen').textContent =
+      [state.version, state.status].concat(state.telemetry).join('\n');
+    document.getElementById('battery').textContent = 'Battery ' + state.battery.toFixed(2) + ' V';
+    setLink(true);
+  } catch (e) {
+    setLink(false);
+  }
+  setTimeout(poll, 100);
+}
+
+function setLink(up) {
+  const link = document.getElementById('link');
+  link.textContent = up ? 'Driver Station for Robot Simulator' : 'Robot Simulator is not running';
+  link.className = up ? '' : 'down';
+}
+
+// ---- Gamepad 1: a real controller, through the browser's Gamepad API ----
+
+const AXES = ['left_stick_x', 'left_stick_y', 'right_stick_x', 'right_stick_y', 'left_trigger', 'right_trigger'];
+const BUTTONS = ['a', 'b', 'x', 'y', 'left_bumper', 'right_bumper', 'dpad_up', 'dpad_down', 'dpad_left',
+  'dpad_right', 'left_stick_button', 'right_stick_button', 'start', 'back', 'guide'];
+
+function neutral() {
+  const pad = {};
+  AXES.forEach(a => pad[a] = 0);
+  BUTTONS.forEach(b => pad[b] = false);
+  return pad;
+}
+
+function axis(v) {
+  return Math.abs(v) < DEADZONE ? 0 : Math.max(-1, Math.min(1, v));
+}
+
+// The browser's "standard" layout, which matches the FTC gamepad. As in FTC,
+// pushing a stick forward gives a negative y.
+function fromController(gp) {
+  const pad = neutral();
+  const b = i => gp.buttons[i] ? gp.buttons[i].pressed : false;
+  const v = i => gp.buttons[i] ? gp.buttons[i].value : 0;
+  pad.left_stick_x = axis(gp.axes[0] || 0);
+  pad.left_stick_y = axis(gp.axes[1] || 0);
+  pad.right_stick_x = axis(gp.axes[2] || 0);
+  pad.right_stick_y = axis(gp.axes[3] || 0);
+  pad.left_trigger = axis(v(6));
+  pad.right_trigger = axis(v(7));
+  pad.a = b(0); pad.b = b(1); pad.x = b(2); pad.y = b(3);
+  pad.left_bumper = b(4); pad.right_bumper = b(5);
+  pad.back = b(8); pad.start = b(9);
+  pad.left_stick_button = b(10); pad.right_stick_button = b(11);
+  pad.dpad_up = b(12); pad.dpad_down = b(13); pad.dpad_left = b(14); pad.dpad_right = b(15);
+  pad.guide = b(16);
+  return pad;
+}
+
+// The first controller found. Without one nothing is sent, and RobotSimulator
+// lets go of the gamepad after half a second.
+function firstController() {
+  const controllers = Array.from(navigator.getGamepads ? navigator.getGamepads() : []);
+  return controllers.find(g => g && g.connected) || null;
+}
+
+function send(pad) {
+  const body = new URLSearchParams({pad: '1'});
+  AXES.forEach(a => body.set(a, pad[a].toFixed(3)));
+  BUTTONS.forEach(b => body.set(b, pad[b] ? '1' : '0'));
+  fetch('/gamepad', {method: 'POST', body}).catch(() => {});
+}
+
+const STICK_TRAVEL = 10; // how far a cap moves, in the drawing's units
+const TRIGGER_HEIGHT = 30;
+
+function show(pad, source) {
+  document.getElementById('pad').classList.toggle('found', pad !== null);
+  document.getElementById('pad-source').textContent = source;
+  const p = pad || neutral();
+  document.querySelectorAll('#controller [data-button]').forEach(el =>
+    el.classList.toggle('on', p[el.dataset.button]));
+  const moveCap = (id, x, y) => document.querySelector('#' + id + ' .cap')
+    .setAttribute('transform', 'translate(' + (x * STICK_TRAVEL) + ' ' + (y * STICK_TRAVEL) + ')');
+  moveCap('left-stick', p.left_stick_x, p.left_stick_y);
+  moveCap('right-stick', p.right_stick_x, p.right_stick_y);
+  const pull = (id, v) => {
+    const el = document.getElementById(id);
+    el.setAttribute('y', 44 - v * TRIGGER_HEIGHT);
+    el.setAttribute('height', v * TRIGGER_HEIGHT);
+  };
+  pull('lt', p.left_trigger);
+  pull('rt', p.right_trigger);
+}
+
+function tick() {
+  const controller = firstController();
+  const pad = controller ? fromController(controller) : null;
+  if (pad) send(pad);
+  show(pad, controller ? controller.id : 'not connected');
+}
+
+setInterval(tick, 50); // 20 times a second, well inside RobotSimulator's 0.5 s timeout
+poll();
+</script>
+</body>
+</html>

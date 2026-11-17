@@ -18,14 +18,22 @@ rm -rf build/classes build/check
 # The FTC stand-ins let src/ftc modules compile and be tested off the robot.
 STUBS=$(find test/ftc-stubs -name '*.java')
 "${JAVAC[@]}" -d build/classes $STUBS src/secondloop/*.java src/ftc/*.java test/secondloop/*.java
+cp test/secondloop/robot-simulator.html build/classes/secondloop/ # the web UI of RobotSimulator
 java -cp build/classes secondloop.ReplTest
 java -cp build/classes secondloop.GamepadTest
 java -cp build/classes secondloop.TelemetryTest
+java -cp build/classes secondloop.SimTelemetryTest
 java -cp build/classes secondloop.MotorTest
+java -cp build/classes secondloop.SimMotorTest
+java -cp build/classes secondloop.SimDrivetrainTest
 java -cp build/classes secondloop.ServoTest
 java -cp build/classes secondloop.BatteryTest
+java -cp build/classes secondloop.SimBatteryTest
 java -cp build/classes secondloop.ImuTest
+java -cp build/classes secondloop.SimImuTest
 java -cp build/classes secondloop.PinpointTest
+java -cp build/classes secondloop.SimPinpointTest
+java -cp build/classes secondloop.SimWebUiTest
 java -cp build/classes secondloop.PublishTest
 
 "${JAVAC[@]}" -d build/check $STUBS build/SecondLoop.java
