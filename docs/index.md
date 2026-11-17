@@ -23,7 +23,7 @@ Once Second Loop is running, the telemetry on the Driver Hub shows the address
 to connect to:
 
 ```
-Second Loop version 1.1.15
+Second Loop version 1.1.16
 Ready at 192.168.43.1:9001 (0 clients)
 ```
 
@@ -34,7 +34,7 @@ automatically:
 $ ./secondloop.py
 Connected to 30618-RC using RC version 12.0 (SDK v12.0.0)
 Active configuration is biobuzz
-Second Loop version 1.1.15
+Second Loop version 1.1.16
 user=>
 ```
 

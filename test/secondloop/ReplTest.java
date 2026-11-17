@@ -68,8 +68,8 @@ public final class ReplTest {
             {"192.168.49.1", ReplServer.preferredAddress(java.util.Arrays.asList("172.17.0.1", "192.168.49.1"))},
             {"10.0.0.5", ReplServer.preferredAddress(java.util.Arrays.asList("10.0.0.5", "172.17.0.1"))},
             {"null", String.valueOf(ReplServer.preferredAddress(new java.util.ArrayList<String>()))},
-            {"Second Loop version 1.1.15", Version.greeting("main")},
-            {"Second Loop version 1.1.15 (commit ab123)", Version.greeting("ab123")},
+            {"Second Loop version 1.1.16", Version.greeting("main")},
+            {"Second Loop version 1.1.16 (commit ab123)", Version.greeting("ab123")},
         };
         for (String[] c : cases) {
             count++;
@@ -717,8 +717,8 @@ public final class ReplTest {
         t.check("Syntax error: Too few arguments to defonce", "(defonce y)");
 
         // Version
-        t.check("{:version \"1.1.15\", :major 1.0, :minor 1.0, :patch 15.0, :commit \"main\"}", "(version)");
-        t.check("\"1.1.15\"", "(:version (version))");
+        t.check("{:version \"1.1.16\", :major 1.0, :minor 1.0, :patch 16.0, :commit \"main\"}", "(version)");
+        t.check("\"1.1.16\"", "(:version (version))");
         t.check("Execution error: Wrong number of args (1) passed to: version", "(version 1)");
 
         // Time
