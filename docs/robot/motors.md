@@ -54,6 +54,38 @@ user=> (motor/direction "left")
 :reverse
 ```
 
+## zero-power-behavior
+
+`(motor/zero-power-behavior name)` is what the motor does when its power is 0:
+`:brake` or `:float`.
+
+```clojure
+user=> (motor/zero-power-behavior "left_drive")
+:brake
+```
+
+## set-zero-power-behavior
+
+`(motor/set-zero-power-behavior name b)` sets what the motor does when its
+power is 0, and returns it. `b` is one of:
+
+- `:brake`: the motor resists turning, so it stops quickly and holds its place.
+  Use it for a drivetrain, so the robot stops where the driver lets go of the
+  stick instead of rolling on.
+- `:float`: the motor turns freely and slows down only by friction. Use it for
+  a flywheel or launcher: a heavy wheel that is stopped hard puts a lot of
+  strain on the motor and gearbox, and spins down gently instead.
+
+```clojure
+user=> (motor/set-zero-power-behavior "left_drive" :brake)
+:brake
+user=> (motor/set-zero-power-behavior "flywheel" :float)
+:float
+```
+
+Set it once at the start of the program, rather than relying on the default.
+It changes nothing while the motor has power.
+
 ## run-mode
 
 `(motor/run-mode name)` is the mode the motor controller is in:

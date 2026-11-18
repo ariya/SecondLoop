@@ -13,6 +13,8 @@ side:
 ```clojure
 (defn drive-tank []
   (motor/set-direction "left_drive" :reverse)
+  (motor/set-zero-power-behavior "left_drive" :brake)
+  (motor/set-zero-power-behavior "right_drive" :brake)
   (loop []
     (let [pad (gamepad 1)]
       (motor/set-power "left_drive" (- (:left-stick-y pad)))
@@ -24,7 +26,9 @@ side:
 The two motors face opposite ways, so one of them is reversed. If the robot
 spins in place or drives backward, reverse `right_drive` instead of
 `left_drive`. Pushing a stick forward gives a negative value, so the loop
-negates it (see [Gamepad](../robot/gamepad.md)).
+negates it (see [Gamepad](../robot/gamepad.md)). Both motors brake at power 0,
+so the robot stops as soon as you let go of the sticks, instead of rolling on
+(see [set-zero-power-behavior](../robot/motors.md#set-zero-power-behavior)).
 
 Paste the code at the prompt, then run it:
 

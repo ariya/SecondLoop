@@ -31,7 +31,18 @@ down together, so the robot still moves in the direction you asked for:
 The two motors on the left are mounted the other way round, so the function
 reverses them first.
 
-Paste it at the prompt.
+Also make all four motors brake when their power is 0, so the robot stops
+where you stop it instead of rolling on (see
+[set-zero-power-behavior](../robot/motors.md#set-zero-power-behavior)):
+
+```clojure
+(motor/set-zero-power-behavior "front_left_drive" :brake)
+(motor/set-zero-power-behavior "front_right_drive" :brake)
+(motor/set-zero-power-behavior "back_left_drive" :brake)
+(motor/set-zero-power-behavior "back_right_drive" :brake)
+```
+
+Paste both at the prompt.
 
 Now drive the robot by hand, one move at a time.
 

@@ -58,6 +58,27 @@ public final class SimMotorTest {
         check("0.0", m.getVelocity(), "coasts to a stop");
         check("14000", m.getCurrentPosition(), "position is the area under the velocity: 2800 for 5 s");
 
+        check("BRAKE", m.getZeroPowerBehavior(), "brakes by default");
+        m.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        m.setPower(1);
+        clock.seconds(5);
+        m.setPower(0);
+        clock.seconds(0.4);
+        check("2450.0", m.getVelocity(), "floats: loses only 12% in 0.4 s");
+        clock.seconds(2.6);
+        check("1030.0", m.getVelocity(), "floats: 37% left after coastTau");
+        m.setPower(1);
+        clock.seconds(5);
+        m.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        m.setVelocity(0);
+        clock.seconds(3);
+        check("1030.0", m.getVelocity(), "floats at velocity 0 too");
+        m.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        m.setPower(0);
+        m.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        clock.seconds(5);
+        check("0.0", m.getVelocity(), "brakes again");
+
         volts[0] = 12.6;
         m.setPower(0.5);
         clock.seconds(10);

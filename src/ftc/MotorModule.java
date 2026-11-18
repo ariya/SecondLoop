@@ -20,7 +20,9 @@ import java.util.Set;
  * (motor/set-run-mode "left" :stop-and-reset-encoder), (motor/run-mode "left"),
  * (motor/set-target-position "arm" 300), (motor/target-position "arm"),
  * (motor/current-position "arm"),
- * (motor/set-pidf "flywheel" {:p 10 :f 14}) and (motor/pidf "flywheel"): DC
+ * (motor/set-pidf "flywheel" {:p 10 :f 14}), (motor/pidf "flywheel"),
+ * (motor/set-zero-power-behavior "left" :brake) and
+ * (motor/zero-power-behavior "left"): DC
  * motors by their name in the robot configuration.
  * Unlike Telemetry, motor calls can come from any thread: the SDK already
  * serialises every command it sends to a hub.
@@ -217,6 +219,32 @@ public final class MotorModule {
                 checkArity(args, 1, 1);
                 DcMotorSimple.Direction direction = lookup(opMode, args[0], name()).getDirection();
                 return Keyword.of(direction == DcMotorSimple.Direction.REVERSE ? "reverse" : "forward");
+            }
+        });
+        Builtins.define(env, new Builtin("motor/set-zero-power-behavior") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 2, 2);
+                DcMotor motor = lookup(opMode, args[0], name());
+                DcMotor.ZeroPowerBehavior behavior;
+                if (Keyword.of("brake").equals(args[1])) {
+                    behavior = DcMotor.ZeroPowerBehavior.BRAKE;
+                } else if (Keyword.of("float").equals(args[1])) {
+                    behavior = DcMotor.ZeroPowerBehavior.FLOAT;
+                } else {
+                    throw new ScriptError(name() + " expects :brake or :float, got: " + Printer.print(args[1]));
+                }
+                motor.setZeroPowerBehavior(behavior);
+                return args[1];
+            }
+        });
+        Builtins.define(env, new Builtin("motor/zero-power-behavior") {
+            @Override
+            public Object invoke(Interp interp, Object[] args) {
+                checkArity(args, 1, 1);
+                // The SDK can also report UNKNOWN, which becomes :unknown.
+                DcMotor.ZeroPowerBehavior behavior = lookup(opMode, args[0], name()).getZeroPowerBehavior();
+                return Keyword.of(behavior.name().toLowerCase(java.util.Locale.ROOT));
             }
         });
     }

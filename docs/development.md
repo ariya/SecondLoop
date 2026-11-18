@@ -174,6 +174,11 @@ perfectly: `motor/set-pidf` is accepted but does not change the response. With
 `:run-to-position` it steers to the target, no faster than the power allows,
 and overshoots by about 16% before settling.
 
+Every simulated motor starts with `:brake`. At power 0 (or velocity 0 with
+`motor/set-velocity`), a braking motor slows down with its usual time
+constant, while with `:float` it coasts and only friction slows it: the
+Flywheel then takes about 3 s, rather than 0.4 s, to lose 63% of its speed.
+
 The mecanum drivetrain has the four motors of the
 [Mecanum Drive](examples/mecanum-drive.md) example: `"front_left_drive"`,
 `"front_right_drive"`, `"back_left_drive"` and `"back_right_drive"`. They are
@@ -183,7 +188,9 @@ on 104 mm mecanum wheels, with the left two mounted the
 other way round, so a program reverses them as on a real robot. Each follows
 the same first-order response, with a time constant of 0.2 s for the weight of
 the robot, and the robot moves by how far each wheel rolled, without slipping.
-At power 0.3 it drives about 20 inches per second.
+At power 0.3 it drives about 20 inches per second. With `:float`, the wheels
+coast with a time constant of 0.5 s, so the robot rolls on further after it
+stops.
 
 The drive motors have no encoders, since driving is done by power. As on a real
 robot, `motor/velocity` and `motor/current-position` read 0, and

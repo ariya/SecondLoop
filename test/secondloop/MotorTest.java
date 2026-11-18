@@ -79,6 +79,7 @@ public final class MotorTest {
     static final class FakeMotor implements DcMotorEx {
         Direction direction = Direction.FORWARD;
         RunMode mode = RunMode.RUN_USING_ENCODER;
+        ZeroPowerBehavior zeroPowerBehavior = ZeroPowerBehavior.BRAKE;
         double power;
         double velocity;
         int modeChanges;
@@ -106,6 +107,16 @@ public final class MotorTest {
         @Override
         public double getVelocity() {
             return velocity;
+        }
+
+        @Override
+        public void setZeroPowerBehavior(ZeroPowerBehavior zeroPowerBehavior) {
+            this.zeroPowerBehavior = zeroPowerBehavior;
+        }
+
+        @Override
+        public ZeroPowerBehavior getZeroPowerBehavior() {
+            return zeroPowerBehavior;
         }
 
         @Override
@@ -310,6 +321,20 @@ public final class MotorTest {
         t.check(":forward", "(motor/set-direction \"left\" :forward)");
         t.check(":forward", "(motor/direction \"left\")");
 
+        t.check(":brake", "(motor/zero-power-behavior \"left\")");
+        t.check(":float", "(motor/set-zero-power-behavior \"left\" :float)");
+        check("FLOAT", String.valueOf(left.zeroPowerBehavior), "zero power behavior is set");
+        t.check(":float", "(motor/zero-power-behavior \"left\")");
+        t.check(":brake", "(motor/set-zero-power-behavior \"left\" :brake)");
+        t.check(":brake", "(motor/zero-power-behavior \"left\")");
+        t.check("Execution error: motor/set-zero-power-behavior expects :brake or :float, got: :coast",
+                "(motor/set-zero-power-behavior \"left\" :coast)");
+        check("BRAKE", String.valueOf(left.zeroPowerBehavior), "a rejected zero power behavior changes nothing");
+        left.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.UNKNOWN;
+        t.check(":unknown", "(motor/zero-power-behavior \"left\")");
+        t.check("Execution error: No motor named \"right\" in the robot configuration",
+                "(motor/set-zero-power-behavior \"right\" :brake)");
+
         t.check("Execution error: motor/set-power expects a power from -1.0 to 1.0, got: 1.5",
                 "(motor/set-power \"left\" 1.5)");
         t.check("Execution error: motor/set-power expects a power from -1.0 to 1.0, got: ##NaN",
@@ -359,6 +384,15 @@ public final class MotorTest {
         t.devices.put("back_right_drive", rb);
         String drive = MECANUM_DRIVE;
         t.check("#'user/mecanum-drive\n#'user/drive-with-gamepad", drive);
+        lf.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT;
+        rb.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT;
+        t.check(":brake\n:brake\n:brake\n:brake",
+                "(motor/set-zero-power-behavior \"front_left_drive\" :brake)\n"
+                + "(motor/set-zero-power-behavior \"front_right_drive\" :brake)\n"
+                + "(motor/set-zero-power-behavior \"back_left_drive\" :brake)\n"
+                + "(motor/set-zero-power-behavior \"back_right_drive\" :brake)");
+        check("BRAKE BRAKE BRAKE BRAKE", lf.zeroPowerBehavior + " " + rf.zeroPowerBehavior + " " + lb.zeroPowerBehavior
+                + " " + rb.zeroPowerBehavior, "all four wheels brake");
         t.check("[0.3 0.3 0.3 0.3]", "(mecanum-drive 0.3 0 0)");
         check("REVERSE FORWARD REVERSE FORWARD", lf.direction + " " + rf.direction + " " + lb.direction + " " + rb.direction,
                 "the left motors are reversed");

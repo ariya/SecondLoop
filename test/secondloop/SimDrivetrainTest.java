@@ -108,6 +108,17 @@ public final class SimDrivetrainTest {
         check("0.5", t.feed("(motor/power \"front_left_drive\")"), "power still reads back");
         t.feed("(motor/set-power \"front_left_drive\" 0)");
 
+        // Floating, the wheels coast 0.5 s further instead of 0.2 s: 6 in more.
+        t.clock.seconds(3);
+        double[] start = t.drivetrain.pose();
+        t.feed("(motor/set-zero-power-behavior \"front_left_drive\" :float)"
+                + "(motor/set-zero-power-behavior \"front_right_drive\" :float)"
+                + "(motor/set-zero-power-behavior \"back_left_drive\" :float)"
+                + "(motor/set-zero-power-behavior \"back_right_drive\" :float)");
+        t.move("0.3 0 0", 3);
+        double[] end = t.drivetrain.pose();
+        check("66.2", String.valueOf(round(Math.hypot(end[0] - start[0], end[1] - start[1]), 10)), "floats further");
+
         System.out.println((count - failures) + "/" + count + " passed");
         if (failures > 0) {
             System.exit(1);

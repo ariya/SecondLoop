@@ -21,7 +21,11 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
  * The current follows from the same model: the motor draws its stall current,
  * scaled by how far it is from the commanded velocity, to accelerate, plus a
  * small current to keep its load turning. The battery supplies that times the
- * power the hub applies. A motor that coasts at power 0 draws nothing.
+ * power the hub applies, so a motor at power 0 draws nothing.
+ *
+ * At zero power (power 0, or velocity 0 in RUN_USING_ENCODER), BRAKE shorts
+ * the windings, so the motor slows down with tau, as when driven to 0. FLOAT
+ * lets it coast, and only friction slows it, with the longer coastTau.
  *
  * A motor on its own advances on every call, from the time since the previous
  * one. A motor in a SimRobot is advanced by it instead, so that all motors and
@@ -47,6 +51,7 @@ final class SimMotor implements DcMotorEx {
     private final double freeSpeed;
     private final double ticksPerRev;
     private final double tau;
+    private final double coastTau;
     private final double stallAmps;
     private final double loadAmps;
     private final boolean hasEncoder;
@@ -57,6 +62,7 @@ final class SimMotor implements DcMotorEx {
 
     private Direction direction = Direction.FORWARD;
     private RunMode mode = RunMode.RUN_WITHOUT_ENCODER;
+    private ZeroPowerBehavior zeroPowerBehavior = ZeroPowerBehavior.BRAKE;
     private double power;
     private double targetVelocity;
     private int targetPosition;
@@ -74,15 +80,17 @@ final class SimMotor implements DcMotorEx {
      * @param freeSpeed ticks per second with no load at full power and NOMINAL_VOLTS
      * @param ticksPerRev encoder ticks for one turn of the output shaft
      * @param tau seconds to reach 63% of a change in commanded velocity
+     * @param coastTau seconds to lose 63% of the velocity when it floats at zero power
      * @param stallAmps current with the shaft held, at NOMINAL_VOLTS
      * @param loadAmps current to keep the load turning at free speed
      * @param robot the robot that advances this motor, or null for a motor on its own
      */
-    SimMotor(double freeSpeed, double ticksPerRev, double tau, double stallAmps, double loadAmps,
+    SimMotor(double freeSpeed, double ticksPerRev, double tau, double coastTau, double stallAmps, double loadAmps,
              boolean hasEncoder, VoltageSensor battery, Clock clock, SimRobot robot) {
         this.freeSpeed = freeSpeed;
         this.ticksPerRev = ticksPerRev;
         this.tau = tau;
+        this.coastTau = coastTau;
         this.stallAmps = stallAmps;
         this.loadAmps = loadAmps;
         this.hasEncoder = hasEncoder;
@@ -96,18 +104,20 @@ final class SimMotor implements DcMotorEx {
     /**
      * A goBILDA 5203 motor at 6000 RPM with a 28-tick encoder, spinning a
      * flywheel: 9.2 A at stall, and about 1 A to keep the flywheel at speed.
+     * Left to float, the heavy flywheel takes a few seconds to spin down.
      */
     static SimMotor flywheel(VoltageSensor battery, Clock clock, SimRobot robot) {
-        return new SimMotor(6000 / 60.0 * 28, 28, 0.4, 9.2, 1.0, true, battery, clock, robot);
+        return new SimMotor(6000 / 60.0 * 28, 28, 0.4, 3, 9.2, 1.0, true, battery, clock, robot);
     }
 
     /**
      * A goBILDA 5203 motor at 312 RPM (537.7 ticks per turn) driving a wheel,
      * with no encoder plugged in: 9.2 A at stall, and about 1.5 A to roll its
-     * share of the robot at full speed.
+     * share of the robot at full speed. Left to float, the robot rolls on
+     * for about a second, slowed by the friction of the rollers.
      */
     static SimMotor driveWheel(VoltageSensor battery, Clock clock, SimRobot robot) {
-        return new SimMotor(312 / 60.0 * 537.7, 537.7, 0.2, 9.2, 1.5, false, battery, clock, robot);
+        return new SimMotor(312 / 60.0 * 537.7, 537.7, 0.2, 0.5, 9.2, 1.5, false, battery, clock, robot);
     }
 
     private double sign() {
@@ -116,6 +126,18 @@ final class SimMotor implements DcMotorEx {
 
     private double maxSpeed() {
         return freeSpeed * battery.getVoltage() / NOMINAL_VOLTS;
+    }
+
+    /** True when the hub applies no power, so the zero power behavior decides. */
+    private boolean zeroPower() {
+        switch (mode) {
+            case RUN_USING_ENCODER:
+                return targetVelocity == 0;
+            case STOP_AND_RESET_ENCODER:
+                return true;
+            default:
+                return power == 0;
+        }
     }
 
     /** The velocity the motor is driven toward, in its own direction, when max is its top speed now. */
@@ -152,8 +174,9 @@ final class SimMotor implements DcMotorEx {
             // The exact first-order response over dt, for a command held constant.
             double max = maxSpeed();
             double target = commanded(max);
-            double decay = Math.exp(-dt / tau);
-            double gap = (target - velocity) * tau * (1 - decay); // the gap to the command, summed over dt
+            double t = zeroPowerBehavior == ZeroPowerBehavior.FLOAT && zeroPower() ? coastTau : tau;
+            double decay = Math.exp(-dt / t);
+            double gap = (target - velocity) * t * (1 - decay); // the gap to the command, summed over dt
             double moved = target * dt - gap;
             velocity = target + (velocity - target) * decay;
             // The winding current, averaged over dt: stall current for the
@@ -200,6 +223,21 @@ final class SimMotor implements DcMotorEx {
     public Direction getDirection() {
         synchronized (lock) {
             return direction;
+        }
+    }
+
+    @Override
+    public void setZeroPowerBehavior(ZeroPowerBehavior zeroPowerBehavior) {
+        synchronized (lock) {
+            advance();
+            this.zeroPowerBehavior = zeroPowerBehavior;
+        }
+    }
+
+    @Override
+    public ZeroPowerBehavior getZeroPowerBehavior() {
+        synchronized (lock) {
+            return zeroPowerBehavior;
         }
     }
 

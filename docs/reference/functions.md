@@ -50,7 +50,7 @@ These are evaluated by the interpreter and cannot be passed as values.
 | Output | `println prn` |
 | Time | `time/elapsed time/sleep` |
 | Version | [`version`](repl.md#version) |
-| Robot hardware | `gamepad motor/set-power motor/power motor/set-velocity motor/velocity motor/set-pidf motor/pidf motor/set-direction motor/direction motor/set-run-mode motor/run-mode motor/set-target-position motor/target-position motor/current-position servo/set-position servo/position servo/set-direction servo/direction crservo/set-power crservo/power crservo/set-direction crservo/direction battery/voltage imu/init imu/reset-yaw imu/angles imu/yaw imu/pitch imu/roll pinpoint/init pinpoint/pose pinpoint/velocity pinpoint/reset pinpoint/status telemetry/add-line telemetry/clear` |
+| Robot hardware | `gamepad motor/set-power motor/power motor/set-velocity motor/velocity motor/set-pidf motor/pidf motor/set-direction motor/direction motor/set-zero-power-behavior motor/zero-power-behavior motor/set-run-mode motor/run-mode motor/set-target-position motor/target-position motor/current-position servo/set-position servo/position servo/set-direction servo/direction crservo/set-power crservo/power crservo/set-direction crservo/direction battery/voltage imu/init imu/reset-yaw imu/angles imu/yaw imu/pitch imu/roll pinpoint/init pinpoint/pose pinpoint/velocity pinpoint/reset pinpoint/status telemetry/add-line telemetry/clear` |
 | Publish | [`publish/setup`](../robot/publish.md) |
 
 `future` is a special form and `deref` is an ordinary function; both appear in
