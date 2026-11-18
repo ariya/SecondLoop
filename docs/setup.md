@@ -40,7 +40,7 @@ On the Driver Hub, select the **Second Loop** TeleOp and press **INIT**, then
 **START**. The telemetry shows the address to connect to:
 
 ```
-Second Loop version 1.1.16
+Second Loop version 1.1.17
 Ready at 192.168.43.1:9001 (0 clients)
 ```
 
@@ -74,7 +74,7 @@ On the Driver Hub, select the **Second Loop** TeleOp and press **INIT**, then
 **START**. The telemetry shows the address to connect to:
 
 ```
-Second Loop version 1.1.16
+Second Loop version 1.1.17
 Ready at 192.168.43.1:9001 (0 clients)
 ```
 
