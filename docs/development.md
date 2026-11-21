@@ -156,22 +156,28 @@ The `"flywheel"` motor launches the game artifacts. It is a goBILDA
 [5203 Series 6000 RPM motor](https://www.gobilda.com/5203-series-yellow-jacket-motor-1-1-ratio-24mm-length-8mm-rex-shaft-6000-rpm-3-3-5v-encoder/)
 with a 28-tick encoder, so at full power it turns at
 about 2800 ticks per second, scaled by the battery voltage. Its speed follows a
-first-order response with a time constant of 0.4 s: after a change it covers
-63% of the gap in 0.4 s and is nearly there after 2 s. Here it spins up to a
-launch speed, and its speed is read after about 0.4 s and again after 2 s:
+first-order response to the power, with a time constant of 0.4 s: at a fixed
+power it covers 63% of the gap in 0.4 s and is nearly there after 2 s.
+
+With `motor/set-velocity`, a PIDF controller sets the power 20 times a second
+from the measured speed, using the gains from `motor/set-pidf`, so tuning them
+changes the response as on a real hub (see
+[PIDF Tuning](examples/pidf-tuning.md)). Its output is in units where 32767
+is full power, and the integral adds the error once per update. With the
+hub's default gains it starts at full power, so here it spins up to a launch
+speed faster than a fixed power would, read after about 0.4 s and again after
+2 s:
 
 ```console
 user=> (motor/set-velocity "flywheel" 2000)
 2000.0
 user=> (motor/velocity "flywheel")
-1189.0
+1544.0
 user=> (motor/velocity "flywheel")
-1985.0
+1989.0
 ```
 
-With `motor/set-velocity` it is as if the hub's controller held the speed
-perfectly: `motor/set-pidf` is accepted but does not change the response. With
-`:run-to-position` it steers to the target, no faster than the power allows,
+With `:run-to-position` it steers to the target, no faster than the power allows,
 and overshoots by about 16% before settling.
 
 Every simulated motor starts with `:brake`. At power 0 (or velocity 0 with

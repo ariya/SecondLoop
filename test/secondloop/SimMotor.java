@@ -9,9 +9,9 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
  * A DC motor of RobotSimulator, as a first-order system: the velocity moves toward
  * the commanded velocity with time constant tau, like a motor with a load
  * whose inertia dominates. The commanded velocity is power times the free
- * speed, which scales with the battery voltage. In RUN_USING_ENCODER it is the
- * set velocity instead, as if the hub's controller held it perfectly (the PIDF
- * coefficients are kept but do not change the response). In RUN_TO_POSITION a
+ * speed, which scales with the battery voltage. In RUN_USING_ENCODER a PIDF
+ * controller sets the power from the encoder every CONTROL_SECONDS, so the
+ * gains change the response as on a real hub. In RUN_TO_POSITION a
  * proportional controller steers to the target, no faster than the power allows.
  *
  * A motor without an encoder reads 0 for velocity and position, and the
@@ -40,6 +40,14 @@ final class SimMotor implements DcMotorEx {
     static final double POSITION_GAIN = 2.5;
     /** The step of the simulation, small enough for RUN_TO_POSITION to settle. */
     static final double STEP_SECONDS = 0.001;
+    /**
+     * How often the velocity controller updates the power. Its output is in
+     * units where FULL_POWER is full power, and the integral adds the error
+     * once per update, so the hub's default gains settle well, and an F of
+     * FULL_POWER divided by the top speed gives about the right power alone.
+     */
+    static final double CONTROL_SECONDS = 0.05;
+    static final double FULL_POWER = 32767;
 
     /** Where the time comes from, so that tests can step it. */
     static class Clock {
@@ -67,6 +75,12 @@ final class SimMotor implements DcMotorEx {
     private double targetVelocity;
     private int targetPosition;
     private PIDFCoefficients pidf = new PIDFCoefficients(10, 3, 0, 0);
+
+    // The velocity controller: the power it holds until the next update.
+    private double controlPower;
+    private double integral;
+    private double lastError = Double.NaN;
+    private double untilControl;
 
     // In the motor's own direction; FORWARD and REVERSE only flip what is reported.
     private double velocity;
@@ -144,11 +158,7 @@ final class SimMotor implements DcMotorEx {
     private double commanded(double max) {
         switch (mode) {
             case RUN_USING_ENCODER:
-                if (!hasEncoder) {
-                    // The controller sees no speed at all, so it pushes as hard as it can.
-                    return targetVelocity == 0 ? 0 : Math.signum(sign() * targetVelocity) * max;
-                }
-                return Math.max(-max, Math.min(max, sign() * targetVelocity));
+                return sign() * controlPower * max;
             case RUN_TO_POSITION:
                 double limit = Math.abs(power) * max;
                 return Math.max(-limit, Math.min(limit, POSITION_GAIN * (sign() * targetPosition - count)));
@@ -168,9 +178,17 @@ final class SimMotor implements DcMotorEx {
         double coulombs = 0;
         double total = elapsed;
         while (elapsed > 0) {
-            // Only RUN_TO_POSITION changes its command as the motor moves.
-            double dt = mode == RunMode.RUN_TO_POSITION ? Math.min(elapsed, STEP_SECONDS) : elapsed;
+            // Only the two controllers change their command as the motor moves.
+            boolean controlled = mode == RunMode.RUN_TO_POSITION || mode == RunMode.RUN_USING_ENCODER;
+            double dt = controlled ? Math.min(elapsed, STEP_SECONDS) : elapsed;
             elapsed -= dt;
+            if (mode == RunMode.RUN_USING_ENCODER) {
+                untilControl -= dt;
+                if (untilControl <= 1e-9) {
+                    control();
+                    untilControl += CONTROL_SECONDS;
+                }
+            }
             // The exact first-order response over dt, for a command held constant.
             double max = maxSpeed();
             double target = commanded(max);
@@ -194,6 +212,35 @@ final class SimMotor implements DcMotorEx {
         }
         amps = total > 0 ? coulombs / total : 0;
         return ticks / ticksPerRev;
+    }
+
+    /**
+     * One update of the velocity controller, in the direction the caller sees.
+     * A motor without an encoder reads 0, so the error never closes and the
+     * power ends up at full. The caller holds the lock.
+     */
+    private void control() {
+        if (targetVelocity == 0) {
+            resetControl();
+            return;
+        }
+        double measured = hasEncoder ? Math.round(sign() * velocity) : 0;
+        double error = targetVelocity - measured;
+        double derivative = Double.isNaN(lastError) ? 0 : (error - lastError) / CONTROL_SECONDS;
+        lastError = error;
+        integral += error;
+        double out = (pidf.f * targetVelocity + pidf.p * error + pidf.i * integral + pidf.d * derivative) / FULL_POWER;
+        if (Math.abs(out) > 1) {
+            integral -= error; // stop winding up while the power is at its limit
+            out = Math.signum(out);
+        }
+        controlPower = out;
+    }
+
+    private void resetControl() {
+        controlPower = 0;
+        integral = 0;
+        lastError = Double.NaN;
     }
 
     /** The average battery current over the last step. The caller holds the lock. */
@@ -260,6 +307,10 @@ final class SimMotor implements DcMotorEx {
     public void setMode(RunMode mode) {
         synchronized (lock) {
             advance();
+            if (mode != this.mode) {
+                resetControl();
+                untilControl = 0;
+            }
             this.mode = mode;
             if (mode == RunMode.STOP_AND_RESET_ENCODER) {
                 power = 0;

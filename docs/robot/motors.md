@@ -299,7 +299,8 @@ user=> (motor/set-pidf "flywheel" {:p 20 :f 14})
 
 Each gain must be 0 or more. `:f` gives power in proportion to the target
 speed, and `:p`, `:i` and `:d` correct the error between the target and the
-measured speed.
+measured speed. [PIDF Tuning](../examples/pidf-tuning.md) shows how to pick
+them for a flywheel.
 
 Keep the gains you start with, so you can go back to them:
 

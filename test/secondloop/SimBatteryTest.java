@@ -73,7 +73,7 @@ public final class SimBatteryTest {
         robot.flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.flywheel.setVelocity(2000);
         clock.seconds(0.01);
-        t.check("12.25", "(battery/voltage)"); // the Flywheel spinning up
+        t.check("12.11", "(battery/voltage)"); // the Flywheel spinning up
         clock.seconds(3);
         t.check("12.74", "(battery/voltage)"); // and at speed
 

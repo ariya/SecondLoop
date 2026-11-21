@@ -21,4 +21,4 @@ With `:float`, the flywheel isn't stopped hard at power 0: it coasts and spins
 down by itself over a few seconds, which is easier on the motor and its
 gearbox (see [set-zero-power-behavior](../robot/motors.md#set-zero-power-behavior)).
 
-Next, drive a whole robot with a [tank drivetrain](tank-drive.md).
+Next, hold the flywheel at a steady speed with [PIDF tuning](pidf-tuning.md).

@@ -2,6 +2,7 @@ package secondloop;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import java.io.PrintWriter;
@@ -93,6 +94,19 @@ public final class SimMotorTest {
         clock.seconds(10);
         check("2800.0", m.getVelocity(), "no faster than free speed");
 
+        // The gains change the response: F alone is right only at the voltage it was measured at.
+        m.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(0, 0, 0, 32767 / 2800.0));
+        m.setVelocity(1400);
+        clock.seconds(5);
+        check("1400.0", m.getVelocity(), "F alone gives the speed at 12 V");
+        volts[0] = 11;
+        clock.seconds(5);
+        check("1283.0", m.getVelocity(), "F alone falls short at 11 V");
+        m.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(0, 0.5, 0, 32767 / 2800.0));
+        clock.seconds(5);
+        check("1400.0", m.getVelocity(), "I closes the gap");
+        volts[0] = 12;
+
         m.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         check("0", m.getCurrentPosition(), "encoder reset");
         check("0.0", m.getPower(), "power off while resetting");
@@ -128,7 +142,10 @@ public final class SimMotorTest {
         replClock.seconds(0.4);
         out.getBuffer().setLength(0);
         repl.feed("(motor/velocity \"flywheel\")");
-        check("948.0", out.toString().trim(), "the flywheel spins up: 63% after 0.4 s");
+        // The battery starts at a random voltage, so check a range: past the
+        // 63% of a fixed power, as the controller starts at full power.
+        double spun = Double.parseDouble(out.toString().trim());
+        check("true", spun > 1200 && spun < 1450, "the default gains spin up at full power at first: " + spun);
         out.getBuffer().setLength(0);
         repl.feed("(motor/power \"Flywheel\")");
         check("Execution error: No motor named \"Flywheel\" in the robot configuration", out.toString().trim(),

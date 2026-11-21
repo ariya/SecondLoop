@@ -67,7 +67,8 @@ nil
 
 From here, the examples build up step by step:
 [reading the robot heading](examples/heading.md),
-[spinning a launcher motor](examples/launcher.md), driving a
+[spinning a launcher motor](examples/launcher.md),
+[tuning its PIDF gains](examples/pidf-tuning.md), driving a
 [tank](examples/tank-drive.md) or [mecanum](examples/mecanum-drive.md)
 drivetrain from the gamepad, [adjusting the speed](examples/speed-adjustment.md)
 on the fly, and [tracking where the robot is](examples/location-tracking.md) on

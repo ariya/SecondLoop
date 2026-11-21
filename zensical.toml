@@ -14,6 +14,7 @@ nav = [
   { "Examples" = [
     { "Robot Heading" = "examples/heading.md" },
     { "Launcher Motor" = "examples/launcher.md" },
+    { "PIDF Tuning" = "examples/pidf-tuning.md" },
     { "Tank Drive" = "examples/tank-drive.md" },
     { "Mecanum Drive" = "examples/mecanum-drive.md" },
     { "Speed Adjustment" = "examples/speed-adjustment.md" },
