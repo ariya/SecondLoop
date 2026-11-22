@@ -17,10 +17,10 @@ down together, so the robot still moves in the direction you asked for:
   (motor/set-direction "front_left_drive" :reverse)
   (motor/set-direction "back_left_drive" :reverse)
   (let [d           (max (+ (abs forward) (abs strafe) (abs rotate)) 1)
-        front-left  (/ (- (+ forward strafe) rotate) d)
-        front-right (/ (+ (- forward strafe) rotate) d)
-        back-left   (/ (- forward strafe rotate) d)
-        back-right  (/ (+ forward strafe rotate) d)]
+        front-left  (/ (+ forward strafe rotate) d)
+        front-right (/ (- forward strafe rotate) d)
+        back-left   (/ (+ (- forward strafe) rotate) d)
+        back-right  (/ (- (+ forward strafe) rotate) d)]
     (motor/set-power "front_left_drive" front-left)
     (motor/set-power "front_right_drive" front-right)
     (motor/set-power "back_left_drive" back-left)
@@ -72,7 +72,7 @@ Turn right on the spot, then stop:
 
 ```clojure
 user=> (mecanum-drive 0 0 0.3)
-[-0.3 0.3 -0.3 0.3]
+[0.3 -0.3 0.3 -0.3]
 user=> (mecanum-drive 0 0 0)
 [0.0 0.0 0.0 0.0]
 ```

@@ -220,21 +220,21 @@ nil
 user=> (pinpoint/init :swingarm -3.3 -6.6)
 :ready
 user=> (mecanum-drive 0 0 0.3)
-[-0.3 0.3 -0.3 0.3]
+[0.3 -0.3 0.3 -0.3]
 user=> (mecanum-drive 0 0 0)
 [0.0 0.0 0.0 0.0]
 user=> (Math/toDegrees (imu/yaw))
-91.5787017918707
+-91.5787017918707
 user=> (mecanum-drive 0.3 0 0)
 [0.3 0.3 0.3 0.3]
 user=> (mecanum-drive 0 0 0)
 [0.0 0.0 0.0 0.0]
 user=> (pinpoint/pose)
-{:x -1.278853782668248, :y 43.12244461261836, :heading 1.6005536231698685}
+{:x -1.278853782668248, :y -43.12244461261836, :heading -1.6005536231698685}
 ```
 
-In the simulator, the turn is a quarter turn counterclockwise, to the left, so
-driving forward afterwards moves the robot toward `+y`.
+The turn is a quarter turn clockwise, to the right, so driving forward
+afterwards moves the robot toward `-y`.
 
 It does not have `servo/*` or `crservo/*` yet.
 

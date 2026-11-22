@@ -16,10 +16,10 @@ public final class SimDrivetrainTest {
             + "  (motor/set-direction \"front_left_drive\" :reverse)"
             + "  (motor/set-direction \"back_left_drive\" :reverse)"
             + "  (let [d           (max (+ (abs forward) (abs strafe) (abs rotate)) 1)"
-            + "        front-left  (/ (- (+ forward strafe) rotate) d)"
-            + "        front-right (/ (+ (- forward strafe) rotate) d)"
-            + "        back-left   (/ (- forward strafe rotate) d)"
-            + "        back-right  (/ (+ forward strafe rotate) d)]"
+            + "        front-left  (/ (+ forward strafe rotate) d)"
+            + "        front-right (/ (- forward strafe rotate) d)"
+            + "        back-left   (/ (+ (- forward strafe) rotate) d)"
+            + "        back-right  (/ (- (+ forward strafe) rotate) d)]"
             + "    (motor/set-power \"front_left_drive\" front-left)"
             + "    (motor/set-power \"front_right_drive\" front-right)"
             + "    (motor/set-power \"back_left_drive\" back-left)"
@@ -91,13 +91,12 @@ public final class SimDrivetrainTest {
         t.move("0 -0.3 0", 3);
         check("0.0 0.0 0", t.pose(), "a square ends where it started");
 
-        // TODO: the example says a positive rotate turns right, but in the
-        // simulator it turns counterclockwise, so the heading goes up. Settle
-        // which is right on real hardware. The wheels roll 60.2 in on a circle
-        // of radius 13 in (7 + 6), so 265 degrees.
+        // A positive rotate turns right (clockwise), so the heading goes down.
+        // The wheels roll 60.2 in on a circle of radius 13 in (7 + 6), so 265
+        // degrees.
         t.move("0 0 0.3", 3);
-        check("0.0 0.0 265", t.pose(), "turn on the spot");
-        check("-95.0", t.feed("(Math/round (Math/toDegrees (imu/yaw)))"), "imu/yaw wraps to -180..180");
+        check("0.0 0.0 -265", t.pose(), "turn on the spot");
+        check("95.0", t.feed("(Math/round (Math/toDegrees (imu/yaw)))"), "imu/yaw wraps to -180..180");
         check("nil", t.feed("(imu/reset-yaw)"), "reset yaw");
         check("0.0", t.feed("(imu/yaw)"), "yaw is 0 after reset");
 
