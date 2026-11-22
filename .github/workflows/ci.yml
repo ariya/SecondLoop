@@ -21,7 +21,7 @@ jobs:
           python-version: '3.x'
       - name: Amalgamate, test, and compile-check
         run: ./build.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: SecondLoop.java
           path: build/SecondLoop.java
