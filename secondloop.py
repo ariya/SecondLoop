@@ -1147,11 +1147,18 @@ WEB_PAGE = r"""<!DOCTYPE html>
   --bg: #fafafa; --fg: #1f2328; --muted: #6e7781; --cell: #fff; --border: #d0d7de;
   --accent: #1a7f37; --error: #cf222e; --focus: #0969da;
 }
+:root { color-scheme: light; }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e; --cell: #161b22; --border: #30363d;
     --accent: #3fb950; --error: #f85149; --focus: #58a6ff;
   }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e; --cell: #161b22; --border: #30363d;
+  --accent: #3fb950; --error: #f85149; --focus: #58a6ff;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg);
@@ -1164,6 +1171,10 @@ header h1 { margin: 0; font-size: 17px; }
 button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; cursor: pointer;
   color: var(--fg); background: var(--cell); border: 1px solid var(--border); }
 button:hover { border-color: var(--muted); }
+#theme { display: flex; padding: 4px; color: var(--muted); background: none; border-color: transparent; }
+#theme:hover { color: var(--fg); border-color: transparent; }
+#theme svg { width: 20px; height: 20px; }
+.dark .moon, :not(.dark) > .sun { display: none; }
 main { max-width: 960px; margin: 0 auto; padding: 16px; }
 pre, textarea { font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin: 0; }
 pre { white-space: pre-wrap; word-break: break-word; }
@@ -1183,6 +1194,14 @@ textarea:focus { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus);
 #prompt .label { color: var(--accent); }
 .hint { grid-column: 2; color: var(--muted); font-size: 12px; padding: 4px 2px; }
 </style>
+<script>
+// Follow the system theme unless a choice was saved; set it before the
+// page draws so it never flashes the other theme.
+try {
+  var saved = localStorage.getItem("theme");
+  if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+} catch (e) {}
+</script>
 </head>
 <body>
 <header>
@@ -1190,6 +1209,10 @@ textarea:focus { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus);
   <div id="status">Connecting…</div>
   <button id="reconnect" hidden>Reconnect</button>
   <button id="clear" title="Remove all cells">Clear</button>
+  <button id="theme">
+    <svg class="moon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+    <svg class="sun" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  </button>
 </header>
 <main>
   <div id="notebook"></div>
@@ -1210,6 +1233,33 @@ var reconnectButton = document.getElementById("reconnect");
 var session = null, source = null, intro = "";
 var count = 0, last = null;          // last: the cell that receives output
 var past = [], index = 0, draft = "";
+
+// The toggle shows the moon in light mode and the sun in dark mode.
+var themeButton = document.getElementById("theme");
+var systemDark = matchMedia("(prefers-color-scheme: dark)");
+function isDark() {
+  var chosen = document.documentElement.dataset.theme;
+  return chosen ? chosen === "dark" : systemDark.matches;
+}
+function showTheme() {
+  var dark = isDark();
+  themeButton.classList.toggle("dark", dark);
+  themeButton.title = dark ? "Switch to light mode" : "Switch to dark mode";
+  themeButton.setAttribute("aria-label", themeButton.title);
+}
+themeButton.addEventListener("click", function () {
+  var next = isDark() ? "light" : "dark";
+  // Picking what the system already uses means following the system again.
+  var follow = next === (systemDark.matches ? "dark" : "light");
+  if (follow) delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = next;
+  try {
+    if (follow) localStorage.removeItem("theme"); else localStorage.setItem("theme", next);
+  } catch (e) {}
+  showTheme();
+});
+systemDark.addEventListener("change", showTheme);
+showTheme();
 
 // Same rule as the terminal: every bracket and string closed.
 function isComplete(text) {

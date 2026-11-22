@@ -143,6 +143,10 @@ below it.
 Earlier cells can't be edited, but clicking one copies it into the input.
 Output from a future goes to the last cell. **Clear** removes all cells.
 
+The page follows the light or dark theme of the system. The sun or moon
+button at the top right switches to the other one, and the browser remembers
+that choice; switching back to the system's theme follows the system again.
+
 Each browser tab has its own connection to the robot, just like a second
 terminal, so it shares every definition but not the prompt. History is
 shared, though: a form run in the browser is recalled with `Up` in the
