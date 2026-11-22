@@ -20,6 +20,11 @@ Ctrl-R works as in readline: type to find the latest entry holding the text,
 Ctrl-R again for an older one, Ctrl-S for a newer one, Enter to run it, Ctrl-G
 or Esc to give up, and any other key to keep the entry and go on editing.
 
+It also serves a notebook-style web REPL at http://localhost:4188, for as long
+as it runs, and opens it in the default web browser. Each browser tab gets its
+own connection to the robot. Pass --no-browser to leave the browser alone, or
+--no-web to turn the web REPL off.
+
 In a terminal that understands ANSI colors, the prompt, the form being typed,
 errors and the Ctrl-R search each get their own color. Set NO_COLOR, or pass
 --no-color, to turn that off.
@@ -30,17 +35,23 @@ Windows.
 
 import argparse
 import codecs
+import html
+import http.server
 import json
 import os
 import re
+import secrets
 import shutil
 import socket
+import subprocess
 import sys
 import threading
 import time
 import unicodedata
 import urllib.error
+import urllib.parse
 import urllib.request
+import webbrowser
 
 # A Control Hub's WiFi address, then a phone's WiFi Direct address.
 DEFAULT_HOSTS = ("192.168.43.1", "192.168.49.1")
@@ -102,11 +113,16 @@ class History:
 
     An entry never contains a blank line itself: those are dropped when it is
     added, so the file can always be split on blank lines.
+
+    The terminal and the web REPL share one History, so a form run in either
+    is recalled in both. Entries are only ever appended, so an index into
+    entries keeps pointing at the same entry.
     """
 
     def __init__(self, path):
         self.path = path
         self.entries = []
+        self.lock = threading.Lock()
         if path and os.path.exists(path):
             try:
                 with open(path, encoding="utf-8") as f:
@@ -134,16 +150,17 @@ class History:
 
     def add(self, entry):
         entry = self.clean(entry)
-        if not entry or (self.entries and self.entries[-1] == entry):
-            return
-        self.entries.append(entry)
-        if not self.path:
-            return
-        try:
-            with open(self.path, "a", encoding="utf-8") as f:
-                f.write(entry + "\n\n")
-        except OSError:
-            pass  # History is a convenience; never stop the REPL over it.
+        with self.lock:
+            if not entry or (self.entries and self.entries[-1] == entry):
+                return
+            self.entries.append(entry)
+            if not self.path:
+                return
+            try:
+                with open(self.path, "a", encoding="utf-8") as f:
+                    f.write(entry + "\n\n")
+            except OSError:
+                pass  # History is a convenience; never stop the REPL over it.
 
 
 # ---------------------------------------------------------------------------
@@ -384,7 +401,7 @@ class Editor:
         self.buf = ""
         self.pos = 0
         self.row = 0         # screen row of the cursor, counted from the first drawn row
-        self.index = len(history.entries)
+        self.index = None    # the history entry shown, or None for the draft
         self.draft = ""
         self.killed = ""
         self.search = None   # a Search while Ctrl-R is active
@@ -562,16 +579,18 @@ class Editor:
         return True
 
     def recall(self, step):
-        index = self.index + step
-        if not 0 <= index <= len(self.history.entries):
+        entries = self.history.entries
+        index = (len(entries) if self.index is None else self.index) + step
+        if not 0 <= index <= len(entries):
             return
-        if self.index == len(self.history.entries):
+        if self.index is None:
             self.draft = self.buf
-        self.index = index
-        if index == len(self.history.entries):
+        if index == len(entries):
+            self.index = None
             self.set_buf(self.draft)
         else:
-            self.set_buf(self.history.entries[index])
+            self.index = index
+            self.set_buf(entries[index])
         if step > 0 and "\n" in self.buf:
             # Arriving from above, start on the first line so Down keeps moving down.
             self.pos = self.buf.find("\n")
@@ -643,7 +662,7 @@ class Editor:
         self.tail = ""
         self.set_buf("")
         self.history.add(text)
-        self.index = len(self.history.entries)
+        self.index = None
         self.draft = ""
         self.send(text + "\n")
 
@@ -668,7 +687,7 @@ class Editor:
             elif key == "\x03":  # Ctrl-C
                 self.commit(self.colors.paint("^C", Colors.NOTE))
                 self.set_buf("")
-                self.index = len(self.history.entries)
+                self.index = None
             elif key in ("\x7f", "\x08"):
                 if self.pos:
                     self.set_buf(buf[:pos - 1] + buf[pos:], pos - 1)
@@ -773,10 +792,12 @@ def fetch_rc_info(host):
     return info if isinstance(info, dict) else None
 
 
-def describe_rc(info, colors):
-    """The lines that introduce the robot controller described by info."""
+def describe_rc(info, paint):
+    """The lines that introduce the robot controller described by info.
+
+    paint(text, style) marks up each value, e.g. Colors.paint."""
     def value(key, style):
-        return colors.paint(str(info.get(key) or "?"), style)
+        return paint(str(info.get(key) or "?"), style)
 
     lines = ["Connected to %s using RC version %s (SDK v%s)" % (
         value("deviceName", Colors.DEVICE),
@@ -956,6 +977,493 @@ def run_interactive(sock, history, color, greeting):
     sock.close()
 
 
+# ---------------------------------------------------------------------------
+# Web REPL
+
+
+WEB_PORT = 4188
+WEB_HOSTS = ("localhost", "127.0.0.1")
+WEB_PING_SECONDS = 15
+
+
+class WebServer:
+    """Serves a notebook-style REPL page at http://localhost:4188.
+
+    Each browser tab gets its own connection to the robot, as a second
+    terminal would, so it shares the definitions but not the prompt. The
+    robot's output reaches the page through Server-Sent Events, which every
+    browser supports without any script library.
+
+    It listens on 127.0.0.1 only: anyone who can reach it can move the robot.
+    """
+
+    def __init__(self, host, port, intro, history):
+        self.robot = (host, port)
+        self.intro = intro
+        self.history = history
+        self.lock = threading.Lock()
+        self.sessions = {}   # session id -> socket to the robot
+
+    def start(self):
+        """Starts serving in the background; raises OSError if the port is taken."""
+        httpd = WebHTTPServer(("127.0.0.1", WEB_PORT), WebHandler)
+        httpd.web = self
+        thread = threading.Thread(target=httpd.serve_forever)
+        thread.daemon = True
+        thread.start()
+
+    def stream(self, handler):
+        """Connects to the robot and relays what it sends until either side leaves."""
+        handler.send_response(200)
+        handler.send_header("Content-Type", "text/event-stream")
+        handler.send_header("Cache-Control", "no-cache")
+        handler.end_headers()
+
+        def event(name, data):
+            handler.wfile.write(("event: %s\ndata: %s\n\n" % (name, json.dumps(data))).encode("utf-8"))
+            handler.wfile.flush()
+
+        try:
+            try:
+                sock = socket.create_connection(self.robot, timeout=5)
+            except OSError as e:
+                event("closed", "Could not connect to %s:%d: %s" % (self.robot[0], self.robot[1], e))
+                return
+            session = secrets.token_hex(16)
+            with self.lock:
+                self.sessions[session] = sock
+            try:
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                # Waking up now and then is how a closed browser tab gets noticed.
+                sock.settimeout(WEB_PING_SECONDS)
+                event("session", {"id": session, "intro": self.intro})
+                decoder = codecs.getincrementaldecoder("utf-8")("replace")
+                while True:
+                    try:
+                        data = sock.recv(4096)
+                    except socket.timeout:
+                        handler.wfile.write(b": ping\n\n")
+                        handler.wfile.flush()
+                        continue
+                    except OSError:
+                        data = b""
+                    if not data:
+                        event("closed", "Connection closed.")
+                        return
+                    text = decoder.decode(data)
+                    if text:
+                        event("output", text)
+            finally:
+                with self.lock:
+                    self.sessions.pop(session, None)
+                sock.close()
+        except OSError:
+            pass  # the browser went away
+
+    def evaluate(self, session, code):
+        """Sends code to the robot for session; False if that session is gone."""
+        with self.lock:
+            sock = self.sessions.get(session)
+            if sock is None:
+                return False
+        self.history.add(code)
+        try:
+            sock.sendall((code + "\n").encode("utf-8"))
+        except OSError:
+            return False
+        return True
+
+    def history_entries(self):
+        with self.history.lock:
+            return list(self.history.entries)
+
+
+class WebHTTPServer(http.server.ThreadingHTTPServer):
+    daemon_threads = True
+    # On Windows, SO_REUSEADDR lets a second secondloop.py bind the same port
+    # without an error, and then either one may answer the browser.
+    allow_reuse_address = not WINDOWS
+
+
+class WebHandler(http.server.BaseHTTPRequestHandler):
+    server_version = "SecondLoop"
+
+    def log_message(self, format, *args):
+        pass  # the terminal belongs to the REPL
+
+    def allowed(self):
+        # Checking Host stops other web sites from reaching in by DNS rebinding.
+        host = self.headers.get("Host", "")
+        if host.rsplit(":", 1)[0] not in WEB_HOSTS:
+            self.reply(403, "text/plain", b"Forbidden")
+            return False
+        return True
+
+    def reply(self, status, content_type, body):
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        if not self.allowed():
+            return
+        web = self.server.web
+        path = self.path.split("?")[0]
+        if path == "/":
+            self.reply(200, "text/html; charset=utf-8", WEB_PAGE.encode("utf-8"))
+        elif path == "/history":
+            self.reply(200, "application/json", json.dumps(web.history_entries()).encode("utf-8"))
+        elif path == "/events":
+            web.stream(self)
+        else:
+            self.reply(404, "text/plain", b"Not found")
+
+    def do_POST(self):
+        if not self.allowed():
+            return
+        path, _, query = self.path.partition("?")
+        length = int(self.headers.get("Content-Length") or 0)
+        code = self.rfile.read(length).decode("utf-8", "replace")
+        session = urllib.parse.parse_qs(query).get("session", [""])[0]
+        if path != "/eval":
+            self.reply(404, "text/plain", b"Not found")
+        elif self.server.web.evaluate(session, code):
+            self.reply(200, "text/plain", b"OK")
+        else:
+            self.reply(410, "text/plain", b"Not connected")
+
+
+WEB_PAGE = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second Loop</title>
+<style>
+:root {
+  --bg: #fafafa; --fg: #1f2328; --muted: #6e7781; --cell: #fff; --border: #d0d7de;
+  --accent: #1a7f37; --error: #cf222e; --focus: #0969da;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e; --cell: #161b22; --border: #30363d;
+    --accent: #3fb950; --error: #f85149; --focus: #58a6ff;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
+header h1 { margin: 0; font-size: 17px; }
+#status { flex: 1; color: var(--muted); font-size: 13px; white-space: pre-line; }
+#status.closed { color: var(--error); }
+button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; cursor: pointer;
+  color: var(--fg); background: var(--cell); border: 1px solid var(--border); }
+button:hover { border-color: var(--muted); }
+main { max-width: 960px; margin: 0 auto; padding: 16px; }
+pre, textarea { font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin: 0; }
+pre { white-space: pre-wrap; word-break: break-word; }
+.cell { display: grid; grid-template-columns: 52px 1fr; column-gap: 8px; margin-bottom: 12px; }
+.label { color: var(--muted); text-align: right; padding-top: 7px;
+  font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.code, textarea { background: var(--cell); border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 10px; color: var(--fg); }
+.code { cursor: pointer; }
+.code:hover { border-color: var(--muted); }
+.out { grid-column: 2; padding: 6px 10px 0; }
+.out:empty { display: none; }
+.err { color: var(--error); }
+.note .out { color: var(--muted); padding-top: 0; }
+textarea { display: block; width: 100%; resize: none; overflow: hidden; outline: none; }
+textarea:focus { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
+#prompt .label { color: var(--accent); }
+.hint { grid-column: 2; color: var(--muted); font-size: 12px; padding: 4px 2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Second Loop</h1>
+  <div id="status">Connecting…</div>
+  <button id="reconnect" hidden>Reconnect</button>
+  <button id="clear" title="Remove all cells">Clear</button>
+</header>
+<main>
+  <div id="notebook"></div>
+  <div class="cell" id="prompt">
+    <div class="label">[ ]:</div>
+    <textarea id="input" rows="1" spellcheck="false" autocomplete="off" autofocus></textarea>
+    <div class="hint">Enter runs a complete form · Shift+Enter adds a line · Up/Down recall history · click a cell to copy it</div>
+  </div>
+</main>
+<script>
+"use strict";
+var PROMPT = "user=> ";
+var ERRORS = ["Syntax error", "Execution error", "Future failed."];
+var notebook = document.getElementById("notebook");
+var input = document.getElementById("input");
+var statusLine = document.getElementById("status");
+var reconnectButton = document.getElementById("reconnect");
+var session = null, source = null, intro = "";
+var count = 0, last = null;          // last: the cell that receives output
+var past = [], index = 0, draft = "";
+
+// Same rule as the terminal: every bracket and string closed.
+function isComplete(text) {
+  var depth = 0, i = 0, n = text.length;
+  while (i < n) {
+    var c = text[i];
+    if (c === ";") {
+      while (i < n && text[i] !== "\n") i++;
+    } else if (c === '"') {
+      i++;
+      while (i < n && text[i] !== '"') { if (text[i] === "\\") i++; i++; }
+      if (i >= n) return false;
+    } else if ("([{".indexOf(c) >= 0) {
+      depth++;
+    } else if (")]}".indexOf(c) >= 0) {
+      if (--depth < 0) return true;
+    }
+    i++;
+  }
+  return depth <= 0;
+}
+
+// The robot's output without its prompts, including one still arriving.
+function clean(raw) {
+  var s = raw.replace(/\r\n/g, "\n").replace(/^(user=> )+/gm, "");
+  for (var k = PROMPT.length - 1; k > 0; k--) {
+    var tail = PROMPT.slice(0, k);
+    if (s.slice(-k) === tail && (s.length === k || s[s.length - k - 1] === "\n")) {
+      s = s.slice(0, -k);
+      break;
+    }
+  }
+  return s.replace(/\n$/, "");
+}
+
+function paint(pre, raw) {
+  pre.textContent = "";
+  var text = clean(raw);
+  if (!text) return;
+  text.split("\n").forEach(function (line, i) {
+    if (i) pre.appendChild(document.createTextNode("\n"));
+    var isError = ERRORS.some(function (e) { return line.indexOf(e) === 0; });
+    if (isError) {
+      var span = document.createElement("span");
+      span.className = "err";
+      span.textContent = line;
+      pre.appendChild(span);
+    } else {
+      pre.appendChild(document.createTextNode(line));
+    }
+  });
+}
+
+function nearBottom() {
+  return window.innerHeight + window.scrollY >= document.body.scrollHeight - 80;
+}
+
+function scrollDown() {
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+function receive(text) {
+  var follow = nearBottom();
+  if (!last) addNote();
+  last.raw += text;
+  paint(last.out, last.raw);
+  if (last.running && last.raw.slice(-PROMPT.length) === PROMPT) {
+    last.running = false;
+    last.label.textContent = "[" + last.number + "]:";
+  }
+  if (follow) scrollDown();
+}
+
+function addCell(code) {
+  var cell = document.createElement("div");
+  cell.className = "cell";
+  var label = document.createElement("div");
+  label.className = "label";
+  label.textContent = "[*]:";
+  var pre = document.createElement("pre");
+  pre.className = "code";
+  pre.textContent = code;
+  pre.title = "Copy to the input";
+  pre.onclick = function () { setInput(code); input.focus(); };
+  var out = document.createElement("pre");
+  out.className = "out";
+  cell.appendChild(label);
+  cell.appendChild(pre);
+  cell.appendChild(out);
+  notebook.appendChild(cell);
+  count++;
+  last = { number: count, label: label, out: out, raw: "", running: true };
+}
+
+// Holds output that comes before any cell, such as the greeting.
+function addNote() {
+  var cell = document.createElement("div");
+  cell.className = "cell note";
+  var out = document.createElement("pre");
+  out.className = "out";
+  cell.appendChild(out);
+  notebook.appendChild(cell);
+  last = { out: out, raw: "", running: false };
+}
+
+function setStatus(text, closed, asHTML) {
+  if (asHTML) statusLine.innerHTML = text; else statusLine.textContent = text;
+  statusLine.className = closed ? "closed" : "";
+  reconnectButton.hidden = !closed;
+}
+
+function run() {
+  var code = input.value.replace(/\s+$/, "");
+  if (!code.trim()) return;
+  if (!session) { setStatus("Not connected to the robot.", true); return; }
+  addCell(code);
+  if (past[past.length - 1] !== code) past.push(code);
+  index = past.length;
+  draft = "";
+  setInput("");
+  scrollDown();
+  fetch("/eval?session=" + session, { method: "POST", body: code }).then(function (r) {
+    if (!r.ok) receive("Execution error: not connected to the robot\n");
+  }, function () {
+    receive("Execution error: secondloop.py is not running\n");
+  });
+}
+
+function setInput(text) {
+  input.value = text;
+  input.selectionStart = input.selectionEnd = text.length;
+  resize();
+}
+
+function resize() {
+  input.style.height = "auto";
+  input.style.height = input.scrollHeight + 2 + "px";
+}
+
+function recall(step) {
+  var i = index + step;
+  if (i < 0 || i > past.length) return;
+  if (index === past.length) draft = input.value;
+  index = i;
+  setInput(i === past.length ? draft : past[i]);
+}
+
+input.addEventListener("input", resize);
+input.addEventListener("keydown", function (e) {
+  var before = input.value.slice(0, input.selectionStart);
+  var after = input.value.slice(input.selectionEnd);
+  if (e.key === "Enter" && !e.shiftKey) {
+    if (isComplete(input.value)) { e.preventDefault(); run(); }
+  } else if (e.key === "Tab" && !e.shiftKey) {
+    e.preventDefault();
+    document.execCommand("insertText", false, "  ");
+  } else if (e.key === "ArrowUp" && before.indexOf("\n") < 0) {
+    e.preventDefault(); recall(-1);
+  } else if (e.key === "ArrowDown" && after.indexOf("\n") < 0) {
+    e.preventDefault(); recall(1);
+  }
+});
+
+function connect() {
+  setStatus("Connecting…", false);
+  source = new EventSource("/events");
+  source.addEventListener("session", function (e) {
+    var data = JSON.parse(e.data);
+    session = data.id;
+    intro = data.intro;
+    setStatus(intro || "Connected.", false, !!intro);
+  });
+  source.addEventListener("output", function (e) { receive(JSON.parse(e.data)); });
+  source.addEventListener("closed", function (e) {
+    disconnect(JSON.parse(e.data));
+  });
+  source.onerror = function () {
+    if (source) disconnect("Lost contact with secondloop.py.");
+  };
+}
+
+function disconnect(message) {
+  source.close();
+  source = null;
+  session = null;
+  if (last && last.running) { last.running = false; last.label.textContent = "[" + last.number + "]:"; }
+  setStatus(message, true);
+}
+
+reconnectButton.onclick = function () {
+  last = null;
+  connect();
+};
+document.getElementById("clear").onclick = function () {
+  notebook.textContent = "";
+  last = null;
+  input.focus();
+};
+
+// History is shared with the terminal, so fetch it again on coming back to
+// the tab, unless an entry is being recalled right now.
+function loadHistory() {
+  fetch("/history").then(function (r) { return r.json(); }).then(function (entries) {
+    if (index !== past.length) return;
+    past = entries;
+    index = past.length;
+  }, function () {});
+}
+window.addEventListener("focus", loadHistory);
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden) loadHistory();
+});
+loadHistory();
+resize();
+connect();
+</script>
+</body>
+</html>
+"""
+
+
+def bold_html(text, style):
+    """HTML for text, in bold for the WiFi Direct name and the configuration."""
+    text = html.escape(text)
+    return "<b>%s</b>" % text if style in (Colors.DEVICE, Colors.CONFIG) else text
+
+
+def open_browser(url):
+    """Opens url in the default web browser, without letting the browser
+    write over the terminal."""
+    try:
+        if sys.platform.startswith("linux") and shutil.which("xdg-open"):
+            subprocess.Popen(["xdg-open", url], stdin=subprocess.DEVNULL,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             start_new_session=True)
+        else:
+            webbrowser.open(url)
+    except (OSError, webbrowser.Error):
+        pass
+
+
+def start_web(host, port, rc_info, history, colors, browser=True):
+    intro = describe_rc(rc_info, bold_html) if rc_info else ""
+    try:
+        WebServer(host, port, intro, history).start()
+    except OSError as e:
+        print(colors.paint("No web REPL: port %d: %s" % (WEB_PORT, e.strerror or e), Colors.NOTE))
+        return
+    url = "http://localhost:%d" % WEB_PORT
+    print("Web REPL at %s" % colors.paint(url, Colors.DEVICE))
+    if browser:
+        threading.Thread(target=open_browser, args=(url,), daemon=True).start()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Connect to the Second Loop REPL on a robot.")
     parser.add_argument("host", nargs="?", default=None,
@@ -967,6 +1475,10 @@ def main():
                         help="history file (default %(default)s); empty to keep none")
     parser.add_argument("--no-color", action="store_true",
                         help="never use colors (they are also off when NO_COLOR is set)")
+    parser.add_argument("--no-web", action="store_true",
+                        help="don't serve the web REPL at http://localhost:%d" % WEB_PORT)
+    parser.add_argument("--no-browser", action="store_true",
+                        help="don't open the web REPL in the default web browser")
     args = parser.parse_args()
 
     host, port = args.host, args.port
@@ -1000,15 +1512,18 @@ def main():
     else:
         sys.exit("\n".join(errors))
     if rc_info:
-        info_out.write(describe_rc(rc_info, Colors(color)) + "\n")
+        info_out.write(describe_rc(rc_info, Colors(color).paint) + "\n")
         info_out.flush()
+    history = History(args.history) if interactive else None
+    if interactive and not args.no_web:
+        start_web(host, port, rc_info, history, Colors(color), not args.no_browser)
 
     sock = connect(host, port, Colors(color and sys.stderr.isatty()))
     sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     # Kept for checking compatibility with the robot later; nothing uses it yet.
     greeting, robot_version = fetch_version(sock)
     if interactive:
-        run_interactive(sock, History(args.history), color, greeting)
+        run_interactive(sock, history, color, greeting)
     else:
         run_piped(sock, color, greeting)
 

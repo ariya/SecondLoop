@@ -15,7 +15,7 @@ project.
 | `src/ftc/` | Modules that use the FTC SDK, such as `GamepadModule`, `MotorModule`, `ServoModule`, `BatteryModule`, `ImuModule`, `PinpointModule` and `TelemetryModule`. |
 | `src/SecondLoop.java` | The OpMode template. The sources are inserted at `// @@SECONDLOOP_SOURCES@@`. |
 | `tools/amalgamate.py` | Merges everything into `build/SecondLoop.java`. |
-| `secondloop.py` | A terminal client with line editing and history, used instead of `nc`. |
+| `secondloop.py` | A terminal client with line editing and history, used instead of `nc`. It also serves the web REPL. |
 | `test/secondloop/` | `ReplTest`, `GamepadTest`, `MotorTest`, `ServoTest`, `BatteryTest`, `ImuTest`, `PinpointTest`, `TelemetryTest`, `SimTelemetryTest`, `SimImuTest`, `SimBatteryTest`, `SimMotorTest`, `SimDrivetrainTest`, `SimPinpointTest` and `SimWebUiTest`, plus `RobotSimulator` and its web page, `robot-simulator.html`. |
 | `test/ftc-stubs/` | Minimal stand-ins for the FTC SDK classes, used only for compiling and testing. |
 | `docs/` | This documentation, built with Zensical. |
@@ -104,7 +104,8 @@ stops sending, for example because its tab is closed, gamepad 1 goes back to neu
 keep driving on a stick that seems stuck. Gamepad 2 stays neutral.
 
 Port 8080 also answers `/js/rcInfo.json`, as the robot controller does, so
-`secondloop.py` works against `RobotSimulator` unchanged.
+`secondloop.py` and its [web REPL](reference/repl.md#web-repl) work against
+`RobotSimulator` unchanged.
 
 Telemetry also shows in the simulator's own terminal, on its standard output.
 Like the OpMode, the simulator redraws telemetry every 100 ms. It prints only what changed: lines added since the last redraw,

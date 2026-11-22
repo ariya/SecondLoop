@@ -74,6 +74,8 @@ On Windows, run it as `python secondloop.py` instead.
 | --- | --- |
 | `--history FILE` | Keep history in `FILE` instead of `~/.secondloop_history`. Pass an empty name to keep no history. |
 | `--no-color` | Never use colors. |
+| `--no-web` | Don't serve the [web REPL](#web-repl). |
+| `--no-browser` | Don't open the [web REPL](#web-repl) in the default web browser. |
 
 Press `Ctrl-D` on an empty line to quit. Quitting closes only that
 connection: the OpMode keeps running, and everything you defined stays.
@@ -123,6 +125,30 @@ contains the text:
 In a terminal that supports colors, the prompt, your input, errors and the
 `Ctrl-R` search each have their own color. To turn colors off, set `NO_COLOR`
 or pass `--no-color`.
+
+## Web REPL
+
+While `secondloop.py` runs, it also serves a web version of the REPL at
+<http://localhost:4188>, and opens it in the default web browser. It works
+like a very small notebook: each form you run becomes a cell, with its output
+below it.
+
+| Keys | Action |
+| --- | --- |
+| `Enter` | Run the form, once its brackets balance. Before that, add a line. |
+| `Shift+Enter` | Add a line. |
+| `Up` `Down` | Step through history, on the first or last line of the input. |
+| `Tab` | Insert two spaces. |
+
+Earlier cells can't be edited, but clicking one copies it into the input.
+Output from a future goes to the last cell. **Clear** removes all cells.
+
+Each browser tab has its own connection to the robot, just like a second
+terminal, so it shares every definition but not the prompt. History is
+shared, though: a form run in the browser is recalled with `Up` in the
+terminal, and one run in the terminal shows up in the browser once you come
+back to its tab. The web REPL stops when `secondloop.py` quits. It only
+accepts connections from the same computer.
 
 ## nc
 

@@ -47,6 +47,12 @@ and to recall earlier ones. To quit, press `Ctrl+D` on an empty line.
     History search, the full list of keys, and other details are covered
     in the [REPL](reference/repl.md) reference.
 
+!!! tip
+
+    Prefer a browser? `secondloop.py` also opens
+    <http://localhost:4188>, a notebook-style
+    [web REPL](reference/repl.md#web-repl), in your web browser.
+
 First, ask the robot for its [battery voltage](robot/battery.md):
 
 ```clojure
