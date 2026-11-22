@@ -46,8 +46,9 @@ nav = [
   ] },
   { "References" = [
     { "Function Reference" = "reference/functions.md" },
-    { "REPL" = "reference/repl.md" },
     { "Differences" = "reference/differences.md" },
+    { "REPL" = "reference/repl.md" },
+    { "Robot Simulator" = "reference/simulator.md" },
     { "Development" = "development.md" },
   ] },
 ]
