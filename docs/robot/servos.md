@@ -88,7 +88,7 @@ measurement. If something blocks the arm, the two differ.
 ## set-position
 
 `(servo/set-position name p)` moves the servo to position `p`, from 0.0 to 1.0,
-and returns it, so you can see at the prompt what was sent to the servo.
+and returns it, so you can see what was sent to the servo.
 
 ```clojure
 user=> (servo/set-position "claw" 0.3)

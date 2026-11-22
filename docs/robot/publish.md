@@ -5,8 +5,7 @@ subscribers on port 5599. A value can be anything: from the robot heading,
 motor velocity, or the result of any function. Each subscriber chooses which
 fields it receives and how many samples arrive each second.
 
-To publish the battery voltage as a field named `battery`, type this at the
-prompt:
+To publish the battery voltage as a field named `battery`, run this:
 
 ```clojure
 user=> (publish/setup {:battery battery/voltage})
@@ -71,7 +70,7 @@ their values at the rate that subscriber asked for, up to 100 times a second.
 When no one is subscribed, nothing is sampled.
 
 An atom is read on every sample. Here `speed` is the atom from
-[Speed adjustment](../examples/speed-adjustment.md). If any connection runs
+[Speed adjustment](../examples/speed-adjustment.md). If any notebook tab runs
 `(reset! speed 0.3)`, subscribers see the new value in the next sample. Write
 `speed`, not `@speed`. `@speed` is read only once, when `publish/setup` runs:
 
@@ -112,6 +111,6 @@ new port is already in use, `publish/setup` fails and the old fields stay
 published on the old port.
 
 An error stops publishing. If a field fails on the first call, `publish/setup`
-itself fails. If a field fails later, the connection that ran `publish/setup`
+itself fails. If a field fails later, the notebook tab that ran `publish/setup`
 prints `Future failed.` and the error, the same way a
 [control loop](../control-loops.md) does.

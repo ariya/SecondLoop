@@ -9,6 +9,7 @@ nav = [
   { "Getting Started" = [
     { "Overview" = "index.md" },
     { "Setup" = "setup.md" },
+    { "Notebook" = "notebook.md" },
     { "Control Loops" = "control-loops.md" },
   ] },
   { "Examples" = [

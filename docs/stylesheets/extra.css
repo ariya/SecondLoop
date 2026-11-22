@@ -1,3 +1,8 @@
+.md-typeset img.screenshot {
+  border: 1px solid #afb8c1;
+  border-radius: 3px;
+}
+
 .md-typeset img.three-quarters {
   width: 75%;
 }

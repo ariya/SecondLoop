@@ -15,7 +15,7 @@ project.
 | `src/ftc/` | Modules that use the FTC SDK, such as `GamepadModule`, `MotorModule`, `ServoModule`, `BatteryModule`, `ImuModule`, `PinpointModule` and `TelemetryModule`. |
 | `src/SecondLoop.java` | The OpMode template. The sources are inserted at `// @@SECONDLOOP_SOURCES@@`. |
 | `tools/amalgamate.py` | Merges everything into `build/SecondLoop.java`. |
-| `secondloop.py` | A terminal client with line editing and history, used instead of `nc`. It also serves the web REPL. |
+| `secondloop.py` | Serves the notebook page at `localhost:4188` and opens it in the browser. Its terminal is also a client, with line editing and history. |
 | `test/secondloop/` | `ReplTest`, `GamepadTest`, `MotorTest`, `ServoTest`, `BatteryTest`, `ImuTest`, `PinpointTest`, `TelemetryTest`, `SimTelemetryTest`, `SimImuTest`, `SimBatteryTest`, `SimMotorTest`, `SimDrivetrainTest`, `SimPinpointTest` and `SimWebUiTest`, plus `RobotSimulator` and its web page, `robot-simulator.html`. |
 | `test/ftc-stubs/` | Minimal stand-ins for the FTC SDK classes, used only for compiling and testing. |
 | `docs/` | This documentation, built with Zensical. |

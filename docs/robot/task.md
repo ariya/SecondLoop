@@ -31,8 +31,8 @@ the function, so after editing `drive-with-gamepad` you can just run
 and starting one stops the unnamed task started before. To keep an inline task
 apart, name it: `(task/start :spin (fn [] ...))`, then `(task/stop :spin)`.
 
-`println` inside the task goes back to the connection that started it. If the
-task fails with an error, that connection prints `Future failed.` and the
+`println` inside the task goes back to the notebook tab that started it. If
+the task fails with an error, that tab prints `Future failed.` and the
 error; see [Errors](../language/errors.md#future-failed).
 
 ## running?
@@ -57,7 +57,7 @@ user=> (task/stop)
 true
 ```
 
-It returns `true` if a task was running. Any connection can stop it, not only
+It returns `true` if a task was running. Any notebook tab can stop it, not only
 the one that started it. Stopping is prompt: the loop cannot take one more step
 after a stop request. A stopped loop prints no `Future failed.` line, because
 it was cancelled rather than broken.
@@ -67,5 +67,5 @@ error handler cannot keep a stopped loop running. A `finally` still runs to
 the end; see [Cleanup](../control-loops.md#cleanup). The classes are on
 [Exceptions](../language/exceptions.md).
 
-Closing the connection does **not** stop a task: it keeps running even when
+Closing the notebook does **not** stop a task, it keeps running even when
 nobody is connected. See [Stopping](../control-loops.md#stopping).

@@ -30,7 +30,7 @@ negates it (see [Gamepad](../robot/gamepad.md)). Both motors brake at power 0,
 so the robot stops as soon as you let go of the sticks, instead of rolling on
 (see [set-zero-power-behavior](../robot/motors.md#set-zero-power-behavior)).
 
-Paste the code at the prompt, then run it:
+Paste the code into the notebook and run it, then start driving:
 
 ```clojure
 user=> (drive-tank)
@@ -40,4 +40,4 @@ That's it: about ten lines of code, and the robot is ready to drive. The loop
 keeps going until you press STOP on the Driver Hub.
 
 Next, a [mecanum drivetrain](mecanum-drive.md) with four motors, driven both
-from the prompt and from the gamepad.
+from the notebook and from the gamepad.

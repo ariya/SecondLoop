@@ -14,18 +14,19 @@ Then open <http://localhost:8080> in a browser. Like the Driver Hub, the page
 shows the telemetry and reads gamepad 1 from a controller plugged into the
 laptop.
 
-To connect to it, run the REPL client in another terminal:
+To connect to it, run `secondloop.py` in another terminal:
 
 ```console
 $ ./secondloop.py localhost
 Connected to RobotSimulator using RC version 0.0 (SDK v0.0.0)
 Active configuration is biobuzz
+Notebook at http://localhost:4188
 Second Loop version 1.1.17
 user=>
 ```
 
 Port 8080 also answers `/js/rcInfo.json`, as the robot controller does, so
-`secondloop.py` and its [web REPL](repl.md#web-repl) work against
+`secondloop.py` and its [notebook](../notebook.md) work against
 `RobotSimulator` unchanged.
 
 The battery is a goBILDA

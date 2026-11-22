@@ -20,10 +20,10 @@ Ctrl-R works as in readline: type to find the latest entry holding the text,
 Ctrl-R again for an older one, Ctrl-S for a newer one, Enter to run it, Ctrl-G
 or Esc to give up, and any other key to keep the entry and go on editing.
 
-It also serves a notebook-style web REPL at http://localhost:4188, for as long
+It also serves a notebook at http://localhost:4188, for as long
 as it runs, and opens it in the default web browser. Each browser tab gets its
 own connection to the robot. Pass --no-browser to leave the browser alone, or
---no-web to turn the web REPL off.
+--no-web to turn the notebook off.
 
 In a terminal that understands ANSI colors, the prompt, the form being typed,
 errors and the Ctrl-R search each get their own color. Set NO_COLOR, or pass
@@ -114,7 +114,7 @@ class History:
     An entry never contains a blank line itself: those are dropped when it is
     added, so the file can always be split on blank lines.
 
-    The terminal and the web REPL share one History, so a form run in either
+    The terminal and the notebook share one History, so a form run in either
     is recalled in both. Entries are only ever appended, so an index into
     entries keeps pointing at the same entry.
     """
@@ -978,7 +978,7 @@ def run_interactive(sock, history, color, greeting):
 
 
 # ---------------------------------------------------------------------------
-# Web REPL
+# Notebook
 
 
 WEB_PORT = 4188
@@ -1506,10 +1506,10 @@ def start_web(host, port, rc_info, history, colors, browser=True):
     try:
         WebServer(host, port, intro, history).start()
     except OSError as e:
-        print(colors.paint("No web REPL: port %d: %s" % (WEB_PORT, e.strerror or e), Colors.NOTE))
+        print(colors.paint("No notebook: port %d: %s" % (WEB_PORT, e.strerror or e), Colors.NOTE))
         return
     url = "http://localhost:%d" % WEB_PORT
-    print("Web REPL at %s" % colors.paint(url, Colors.DEVICE))
+    print("Notebook at %s" % colors.paint(url, Colors.DEVICE))
     if browser:
         threading.Thread(target=open_browser, args=(url,), daemon=True).start()
 
@@ -1526,9 +1526,9 @@ def main():
     parser.add_argument("--no-color", action="store_true",
                         help="never use colors (they are also off when NO_COLOR is set)")
     parser.add_argument("--no-web", action="store_true",
-                        help="don't serve the web REPL at http://localhost:%d" % WEB_PORT)
+                        help="don't serve the notebook at http://localhost:%d" % WEB_PORT)
     parser.add_argument("--no-browser", action="store_true",
-                        help="don't open the web REPL in the default web browser")
+                        help="don't open the notebook in the default web browser")
     args = parser.parse_args()
 
     host, port = args.host, args.port

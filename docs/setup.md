@@ -5,10 +5,11 @@
 Second Loop has two parts:
 
 - `SecondLoop.java`, a single OpMode that runs on the robot.
-- `secondloop.py`, a small program you run on your laptop to talk to the robot.
+- `secondloop.py`, a small program you run on your laptop. It opens the
+  [Notebook](notebook.md) in your web browser, where you talk to the robot.
 
 You put `SecondLoop.java` on the robot only once. After that, everything you
-type on the laptop runs on the robot right away, with no rebuilding.
+type in the notebook runs on the robot right away, with no rebuilding.
 
 You need:
 
@@ -20,7 +21,7 @@ While the laptop still has a working Internet connection, download
 [Second Loop repository](https://github.com/ariya/SecondLoop).
 
 Then put `SecondLoop.java` on the robot using **one** of the two methods
-below. If you are not sure which one to pick, use OnBot Java: it needs only a
+below. If you are not sure which one to pick, use OnBot Java, it needs only a
 web browser.
 
 ## OnBot Java
@@ -51,9 +52,14 @@ you saved `secondloop.py` and run it:
 $ python3 secondloop.py
 Connected to 30618-RC using RC version 12.0 (SDK v12.0.0)
 Active configuration is biobuzz
-Second Loop REPL
+Notebook at http://localhost:4188
+Second Loop version 1.1.17
 user=>
 ```
+
+The [Notebook](notebook.md) opens in your web browser at
+<http://localhost:4188>, ready for your first command. Keep `secondloop.py`
+running while you use it.
 
 That's it! Head back to the [Overview](index.md) for a first tour, or browse
 the [Examples](examples/heading.md).
@@ -85,9 +91,14 @@ you saved `secondloop.py` and run it:
 $ python3 secondloop.py
 Connected to 30618-RC using RC version 12.0 (SDK v12.0.0)
 Active configuration is biobuzz
-Second Loop REPL
+Notebook at http://localhost:4188
+Second Loop version 1.1.17
 user=>
 ```
+
+The [Notebook](notebook.md) opens in your web browser at
+<http://localhost:4188>, ready for your first command. Keep `secondloop.py`
+running while you use it.
 
 That's it! Head back to the [Overview](index.md) for a first tour, or browse
 the [Examples](examples/heading.md).

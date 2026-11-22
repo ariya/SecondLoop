@@ -21,7 +21,7 @@ This loop drives with gamepad 1, using `mecanum-drive` from
     (recur)))
 ```
 
-Call it at the prompt:
+Call it:
 
 ```clojure
 user=> (drive)
@@ -46,7 +46,7 @@ The robot keeps driving, and other loops can now run alongside it (see
 running (see [Futures](language/futures.md)).
 
 If a round fails, for example by dividing by zero, the task ends and the
-connection that started it prints `Future failed.` and the error. See
+notebook tab that started it prints `Future failed.` and the error. See
 [Errors](language/errors.md#future-failed).
 
 ## Stopping
@@ -63,7 +63,7 @@ every task at once. Everything you defined stays, so you can edit `drive` and
 start it again. `task/start` also stops the task of the same name before
 starting it, so after an edit, `(task/start drive)` alone is enough.
 
-Closing the connection does **not** stop a running task: reconnect and call
+Closing the notebook does **not** stop a running task, open it again and call
 `(task/stop)`.
 
 ## Cleanup

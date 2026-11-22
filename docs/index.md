@@ -7,51 +7,29 @@ hide:
 [FTC robot](https://www.firstinspires.org/programs/ftc/), built for rapid
 iteration.
 
-Setup takes [just 5 minutes](setup.md), with no Java coding.
-You talk to the robot from your laptop, and it acts on each command **right
-away**.
+Setup takes [just 5 minutes](setup.md) and needs no Java coding.
+You type commands on your laptop, and the robot runs each one **right away**.
+Want to tune the launcher PID, adjust the drivetrain, or fix the odometry?
+Change it while the robot runs and see the result at once, with **no
+waiting** to rebuild, redeploy, and restart.
 
-Want to tune the launcher PID, tweak the drivetrain, or fix the odometry? Change it while the robot runs and see the result instantly, with **no waiting** to
-rebuild, redeploy, and restart.
-
-You try ideas and tune your robot much faster, and get more out of every
-practice session.
-
-![Setup with a laptop and the robot](setup.jpg){ width="850" }
-
-Once Second Loop is running, the telemetry on the Driver Hub shows the address
-to connect to:
+Once Second Loop is [running](setup.md), the telemetry on the Driver Hub
+shows:
 
 ```
 Second Loop version 1.1.17
 Ready at 192.168.43.1:9001 (0 clients)
 ```
 
-Now run `secondloop.py` on the computer. It should detect the setup
-automatically:
+Now run `secondloop.py` on your laptop. It opens the
+[Notebook](notebook.md) in your web browser. Type a command in the box at
+the bottom of the page and press `Enter`. The command runs on the robot right away, and the result
+appears below it. Press `Up` and `Down` to get earlier commands back.
 
-```console
-$ ./secondloop.py
-Connected to 30618-RC using RC version 12.0 (SDK v12.0.0)
-Active configuration is biobuzz
-Second Loop version 1.1.17
-user=>
-```
+![Notebook window](notebook.png){ .screenshot width="776" }
 
-Type at the `user=>` prompt. Each line runs on the robot as soon as you press
-`Enter`, and the result appears below it. Use the arrow keys to edit the line
-and to recall earlier ones. To quit, press `Ctrl+D` on an empty line.
-
-!!! info
-
-    History search, the full list of keys, and other details are covered
-    in the [REPL](reference/repl.md) reference.
-
-!!! tip
-
-    Prefer a browser? `secondloop.py` also opens
-    <http://localhost:4188>, a notebook-style
-    [web REPL](reference/repl.md#web-repl), in your web browser.
+The examples in this manual are written as a transcript, what you type comes
+after `user=>`, and the result appears on the next line.
 
 First, ask the robot for its [battery voltage](robot/battery.md):
 
@@ -62,7 +40,7 @@ user=> (battery/voltage)
 
 The answer comes from the robot itself, in volts.
 
-Next, show some messages in the Driver Hub's [telemetry](robot/telemetry.md):
+Next, show a few messages in the Driver Hub's [telemetry](robot/telemetry.md):
 
 ```clojure
 user=> (telemetry/add-line "Hello from my computer")
@@ -76,6 +54,6 @@ From here, the examples build up step by step:
 [spinning a launcher motor](examples/launcher.md),
 [tuning its PIDF gains](examples/pidf-tuning.md), driving a
 [tank](examples/tank-drive.md) or [mecanum](examples/mecanum-drive.md)
-drivetrain from the gamepad, [adjusting the speed](examples/speed-adjustment.md)
-on the fly, and [tracking where the robot is](examples/location-tracking.md) on
+drivetrain from the gamepad, [changing the speed](examples/speed-adjustment.md)
+while driving, and [tracking where the robot is](examples/location-tracking.md) on
 the field.

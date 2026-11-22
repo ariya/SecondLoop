@@ -1,7 +1,7 @@
 # Atom
 
 A `def` fixes a value when you type it. An atom holds a value that can change
-while the robot runs, and every connection and every loop sees the change.
+while the robot runs, and every notebook tab and every loop sees the change.
 That is what makes live tuning possible.
 
 `(atom x)` creates one, and `def` gives it a name:
@@ -58,7 +58,7 @@ user=> (swap! pieces inc)
 1.0
 ```
 
-`swap!` is atomic. Two connections, or a connection and a running loop, can
+`swap!` is atomic. Two notebook tabs, or a tab and a running loop, can
 update the same atom at once and no update is lost. Never do
 `(reset! a (inc @a))` for this: between the read and the write another update
 could slip in.

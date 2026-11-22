@@ -1,7 +1,7 @@
 # Errors
 
 An error ends the form that caused it. If nothing catches it, the message is
-printed where the value would have been, and the prompt comes back:
+printed where the value would have been, and the next form runs as usual:
 
 ```clojure
 user=> (/ 1 0)
@@ -52,8 +52,8 @@ of STOP shows `Execution error: Interrupted`.
 
 ## Future failed
 
-A [future](futures.md) runs in the background, so its error has no prompt to
-print at. Instead, the connection that started it prints `Future failed.` and
+A [future](futures.md) runs in the background, so its error doesn't belong to
+any form. Instead, the notebook tab that started it prints `Future failed.` and
 the error as soon as the future ends, even if nobody calls `deref`:
 
 ```clojure
@@ -61,7 +61,7 @@ user=> (def bad (future (/ 1 0)))
 #'user/bad
 ```
 
-A moment later, the same connection prints:
+A moment later, the same tab prints:
 
 ```clojure
 Future failed. Execution error: Divide by zero

@@ -1,7 +1,7 @@
 # Launcher Motor
 
 If a [motor](../robot/motors.md) is connected, such as a flywheel that launches
-artifacts, you can control it from the prompt. Assuming the motor is named
+artifacts, you can control it from your laptop. Assuming the motor is named
 `flywheel` in the robot configuration, this sets its direction, spins it for
 three seconds, and then stops it:
 
@@ -14,7 +14,7 @@ three seconds, and then stops it:
   (motor/set-power "flywheel" 0))              ; then stop
 ```
 
-The prompt waits while the motor spins, and returns once it stops. If the
+The form keeps running while the motor spins, and finishes once it stops. If the
 flywheel spins the wrong way, use `:forward` instead of `:reverse`.
 
 With `:float`, the flywheel isn't stopped hard at power 0: it coasts and spins

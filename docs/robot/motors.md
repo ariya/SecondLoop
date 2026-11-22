@@ -209,7 +209,7 @@ user=> (motor/power "flywheel")
 ## set-power
 
 `(motor/set-power name p)` runs the motor at power `p`, from -1.0 to 1.0, and
-returns it, so you can see at the prompt what was sent to the motor. 0 stops it.
+returns it, so you can see what was sent to the motor. 0 stops it.
 
 ```clojure
 user=> (motor/set-power "flywheel" 0.1)

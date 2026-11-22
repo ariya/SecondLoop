@@ -42,7 +42,7 @@ where you stop it instead of rolling on (see
 (motor/set-zero-power-behavior "back_right_drive" :brake)
 ```
 
-Paste both at the prompt.
+Paste both into the notebook and run them.
 
 Now drive the robot by hand, one move at a time.
 
@@ -109,11 +109,11 @@ user=> (drive-square)
 ```
 
 The robot drives the square, but you have to wait the full 12 seconds. The
-result and the next prompt appear only after the robot stops, and you can't
-type anything in the meantime.
+result appears only after the robot stops, and nothing else you run gets a
+turn in the meantime.
 
 **While it drives, the robot can't do anything else.** Each `time/sleep` holds
-the prompt, so you can't spin the launcher, read the gamepad or change the
+the notebook, so you can't spin the launcher, read the gamepad or change the
 speed until the square is done.
 
 To keep typing while the robot drives, use `task/start` instead. It runs

@@ -23,7 +23,7 @@ Paste it, then run `(task/start drive-with-gamepad)` again. A running loop
 keeps the old definition, and `task/start` stops it before starting the new
 one.
 
-Now change the speed at the prompt while you drive:
+Now change the speed while you drive:
 
 ```clojure
 user=> (reset! speed 0.3)

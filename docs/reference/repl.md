@@ -1,24 +1,27 @@
 # REPL
 
-The [Overview](../index.md) shows how to connect with `secondloop.py`. This
-page explains what the REPL is, then covers the rest of the client: its
-options, line editing, history, and how to use plain `nc` when something goes
-wrong.
+Most of the time you use the REPL through the [Notebook](../notebook.md).
+This page explains what the REPL is, then covers the options of
+`secondloop.py`, and the other ways to connect when you want something
+different or something goes wrong.
 
 REPL stands for **read, evaluate, print, loop**, and it is how you work with
-Second Loop: the prompt waits for a form, runs it right away, prints the
-value, and then waits for the next one.
+Second Loop, you type a form, it runs right away, the value is printed, and
+then the next form is awaited.
 
-- **Read.** The prompt is `user=>`. A form is anything with balanced
-  brackets, so `(+ 1 2)` is a form, and so is a whole `(defn ...)`.
+- **Read.** A form is anything with balanced brackets, so `(+ 1 2)` is a
+  form, and so is a whole `(defn ...)`.
 - **Evaluate.** The interpreter on the robot runs it.
-- **Print.** The value appears on the next line, in this case `3.0`.
-- **Loop.** The prompt returns, and everything you defined is still there.
+- **Print.** The value appears below it, in this case `3.0`.
+- **Loop.** You type the next form, and everything you defined is still
+  there.
 
-Because each form runs as soon as it is complete, a change takes one line at
-the prompt instead of a build and a deploy. If a form fails, the error is
-printed where the value would have been, and the loop continues with the next
-form:
+Because each form runs as soon as it is complete, a change takes one line
+instead of a build and a deploy. If a form fails, the error is printed where
+the value would have been, and the loop continues with the next form.
+
+The pages of this manual write an exchange as a transcript, with each form
+after the `user=>` prompt and its value on the next line:
 
 ```clojure
 user=> (/ 1 0)
@@ -35,12 +38,13 @@ explains this and everything else you can type.
 
 - The robot accepts connections from INIT until the OpMode stops, so you can
   disconnect and reconnect without losing your definitions.
-- Several laptops can connect at once and share the same definitions.
+- Several laptops, and several notebook tabs, can connect at once and share
+  the same definitions.
 - Pressing STOP on the Driver Hub ends the OpMode, and everything you
   defined is gone on the next INIT. `(task/stop)` stops only the
   tasks and keeps your definitions.
-- A long loop started at the prompt keeps that connection busy. To keep the
-  prompt free, start loops with `(task/start f)` instead; see
+- A long loop started from a form keeps that notebook tab busy. To keep it
+  free, start loops with `(task/start f)` instead; see
   [Control Loops](../control-loops.md).
 
 ## Version
@@ -72,15 +76,28 @@ On Windows, run it as `python secondloop.py` instead.
 
 | Option | Effect |
 | --- | --- |
+| `--no-browser` | Don't open the [notebook](../notebook.md) in the default web browser. It is still served at <http://localhost:4188>. |
+| `--no-web` | Don't serve the [notebook](../notebook.md) at all. |
 | `--history FILE` | Keep history in `FILE` instead of `~/.secondloop_history`. Pass an empty name to keep no history. |
-| `--no-color` | Never use colors. |
-| `--no-web` | Don't serve the [web REPL](#web-repl). |
-| `--no-browser` | Don't open the [web REPL](#web-repl) in the default web browser. |
+| `--no-color` | Never use colors in the terminal. |
 
-Press `Ctrl-D` on an empty line to quit. Quitting closes only that
-connection: the OpMode keeps running, and everything you defined stays.
+Keep `secondloop.py` running for as long as you use the notebook. Pressing
+`Ctrl-D` in its terminal quits it. Quitting closes only its connections, the
+OpMode keeps running, and everything you defined stays.
 
-## Line editing
+## Other clients
+
+The [Notebook](../notebook.md) is not the only way in. The same REPL is also
+available in the terminal, and through anything that speaks plain text over
+TCP.
+
+### Terminal
+
+The terminal where `secondloop.py` runs also shows a `user=>` prompt. It is
+one more connection, like a browser tab, so it shares definitions and history
+with the notebook. History is saved in `~/.secondloop_history`, a plain text
+file with a blank line between entries, so it carries over from one session
+to the next.
 
 Lines are edited on the laptop, as with readline, and a form is sent only
 once its brackets balance. An unfinished form can span several lines, and
@@ -98,18 +115,13 @@ history recalls it as a single entry.
 | `Ctrl-W`, `Alt-Backspace` | Delete the word before the cursor. |
 | `Alt-D` | Delete the word after the cursor. |
 | `Ctrl-Y` | Paste the most recently deleted text. |
+| `Up` `Down`, `Ctrl-P` `Ctrl-N` | Step through history. |
 | `Tab` | Insert two spaces. |
 | `Ctrl-L` | Clear the screen. |
 | `Ctrl-C` | Discard the line. |
 | `Ctrl-D` on an empty line | Quit. |
 
-## History
-
-`Up` and `Down` (or `Ctrl-P` and `Ctrl-N`) step through earlier forms. History
-is saved in `~/.secondloop_history`, a plain text file with a blank line
-between entries, so it carries over from one session to the next.
-
-`Ctrl-R` searches it as you type and finds the most recent entry that
+`Ctrl-R` searches history as you type and finds the most recent entry that
 contains the text:
 
 | Keys | Action |
@@ -120,46 +132,16 @@ contains the text:
 | `Ctrl-G`, `Esc` | Cancel and return to what you were typing. |
 | Any other key | Keep the entry and continue editing it. |
 
-## Colors
-
 In a terminal that supports colors, the prompt, your input, errors and the
 `Ctrl-R` search each have their own color. To turn colors off, set `NO_COLOR`
 or pass `--no-color`.
 
-## Web REPL
-
-While `secondloop.py` runs, it also serves a web version of the REPL at
-<http://localhost:4188>, and opens it in the default web browser. It works
-like a very small notebook: each form you run becomes a cell, with its output
-below it.
-
-| Keys | Action |
-| --- | --- |
-| `Enter` | Run the form, once its brackets balance. Before that, add a line. |
-| `Shift+Enter` | Add a line. |
-| `Up` `Down` | Step through history, on the first or last line of the input. |
-| `Tab` | Insert two spaces. |
-
-Earlier cells can't be edited, but clicking one copies it into the input.
-Output from a future goes to the last cell. **Clear** removes all cells.
-
-The page follows the light or dark theme of the system. The sun or moon
-button at the top right switches to the other one, and the browser remembers
-that choice; switching back to the system's theme follows the system again.
-
-Each browser tab has its own connection to the robot, just like a second
-terminal, so it shares every definition but not the prompt. History is
-shared, though: a form run in the browser is recalled with `Up` in the
-terminal, and one run in the terminal shows up in the browser once you come
-back to its tab. The web REPL stops when `secondloop.py` quits. It only
-accepts connections from the same computer.
-
-## nc
+### nc
 
 The REPL is plain text over TCP, so `nc` also works as a client. It has no
 line editing or history, but it is available almost everywhere and puts
-nothing between you and the robot, which helps when you want to rule out the
-client as the problem:
+nothing between you and the robot, which helps when you want to rule out
+`secondloop.py` as the problem:
 
 ```console
 $ nc 192.168.43.1 9001
@@ -170,7 +152,7 @@ user=> (+ 1 2)
 
 `nc` sends each line as you type it. Closing it closes only that connection.
 
-If neither client connects:
+## If it doesn't connect
 
 - Check that INIT has been pressed. The REPL listens from INIT until the
   OpMode stops.
@@ -179,7 +161,9 @@ If neither client connects:
   9001. If the robot has several addresses, it shows the Control Hub's WiFi
   address (`192.168.43.1`) or a phone's WiFi Direct address (`192.168.49.1`).
 - Make sure the laptop is on the robot's WiFi.
-- If the prompt appears but nothing responds, a loop started at the prompt
+- If the browser doesn't open, go to <http://localhost:4188> yourself while
+  `secondloop.py` is running.
+- If a form is sent but nothing responds, a loop started from an earlier form
   may be keeping that connection busy. Several connections can be open at
-  once, so connect again from a second window, and start long loops with
+  once, so open another browser tab, and start long loops with
   `(task/start f)`; see [Control Loops](../control-loops.md).
