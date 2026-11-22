@@ -1146,6 +1146,8 @@ WEB_PAGE = r"""<!DOCTYPE html>
 :root {
   --bg: #fafafa; --fg: #1f2328; --muted: #6e7781; --cell: #fff; --border: #d0d7de;
   --accent: #1a7f37; --error: #cf222e; --focus: #0969da;
+  --t-comment: #6e7781; --t-string: #0a3069; --t-keyword: #8250df;
+  --t-number: #0550ae; --t-special: #cf222e; --t-paren: #8c959f; --t-op: #5c4425;
 }
 :root { color-scheme: light; }
 @media (prefers-color-scheme: dark) {
@@ -1153,12 +1155,16 @@ WEB_PAGE = r"""<!DOCTYPE html>
     color-scheme: dark;
     --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e; --cell: #161b22; --border: #30363d;
     --accent: #3fb950; --error: #f85149; --focus: #58a6ff;
+    --t-comment: #8b949e; --t-string: #a5d6ff; --t-keyword: #d2a8ff;
+    --t-number: #79c0ff; --t-special: #ff7b72; --t-paren: #6e7681; --t-op: #e2cca6;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e; --cell: #161b22; --border: #30363d;
   --accent: #3fb950; --error: #f85149; --focus: #58a6ff;
+  --t-comment: #8b949e; --t-string: #a5d6ff; --t-keyword: #d2a8ff;
+  --t-number: #79c0ff; --t-special: #ff7b72; --t-paren: #6e7681; --t-op: #e2cca6;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg);
@@ -1193,6 +1199,13 @@ textarea { display: block; width: 100%; resize: none; overflow: hidden; outline:
 textarea:focus { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
 #prompt .label { color: var(--accent); }
 .hint { grid-column: 2; color: var(--muted); font-size: 12px; padding: 4px 2px; }
+.t-comment { color: var(--t-comment); font-style: italic; }
+.t-string { color: var(--t-string); }
+.t-keyword { color: var(--t-keyword); }
+.t-number { color: var(--t-number); }
+.t-special { color: var(--t-special); }
+.t-paren { color: var(--t-paren); }
+.t-op { color: var(--t-op); }
 </style>
 <script>
 // Follow the system theme unless a choice was saved; set it before the
@@ -1333,6 +1346,36 @@ function receive(text) {
   if (follow) scrollDown();
 }
 
+// Keep in sync with the special forms in Interp.java.
+var SPECIAL = /^(quote|if|do|def|defonce|let|fn|defn|cond|loop|recur|while|dotimes|doseq|try|catch|finally|time|future|when|when-not|if-not|if-let|when-let|case|->|->>|doc|and|or)$/;
+var TOKEN = /(;[^\n]*)|("(?:\\.|[^"\\])*"?)|(:[^\s()\[\]{}"';]+)|(-?\d+(?:\.\d+)?)(?=[\s()\[\]{}]|$)|([^\s()\[\]{}"';]+)|([()\[\]{}])/g;
+
+// Builds spans with textContent, so the code is never parsed as HTML.
+function highlight(el, code) {
+  el.textContent = "";
+  var last = 0, m, head = false;
+  TOKEN.lastIndex = 0;
+  while ((m = TOKEN.exec(code))) {
+    if (m.index > last) el.appendChild(document.createTextNode(code.slice(last, m.index)));
+    var cls = m[1] ? "t-comment" : m[2] ? "t-string" : m[3] ? "t-keyword" : m[4] ? "t-number"
+      : m[5] ? (SPECIAL.test(m[5]) || /^[-+*\/<>=!]+$/.test(m[5]) ? "t-special" : /^(true|false|nil)$/.test(m[5]) ? "t-number"
+        : head ? "t-op" : "")
+      : "t-paren";
+    // The symbol right after "(" is the function being called.
+    head = m[0] === "(";
+    if (cls) {
+      var span = document.createElement("span");
+      span.className = cls;
+      span.textContent = m[0];
+      el.appendChild(span);
+    } else {
+      el.appendChild(document.createTextNode(m[0]));
+    }
+    last = TOKEN.lastIndex;
+  }
+  if (last < code.length) el.appendChild(document.createTextNode(code.slice(last)));
+}
+
 function addCell(code) {
   var cell = document.createElement("div");
   cell.className = "cell";
@@ -1341,7 +1384,7 @@ function addCell(code) {
   label.textContent = "[*]:";
   var pre = document.createElement("pre");
   pre.className = "code";
-  pre.textContent = code;
+  highlight(pre, code);
   pre.title = "Copy to the input";
   pre.onclick = function () { setInput(code); input.focus(); };
   var out = document.createElement("pre");
