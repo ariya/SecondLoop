@@ -25,8 +25,9 @@ import java.util.Map;
  */
 final class SimWebUi {
     static final int PORT = 8080;
-    // Made-up versions: there is no robot controller or SDK here, only stand-ins.
-    static final String RC_INFO = "{\"deviceName\":\"RobotSimulator\",\"rcVersion\":\"0.0\",\"sdkVersion\":\"0.0.0\"}";
+    // Made-up versions: there is no robot controller or SDK here, only stand-ins. The active
+    // configuration is named biobuzz, as on the robot the docs show.
+    static final String RC_INFO = "{\"deviceName\":\"RobotSimulator\",\"rcVersion\":\"0.0\",\"sdkVersion\":\"0.0.0\",\"activeConfigName\":\"biobuzz\"}";
 
     private final SimTelemetry telemetry;
     private final VoltageSensor battery;

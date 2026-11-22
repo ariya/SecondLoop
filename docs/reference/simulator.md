@@ -16,8 +16,12 @@ laptop.
 
 To connect to it, run the REPL client in another terminal:
 
-```bash
+```console
 $ ./secondloop.py localhost
+Connected to RobotSimulator using RC version 0.0 (SDK v0.0.0)
+Active configuration is biobuzz
+Second Loop version 1.1.17
+user=>
 ```
 
 Port 8080 also answers `/js/rcInfo.json`, as the robot controller does, so
