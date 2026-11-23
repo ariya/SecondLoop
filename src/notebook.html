@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second Loop</title>
+<style>
+:root {
+  --bg: #fafafa; --fg: #1f2328; --muted: #6e7781; --cell: #fff; --border: #d0d7de;
+  --accent: #1a7f37; --error: #cf222e; --focus: #0969da;
+  --t-comment: #6e7781; --t-string: #0a3069; --t-keyword: #8250df;
+  --t-number: #0550ae; --t-special: #cf222e; --t-paren: #8c959f; --t-op: #5c4425;
+}
+:root { color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e; --cell: #161b22; --border: #30363d;
+    --accent: #3fb950; --error: #f85149; --focus: #58a6ff;
+    --t-comment: #8b949e; --t-string: #a5d6ff; --t-keyword: #d2a8ff;
+    --t-number: #79c0ff; --t-special: #ff7b72; --t-paren: #6e7681; --t-op: #e2cca6;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e; --cell: #161b22; --border: #30363d;
+  --accent: #3fb950; --error: #f85149; --focus: #58a6ff;
+  --t-comment: #8b949e; --t-string: #a5d6ff; --t-keyword: #d2a8ff;
+  --t-number: #79c0ff; --t-special: #ff7b72; --t-paren: #6e7681; --t-op: #e2cca6;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
+header h1 { margin: 0; font-size: 17px; }
+#status { flex: 1; color: var(--muted); font-size: 13px; white-space: pre-line; }
+#status.closed { color: var(--error); }
+button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; cursor: pointer;
+  color: var(--fg); background: var(--cell); border: 1px solid var(--border); }
+button:hover { border-color: var(--muted); }
+#theme { display: flex; padding: 4px; color: var(--muted); background: none; border-color: transparent; }
+#theme:hover { color: var(--fg); border-color: transparent; }
+#theme svg { width: 20px; height: 20px; }
+.dark .moon, :not(.dark) > .sun { display: none; }
+main { max-width: 960px; margin: 0 auto; padding: 16px; }
+pre, textarea { font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin: 0; }
+pre { white-space: pre-wrap; word-break: break-word; }
+.cell { display: grid; grid-template-columns: 52px 1fr; column-gap: 8px; margin-bottom: 12px; }
+.label { color: var(--muted); text-align: right; padding-top: 7px;
+  font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.code, textarea { background: var(--cell); border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 10px; color: var(--fg); }
+.code { cursor: pointer; }
+.code:hover { border-color: var(--muted); }
+.out { grid-column: 2; padding: 6px 10px 0; }
+.out:empty { display: none; }
+.err { color: var(--error); }
+.note .out { color: var(--muted); padding-top: 0; }
+textarea { display: block; width: 100%; resize: none; overflow: hidden; outline: none; }
+textarea:focus { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
+#prompt .label { color: var(--accent); }
+.hint { grid-column: 2; color: var(--muted); font-size: 12px; padding: 4px 2px; }
+.t-comment { color: var(--t-comment); font-style: italic; }
+.t-string { color: var(--t-string); }
+.t-keyword { color: var(--t-keyword); }
+.t-number { color: var(--t-number); }
+.t-special { color: var(--t-special); }
+.t-paren { color: var(--t-paren); }
+.t-op { color: var(--t-op); }
+</style>
+<script>
+// Follow the system theme unless a choice was saved; set it before the
+// page draws so it never flashes the other theme.
+try {
+  var saved = localStorage.getItem("theme");
+  if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+} catch (e) {}
+</script>
+</head>
+<body>
+<header>
+  <h1>Second Loop</h1>
+  <div id="status">Connecting…</div>
+  <button id="reconnect" hidden>Reconnect</button>
+  <button id="clear" title="Remove all cells">Clear</button>
+  <button id="theme">
+    <svg class="moon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+    <svg class="sun" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  </button>
+</header>
+<main>
+  <div id="notebook"></div>
+  <div class="cell" id="prompt">
+    <div class="label">[ ]:</div>
+    <textarea id="input" rows="1" spellcheck="false" autocomplete="off" autofocus></textarea>
+    <div class="hint">Enter runs a complete form · Shift+Enter adds a line · Up/Down recall history · click a cell to copy it</div>
+  </div>
+</main>
+<script>
+"use strict";
+var PROMPT = "user=> ";
+var ERRORS = ["Syntax error", "Execution error", "Future failed."];
+var notebook = document.getElementById("notebook");
+var input = document.getElementById("input");
+var statusLine = document.getElementById("status");
+var reconnectButton = document.getElementById("reconnect");
+var session = null, source = null;
+var count = 0, last = null;          // last: the cell that receives output
+var past = [], index = 0, draft = "";
+
+// The toggle shows the moon in light mode and the sun in dark mode.
+var themeButton = document.getElementById("theme");
+var systemDark = matchMedia("(prefers-color-scheme: dark)");
+function isDark() {
+  var chosen = document.documentElement.dataset.theme;
+  return chosen ? chosen === "dark" : systemDark.matches;
+}
+function showTheme() {
+  var dark = isDark();
+  themeButton.classList.toggle("dark", dark);
+  themeButton.title = dark ? "Switch to light mode" : "Switch to dark mode";
+  themeButton.setAttribute("aria-label", themeButton.title);
+}
+themeButton.addEventListener("click", function () {
+  var next = isDark() ? "light" : "dark";
+  // Picking what the system already uses means following the system again.
+  var follow = next === (systemDark.matches ? "dark" : "light");
+  if (follow) delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = next;
+  try {
+    if (follow) localStorage.removeItem("theme"); else localStorage.setItem("theme", next);
+  } catch (e) {}
+  showTheme();
+});
+systemDark.addEventListener("change", showTheme);
+showTheme();
+
+// Same rule as the terminal: every bracket and string closed.
+function isComplete(text) {
+  var depth = 0, i = 0, n = text.length;
+  while (i < n) {
+    var c = text[i];
+    if (c === ";") {
+      while (i < n && text[i] !== "\n") i++;
+    } else if (c === '"') {
+      i++;
+      while (i < n && text[i] !== '"') { if (text[i] === "\\") i++; i++; }
+      if (i >= n) return false;
+    } else if ("([{".indexOf(c) >= 0) {
+      depth++;
+    } else if (")]}".indexOf(c) >= 0) {
+      if (--depth < 0) return true;
+    }
+    i++;
+  }
+  return depth <= 0;
+}
+
+// The robot's output without its prompts, including one still arriving.
+function clean(raw) {
+  var s = raw.replace(/\r\n/g, "\n").replace(/^(user=> )+/gm, "");
+  for (var k = PROMPT.length - 1; k > 0; k--) {
+    var tail = PROMPT.slice(0, k);
+    if (s.slice(-k) === tail && (s.length === k || s[s.length - k - 1] === "\n")) {
+      s = s.slice(0, -k);
+      break;
+    }
+  }
+  return s.replace(/\n$/, "");
+}
+
+function paint(pre, raw) {
+  pre.textContent = "";
+  var text = clean(raw);
+  if (!text) return;
+  text.split("\n").forEach(function (line, i) {
+    if (i) pre.appendChild(document.createTextNode("\n"));
+    var isError = ERRORS.some(function (e) { return line.indexOf(e) === 0; });
+    if (isError) {
+      var span = document.createElement("span");
+      span.className = "err";
+      span.textContent = line;
+      pre.appendChild(span);
+    } else {
+      pre.appendChild(document.createTextNode(line));
+    }
+  });
+}
+
+function nearBottom() {
+  return window.innerHeight + window.scrollY >= document.body.scrollHeight - 80;
+}
+
+function scrollDown() {
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+function receive(text) {
+  var follow = nearBottom();
+  if (!last) addNote();
+  last.raw += text;
+  paint(last.out, last.raw);
+  if (last.running && last.raw.slice(-PROMPT.length) === PROMPT) {
+    last.running = false;
+    last.label.textContent = "[" + last.number + "]:";
+  }
+  if (follow) scrollDown();
+}
+
+// Keep in sync with the special forms in Interp.java.
+var SPECIAL = /^(quote|if|do|def|defonce|let|fn|defn|cond|loop|recur|while|dotimes|doseq|try|catch|finally|time|future|when|when-not|if-not|if-let|when-let|case|->|->>|doc|and|or)$/;
+var TOKEN = /(;[^\n]*)|("(?:\\.|[^"\\])*"?)|(:[^\s()\[\]{}"';]+)|(-?\d+(?:\.\d+)?)(?=[\s()\[\]{}]|$)|([^\s()\[\]{}"';]+)|([()\[\]{}])/g;
+
+// Builds spans with textContent, so the code is never parsed as HTML.
+function highlight(el, code) {
+  el.textContent = "";
+  var last = 0, m, head = false;
+  TOKEN.lastIndex = 0;
+  while ((m = TOKEN.exec(code))) {
+    if (m.index > last) el.appendChild(document.createTextNode(code.slice(last, m.index)));
+    var cls = m[1] ? "t-comment" : m[2] ? "t-string" : m[3] ? "t-keyword" : m[4] ? "t-number"
+      : m[5] ? (SPECIAL.test(m[5]) || /^[-+*\/<>=!]+$/.test(m[5]) ? "t-special" : /^(true|false|nil)$/.test(m[5]) ? "t-number"
+        : head ? "t-op" : "")
+      : "t-paren";
+    // The symbol right after "(" is the function being called.
+    head = m[0] === "(";
+    if (cls) {
+      var span = document.createElement("span");
+      span.className = cls;
+      span.textContent = m[0];
+      el.appendChild(span);
+    } else {
+      el.appendChild(document.createTextNode(m[0]));
+    }
+    last = TOKEN.lastIndex;
+  }
+  if (last < code.length) el.appendChild(document.createTextNode(code.slice(last)));
+}
+
+function addCell(code) {
+  var cell = document.createElement("div");
+  cell.className = "cell";
+  var label = document.createElement("div");
+  label.className = "label";
+  label.textContent = "[*]:";
+  var pre = document.createElement("pre");
+  pre.className = "code";
+  highlight(pre, code);
+  pre.title = "Copy to the input";
+  pre.onclick = function () { setInput(code); input.focus(); };
+  var out = document.createElement("pre");
+  out.className = "out";
+  cell.appendChild(label);
+  cell.appendChild(pre);
+  cell.appendChild(out);
+  notebook.appendChild(cell);
+  count++;
+  last = { number: count, label: label, out: out, raw: "", running: true };
+}
+
+// Holds output that comes before any cell, such as the greeting.
+function addNote() {
+  var cell = document.createElement("div");
+  cell.className = "cell note";
+  var out = document.createElement("pre");
+  out.className = "out";
+  cell.appendChild(out);
+  notebook.appendChild(cell);
+  last = { out: out, raw: "", running: false };
+}
+
+function setStatus(text, closed) {
+  statusLine.textContent = text;
+  statusLine.className = closed ? "closed" : "";
+  reconnectButton.hidden = !closed;
+}
+
+// rc: what the robot controller tells about itself, or null.
+function showRobot(rc) {
+  setStatus("", false);
+  if (!rc || !rc.deviceName) { statusLine.textContent = "Connected."; return; }
+  function bold(text) {
+    var b = document.createElement("b");
+    b.textContent = text;
+    statusLine.appendChild(b);
+  }
+  function text(t) { statusLine.appendChild(document.createTextNode(t)); }
+  text("Connected to "); bold(rc.deviceName);
+  text(" using RC version " + (rc.rcVersion || "?") + " (SDK v" + (rc.sdkVersion || "?") + ")");
+  if (rc.activeConfigName) { text("\nActive configuration is "); bold(rc.activeConfigName); }
+}
+
+function run() {
+  var code = input.value.replace(/\s+$/, "");
+  if (!code.trim()) return;
+  if (!session) { setStatus("Not connected to the robot.", true); return; }
+  addCell(code);
+  addHistory(code);
+  draft = "";
+  setInput("");
+  scrollDown();
+  fetch("/eval?session=" + session, { method: "POST", body: code }).then(function (r) {
+    if (!r.ok) receive("Execution error: not connected to the robot\n");
+  }, function () {
+    receive("Execution error: lost contact with the robot\n");
+  });
+}
+
+function setInput(text) {
+  input.value = text;
+  input.selectionStart = input.selectionEnd = text.length;
+  resize();
+}
+
+function resize() {
+  input.style.height = "auto";
+  input.style.height = input.scrollHeight + 2 + "px";
+}
+
+function recall(step) {
+  var i = index + step;
+  if (i < 0 || i > past.length) return;
+  if (index === past.length) draft = input.value;
+  index = i;
+  setInput(i === past.length ? draft : past[i]);
+}
+
+input.addEventListener("input", resize);
+input.addEventListener("keydown", function (e) {
+  var before = input.value.slice(0, input.selectionStart);
+  var after = input.value.slice(input.selectionEnd);
+  if (e.key === "Enter" && !e.shiftKey) {
+    if (isComplete(input.value)) { e.preventDefault(); run(); }
+  } else if (e.key === "Tab" && !e.shiftKey) {
+    e.preventDefault();
+    document.execCommand("insertText", false, "  ");
+  } else if (e.key === "ArrowUp" && before.indexOf("\n") < 0) {
+    e.preventDefault(); recall(-1);
+  } else if (e.key === "ArrowDown" && after.indexOf("\n") < 0) {
+    e.preventDefault(); recall(1);
+  }
+});
+
+function connect() {
+  setStatus("Connecting…", false);
+  source = new EventSource("/events");
+  source.addEventListener("session", function (e) {
+    var data = JSON.parse(e.data);
+    session = data.id;
+    showRobot(data.rc);
+  });
+  source.addEventListener("output", function (e) { receive(JSON.parse(e.data)); });
+  source.addEventListener("closed", function (e) {
+    disconnect(JSON.parse(e.data));
+  });
+  source.onerror = function () {
+    if (source) disconnect("Lost contact with the robot.");
+  };
+}
+
+function disconnect(message) {
+  source.close();
+  source = null;
+  session = null;
+  if (last && last.running) { last.running = false; last.label.textContent = "[" + last.number + "]:"; }
+  setStatus(message, true);
+}
+
+reconnectButton.onclick = function () {
+  last = null;
+  connect();
+};
+document.getElementById("clear").onclick = function () {
+  notebook.textContent = "";
+  last = null;
+  input.focus();
+};
+
+// History lives in this browser, so it outlasts the OpMode. Other tabs may
+// add to it, so read it again on coming back to the tab, unless an entry is
+// being recalled right now.
+var HISTORY_KEY = "history", HISTORY_LIMIT = 1000;
+function loadHistory() {
+  if (index !== past.length) return;
+  try {
+    var entries = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    if (Array.isArray(entries)) past = entries;
+  } catch (e) {}
+  index = past.length;
+}
+function addHistory(code) {
+  loadHistory();
+  if (past[past.length - 1] !== code) past.push(code);
+  past = past.slice(-HISTORY_LIMIT);
+  index = past.length;
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(past)); } catch (e) {}
+}
+window.addEventListener("focus", loadHistory);
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden) loadHistory();
+});
+loadHistory();
+resize();
+connect();
+</script>
+</body>
+</html>

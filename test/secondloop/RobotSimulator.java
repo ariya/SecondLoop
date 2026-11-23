@@ -18,15 +18,16 @@ import java.util.Random;
  * the OpMode does (see SimTelemetry), gamepads 1 and 2 (see SimGamepads), and
  * a robot (see SimRobot): a battery that the motors drain, a motor named
  * "flywheel", a mecanum drivetrain, and an IMU and a Pinpoint that follow it.
- *   java -cp build/classes secondloop.RobotSimulator          serve on port 9001, like the robot
+ *   java -cp build/classes secondloop.RobotSimulator          serve the notebook on port 9002 (and open it in the browser) and nc on 9001, like the robot
  *   java -cp build/classes secondloop.RobotSimulator --stdin  read from the terminal directly
  *
  * Either way, its web UI on port 8080 (see SimWebUi) shows the telemetry
  * screen and the battery, and reads gamepad 1. Port 8080 also answers /js/rcInfo.json as the robot
- * controller does, since secondloop.py asks for it before connecting.
+ * controller does, since the notebook shows what it tells.
  */
 public final class RobotSimulator {
     static final long STATUS_MILLIS = 100;
+    static final int WEB_PORT = 9002;
 
     private static final TelemetryModule telemetryModule = new TelemetryModule();
     private static final SimTelemetry telemetry = new SimTelemetry(System.out);
@@ -50,12 +51,10 @@ public final class RobotSimulator {
             // On stderr, so that --stdin output stays the REPL's alone.
             System.err.println("Web UI: http://localhost:" + SimWebUi.PORT + "/");
         } catch (IOException e) {
-            System.err.println("Could not serve the web UI on port " + SimWebUi.PORT + ": " + e.getMessage()
-                    + (stdin ? "" : ". secondloop.py will not connect."));
+            System.err.println("Could not serve the web UI on port " + SimWebUi.PORT + ": " + e.getMessage());
         }
         if (stdin) {
-            ui.setStatus("Reading from the terminal");
-            startDisplay(gamepads, ui, null, 0);
+            startDisplay(gamepads, ui, null);
             new Repl(globals, new PrintWriter(System.out)).run(
                     new BufferedReader(new InputStreamReader(System.in, "UTF-8")));
             showTelemetry(); // the last lines, in case input ended within a frame
@@ -63,13 +62,41 @@ public final class RobotSimulator {
             return;
         }
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 9001;
-        ReplServer server = new ReplServer(globals, port);
+        ReplServer server = new ReplServer(globals, port, WEB_PORT);
         server.start();
-        startDisplay(gamepads, ui, server, port);
+        startDisplay(gamepads, ui, server);
         System.out.println(Version.greeting(Version.COMMIT));
-        System.out.println(ReplServer.status(ReplServer.preferredAddress(ReplServer.localAddresses()), port, 0)
-                + ". Try: ./secondloop.py localhost" + (port == 9001 ? "" : ":" + port));
+        String notebook = ReplServer.url("localhost", WEB_PORT) + "/";
+        System.out.println("Notebook: " + notebook + " (or: nc localhost " + port + ")");
+        openBrowser(notebook);
         Thread.currentThread().join(); // the REPL and the web UI run until Ctrl-C
+    }
+
+    /**
+     * The command that opens a URL in the default browser. It is not
+     * java.awt.Desktop, which often fails on Linux and adds a Dock icon on macOS.
+     */
+    static String[] browserCommand(String osName, String url) {
+        String os = osName.toLowerCase();
+        if (os.startsWith("windows")) {
+            return new String[] {"rundll32", "url.dll,FileProtocolHandler", url};
+        }
+        if (os.startsWith("mac")) {
+            return new String[] {"open", url};
+        }
+        return new String[] {"xdg-open", url};
+    }
+
+    /** Best effort: without a browser, the printed URL is enough. */
+    static void openBrowser(String url) {
+        try {
+            new ProcessBuilder(browserCommand(System.getProperty("os.name", ""), url))
+                    .redirectErrorStream(true)
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                    .start();
+        } catch (IOException e) {
+            System.err.println("Could not open a browser: " + e.getMessage());
+        }
     }
 
     static OpMode createOpMode() {
@@ -108,7 +135,7 @@ public final class RobotSimulator {
      * Redraws telemetry from its own thread, as the OpMode thread does on the
      * robot, and lets go of gamepads the web UI no longer sends.
      */
-    static void startDisplay(final SimGamepads gamepads, final SimWebUi ui, final ReplServer server, final int port) {
+    static void startDisplay(final SimGamepads gamepads, final SimWebUi ui, final ReplServer server) {
         final String address = ReplServer.preferredAddress(ReplServer.localAddresses());
         Thread display = new Thread(new Runnable() {
             @Override
@@ -118,7 +145,7 @@ public final class RobotSimulator {
                         showTelemetry();
                         gamepads.checkTimeout(System.nanoTime());
                         if (server != null) {
-                            ui.setStatus(ReplServer.status(address, port, server.clientCount()));
+                            telemetryModule.setHeader(ReplServer.status(address, WEB_PORT, server.clientCount()));
                         }
                         Thread.sleep(STATUS_MILLIS);
                     }

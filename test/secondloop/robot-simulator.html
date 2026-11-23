@@ -127,7 +127,7 @@ async function poll() {
     const response = await fetch('/state', {cache: 'no-store'});
     const state = await response.json();
     document.getElementById('screen').textContent =
-      [state.version, state.status].concat(state.telemetry).join('\n');
+      state.telemetry.join('\n');
     document.getElementById('battery').textContent = 'Battery ' + state.battery.toFixed(2) + ' V';
     setLink(true);
   } catch (e) {

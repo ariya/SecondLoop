@@ -27,7 +27,9 @@ nil
 
 ## clear
 
-`(telemetry/clear)` removes every line that was added:
+`(telemetry/clear)` removes every line that was added. The first time, it
+also removes the Second Loop status line at the top, so your program gets
+the whole screen:
 
 ```clojure
 user=> (telemetry/clear)

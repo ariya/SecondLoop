@@ -21,29 +21,23 @@ import java.util.Map;
  *   /                  the page (robot-simulator.html, next to this class)
  *   /state             the telemetry screen and the battery voltage, as JSON
  *   /gamepad           POST: one gamepad's state from the page, form-encoded
- *   /js/rcInfo.json    what the robot controller answers, since secondloop.py asks for it
+ *   /js/rcInfo.json    what the robot controller answers, which the notebook shows
  */
 final class SimWebUi {
     static final int PORT = 8080;
-    // Made-up versions: there is no robot controller or SDK here, only stand-ins. The active
-    // configuration is named biobuzz, as on the robot the docs show.
-    static final String RC_INFO = "{\"deviceName\":\"RobotSimulator\",\"rcVersion\":\"0.0\",\"sdkVersion\":\"0.0.0\",\"activeConfigName\":\"biobuzz\"}";
+    // As on the robot the docs show, though no robot controller runs here. The active
+    // configuration is named biobuzz there too.
+    static final String RC_INFO = "{\"deviceName\":\"RobotSimulator\",\"rcVersion\":\"12.0\",\"sdkVersion\":\"12.0.0\",\"activeConfigName\":\"biobuzz\"}";
 
     private final SimTelemetry telemetry;
     private final VoltageSensor battery;
     private final SimGamepads gamepads;
-    private volatile String status = "";
     private HttpServer http;
 
     SimWebUi(SimTelemetry telemetry, VoltageSensor battery, SimGamepads gamepads) {
         this.telemetry = telemetry;
         this.battery = battery;
         this.gamepads = gamepads;
-    }
-
-    /** The line under the version, such as "Ready at 192.168.43.1:9001 (1 client)". */
-    void setStatus(String status) {
-        this.status = status;
     }
 
     void start(int port) throws IOException {
@@ -106,12 +100,10 @@ final class SimWebUi {
         }
     }
 
-    /** The telemetry lines as the OpMode shows them (the version, the status, then the rest) and the battery voltage. */
+    /** The telemetry lines as the OpMode shows them, and the battery voltage. */
     String state() {
         StringBuilder sb = new StringBuilder("{");
-        sb.append("\"version\":").append(quote(Version.greeting(Version.COMMIT)));
-        sb.append(",\"status\":").append(quote(status));
-        sb.append(",\"battery\":").append(battery.getVoltage());
+        sb.append("\"battery\":").append(battery.getVoltage());
         sb.append(",\"telemetry\":[");
         List<String> lines = telemetry.lines();
         for (int i = 0; i < lines.size(); i++) {

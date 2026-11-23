@@ -27,6 +27,14 @@ public final class SimWebUiTest {
         }
     }
 
+    private static String join(String[] words) {
+        StringBuilder sb = new StringBuilder();
+        for (String w : words) {
+            sb.append(sb.length() == 0 ? "" : " ").append(w);
+        }
+        return sb.toString();
+    }
+
     /** The status code, then the body if there is one. */
     private static String request(int port, String method, String path, String body) throws Exception {
         HttpURLConnection c = (HttpURLConnection) URI.create("http://localhost:" + port + path).toURL().openConnection();
@@ -66,17 +74,15 @@ public final class SimWebUiTest {
         SimTelemetry telemetry = new SimTelemetry(new PrintStream(new ByteArrayOutputStream()));
         SimGamepads gamepads = new SimGamepads(opMode);
         SimWebUi ui = new SimWebUi(telemetry, battery, gamepads);
-        ui.setStatus("Ready on port 9001 (0 clients)");
         ui.start(0);
         int port = ui.port();
         try {
-            String version = SimWebUi.quote(Version.greeting(Version.COMMIT));
-            check("200 {\"version\":" + version + ",\"status\":\"Ready on port 9001 (0 clients)\",\"battery\":12.74,\"telemetry\":[]}",
+            check("200 {\"battery\":12.74,\"telemetry\":[]}",
                     request(port, "GET", "/state", null), "the Driver Hub at rest");
             telemetry.addLine("power 0.5");
             telemetry.addLine("say \"hi\"\\");
             telemetry.update();
-            check("200 {\"version\":" + version + ",\"status\":\"Ready on port 9001 (0 clients)\",\"battery\":12.74,"
+            check("200 {\"battery\":12.74,"
                     + "\"telemetry\":[\"power 0.5\",\"say \\\"hi\\\"\\\\\"]}",
                     request(port, "GET", "/state", null), "telemetry lines, quoted");
 
@@ -100,10 +106,15 @@ public final class SimWebUiTest {
             String page = request(port, "GET", "/", null);
             check("true", String.valueOf(page.startsWith("200 <!doctype html>")), "the page");
             check("404 Not found", request(port, "GET", "/nothing", null), "other paths");
-            check("200 " + SimWebUi.RC_INFO, request(port, "GET", "/js/rcInfo.json", null), "rcInfo.json for secondloop.py");
+            check("200 " + SimWebUi.RC_INFO, request(port, "GET", "/js/rcInfo.json", null), "rcInfo.json for the notebook");
         } finally {
             ui.stop();
         }
+
+        String url = "http://localhost:9002/";
+        check("open " + url, join(RobotSimulator.browserCommand("Mac OS X", url)), "browser on macOS");
+        check("rundll32 url.dll,FileProtocolHandler " + url, join(RobotSimulator.browserCommand("Windows 11", url)), "browser on Windows");
+        check("xdg-open " + url, join(RobotSimulator.browserCommand("Linux", url)), "browser on Linux");
 
         System.out.println((count - failures) + "/" + count + " passed");
         if (failures > 0) {

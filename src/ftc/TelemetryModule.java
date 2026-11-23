@@ -16,6 +16,9 @@ public final class TelemetryModule {
     static final int MAX_LINES = 50;
 
     private final List<String> lines = new ArrayList<String>();
+    /** The status line above the lines, until the first clear() gives the screen to the program. */
+    private String header;
+    private boolean headerShown = true;
 
     public void install(Env env) {
         Builtins.define(env, new Builtin("telemetry/add-line") {
@@ -52,6 +55,11 @@ public final class TelemetryModule {
 
     public synchronized void clear() {
         lines.clear();
+        headerShown = false;
+    }
+
+    public synchronized void setHeader(String header) {
+        this.header = header;
     }
 
     /** Adds the current lines to telemetry; the caller then calls telemetry.update(). */
@@ -59,6 +67,9 @@ public final class TelemetryModule {
         List<String> snapshot;
         synchronized (this) {
             snapshot = new ArrayList<String>(lines);
+            if (headerShown && header != null) {
+                snapshot.add(0, header);
+            }
         }
         for (String line : snapshot) {
             telemetry.addLine(line);

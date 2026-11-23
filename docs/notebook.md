@@ -6,13 +6,10 @@ appears below it.
 
 ![Notebook window](notebook.png){ .screenshot width="880" }
 
-Run `secondloop.py` on your laptop, as shown in [Setup](setup.md). It
-connects to the robot, serves the notebook at `localhost:4188`, and
-opens it in the default web browser. If the browser doesn't open, go to
-`localhost:4188` yourself.
-
-Keep `secondloop.py` running while you use the notebook. When it quits, the
-notebook stops. Only the same computer can open the notebook.
+The robot serves the notebook while the Second Loop OpMode runs, as shown in
+[Setup](setup.md). Open the address that the Driver Hub shows in its
+Second Loop status line, usually <http://192.168.43.1:9002>, in a web browser on a
+laptop that is on the robot's WiFi.
 
 Type a command in the box at the bottom of the page and press `Enter`. Each
 command you run becomes a cell, with its output below it.
@@ -21,7 +18,8 @@ command you run becomes a cell, with its output below it.
   it adds a new line.
 - `Shift+Enter` adds a new line.
 - `Up` and `Down` bring back earlier commands, when the cursor is on the
-  first or last line.
+  first or last line. The browser keeps them, so they are still there after
+  the OpMode restarts.
 - `Tab` inserts two spaces.
 
 While a command runs, its cell shows `[*]`. When it finishes, the cell gets a
@@ -44,6 +42,5 @@ If the connection to the robot is lost, the top of the page says so and
 shows **Reconnect**. Click it when the robot is back. Your definitions are
 still there if the OpMode kept running.
 
-The [REPL](reference/repl.md) reference explains the options of
-`secondloop.py`, the terminal prompt, other clients, and what to do if the
-notebook can't connect.
+The [REPL](reference/repl.md) reference explains sessions, other clients,
+and what to do if the notebook can't connect.

@@ -2,11 +2,9 @@
 
 ![Setup with a laptop and the robot](setup.jpg){ width="850" }
 
-Second Loop has two parts:
-
-- `SecondLoop.java`, a single OpMode that runs on the robot.
-- `secondloop.py`, a small program you run on your laptop. It opens the
-  [Notebook](notebook.md) in your web browser, where you talk to the robot.
+Second Loop is a single OpMode, `SecondLoop.java`, that runs on the robot. It
+also serves the [Notebook](notebook.md), a page where you talk to the robot
+from the web browser on your laptop.
 
 You put `SecondLoop.java` on the robot only once. After that, everything you
 type in the notebook runs on the robot right away, with no rebuilding.
@@ -14,10 +12,10 @@ type in the notebook runs on the robot right away, with no rebuilding.
 You need:
 
 - A robot with a REV Control Hub, and a Driver Hub.
-- A laptop with Python 3 installed.
+- A laptop with a web browser.
 
 While the laptop still has a working Internet connection, download
-`SecondLoop.java` and `secondloop.py` from the
+`SecondLoop.java` from the
 [Second Loop repository](https://github.com/ariya/SecondLoop).
 
 Then put `SecondLoop.java` on the robot using **one** of the two methods
@@ -41,25 +39,12 @@ On the Driver Hub, select the **Second Loop** TeleOp and press **INIT**, then
 **START**. The telemetry shows the address to connect to:
 
 ```
-Second Loop version 1.1.17
-Ready at 192.168.43.1:9001 (0 clients)
+Second Loop 1.1.22 at http://192.168.43.1:9002 (0 clients)
 ```
 
-With the laptop still on the robot's WiFi, open a terminal in the folder where
-you saved `secondloop.py` and run it:
-
-```console
-$ python3 secondloop.py
-Connected to 30618-RC using RC version 12.0 (SDK v12.0.0)
-Active configuration is biobuzz
-Notebook at http://localhost:4188
-Second Loop version 1.1.17
-user=>
-```
-
-The [Notebook](notebook.md) opens in your web browser at
-<http://localhost:4188>, ready for your first command. Keep `secondloop.py`
-running while you use it.
+With the laptop still on the robot's WiFi, open that address,
+<http://192.168.43.1:9002>, in a web browser. The [Notebook](notebook.md)
+appears, ready for your first command.
 
 That's it! Head back to the [Overview](index.md) for a first tour, or browse
 the [Examples](examples/heading.md).
@@ -80,25 +65,12 @@ On the Driver Hub, select the **Second Loop** TeleOp and press **INIT**, then
 **START**. The telemetry shows the address to connect to:
 
 ```
-Second Loop version 1.1.17
-Ready at 192.168.43.1:9001 (0 clients)
+Second Loop 1.1.22 at http://192.168.43.1:9002 (0 clients)
 ```
 
-With the laptop still on the robot's WiFi, open a terminal in the folder where
-you saved `secondloop.py` and run it:
-
-```console
-$ python3 secondloop.py
-Connected to 30618-RC using RC version 12.0 (SDK v12.0.0)
-Active configuration is biobuzz
-Notebook at http://localhost:4188
-Second Loop version 1.1.17
-user=>
-```
-
-The [Notebook](notebook.md) opens in your web browser at
-<http://localhost:4188>, ready for your first command. Keep `secondloop.py`
-running while you use it.
+With the laptop still on the robot's WiFi, open that address,
+<http://192.168.43.1:9002>, in a web browser. The [Notebook](notebook.md)
+appears, ready for your first command.
 
 That's it! Head back to the [Overview](index.md) for a first tour, or browse
 the [Examples](examples/heading.md).

@@ -15,8 +15,8 @@ project.
 | `src/ftc/` | Modules that use the FTC SDK, such as `GamepadModule`, `MotorModule`, `ServoModule`, `BatteryModule`, `ImuModule`, `PinpointModule` and `TelemetryModule`. |
 | `src/SecondLoop.java` | The OpMode template. The sources are inserted at `// @@SECONDLOOP_SOURCES@@`. |
 | `tools/amalgamate.py` | Merges everything into `build/SecondLoop.java`. |
-| `secondloop.py` | Serves the notebook page at `localhost:4188` and opens it in the browser. Its terminal is also a client, with line editing and history. |
-| `test/secondloop/` | `ReplTest`, `GamepadTest`, `MotorTest`, `ServoTest`, `BatteryTest`, `ImuTest`, `PinpointTest`, `TelemetryTest`, `SimTelemetryTest`, `SimImuTest`, `SimBatteryTest`, `SimMotorTest`, `SimDrivetrainTest`, `SimPinpointTest` and `SimWebUiTest`, plus `RobotSimulator` and its web page, `robot-simulator.html`. |
+| `src/notebook.html` | The notebook page. `tools/amalgamate.py` turns it into the string `NotebookPage.HTML`, also written as `build/gen/NotebookPage.java`, and `NotebookServer` serves it on port 9002. |
+| `test/secondloop/` | `ReplTest`, `GamepadTest`, `MotorTest`, `ServoTest`, `BatteryTest`, `ImuTest`, `PinpointTest`, `TelemetryTest`, `SimTelemetryTest`, `SimImuTest`, `SimBatteryTest`, `SimMotorTest`, `SimDrivetrainTest`, `SimPinpointTest`, `SimWebUiTest` and `NotebookTest`, plus `RobotSimulator` and its web page, `robot-simulator.html`. |
 | `test/ftc-stubs/` | Minimal stand-ins for the FTC SDK classes, used only for compiling and testing. |
 | `docs/` | This documentation, built with Zensical. |
 
@@ -75,12 +75,25 @@ so the display shows the current state rather than a history:
 (telemetry/add-line (format "heading %.1f" heading))
 ```
 
-`showStatus` adds two lines above these, the version such as `Second Loop
-version 1.1.17` and then the address such as `Ready at 192.168.43.1:9001 (1
-client)`, so the copy that runs and the address a laptop needs are on the
-Driver Hub from INIT. When
+Above these, `showStatus` keeps one status line, such as `Second Loop 1.1.22
+at http://192.168.43.1:9002 (1 client)`, so the copy that runs and the
+address a laptop needs are on the Driver Hub from INIT. The first
+`(telemetry/clear)` removes it for good, so a program gets the whole screen. When
 the robot has several addresses, `ReplServer.preferredAddress` picks
 `192.168.43.1` or `192.168.49.1` if either is there.
+
+## Notebook
+
+`NotebookServer` serves the notebook over HTTP on plain sockets, since Android
+has no HTTP server class. Each browser tab opens `/events`, a stream of
+Server-Sent Events, and that request's thread runs the tab's REPL session,
+just as a thread runs each `nc` connection. The page sends code with `POST
+/eval`. `ReplServer` starts both, and stops both when the OpMode ends.
+
+Anyone on the robot's WiFi can already reach port 9001, so the notebook adds
+no exposure there. It answers only requests whose `Host` is an IP address or
+`localhost`, so a web site cannot reach the robot through the browser by
+DNS rebinding.
 
 ## RobotSimulator
 

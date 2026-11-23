@@ -88,6 +88,14 @@ public final class TelemetryTest {
         t.shows("power 0.54 heading 12.3|mode :fast [a nil]||nil|", "several values joined like println");
         t.feed("nil", "(telemetry/clear)");
         t.shows("", "after clear");
+        t.module.setHeader("status");
+        t.shows("", "no status once cleared");
+        TelemetryTest fresh = new TelemetryTest();
+        fresh.module.setHeader("Second Loop 1.1.22 at http://192.168.43.1:9002 (0 clients)");
+        fresh.feed("nil", "(telemetry/add-line \"Hello\")");
+        fresh.shows("Second Loop 1.1.22 at http://192.168.43.1:9002 (0 clients)|Hello|", "the status line first");
+        fresh.feed("nil", "(telemetry/clear)");
+        fresh.shows("", "clear removes the status line too");
         t.feed("nil", "(dotimes [i 60] (telemetry/add-line (str \"line \" i)))");
         RecordingTelemetry frame = new RecordingTelemetry();
         t.module.render(frame);

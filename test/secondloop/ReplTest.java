@@ -60,16 +60,18 @@ public final class ReplTest {
     /** The Driver Hub status line, and which address it picks. */
     private static void checkStatus() {
         String[][] cases = {
-            {"Ready at 192.168.43.1:9001 (0 clients)", ReplServer.status("192.168.43.1", 9001, 0)},
-            {"Ready at 192.168.43.1:9001 (1 client)", ReplServer.status("192.168.43.1", 9001, 1)},
-            {"Ready at 192.168.49.1:9001 (2 clients)", ReplServer.status("192.168.49.1", 9001, 2)},
-            {"Ready on port 9001 (0 clients)", ReplServer.status(null, 9001, 0)},
+            {"Second Loop 1.1.22 at http://192.168.43.1:9002 (0 clients)", ReplServer.status("192.168.43.1", 9002, 0)},
+            {"Second Loop 1.1.22 at http://192.168.43.1:9002 (1 client)", ReplServer.status("192.168.43.1", 9002, 1)},
+            {"Second Loop 1.1.22 at http://192.168.49.1:9002 (2 clients)", ReplServer.status("192.168.49.1", 9002, 2)},
+            {"Second Loop 1.1.22 on port 9002 (0 clients)", ReplServer.status(null, 9002, 0)},
+            {"Second Loop 1.1.22", Version.title("main")},
+            {"Second Loop 1.1.22 (ab123)", Version.title("ab123")},
             {"192.168.43.1", ReplServer.preferredAddress(java.util.Arrays.asList("10.0.0.5", "192.168.43.1"))},
             {"192.168.49.1", ReplServer.preferredAddress(java.util.Arrays.asList("172.17.0.1", "192.168.49.1"))},
             {"10.0.0.5", ReplServer.preferredAddress(java.util.Arrays.asList("10.0.0.5", "172.17.0.1"))},
             {"null", String.valueOf(ReplServer.preferredAddress(new java.util.ArrayList<String>()))},
-            {"Second Loop version 1.1.17", Version.greeting("main")},
-            {"Second Loop version 1.1.17 (commit ab123)", Version.greeting("ab123")},
+            {"Second Loop version 1.1.22", Version.greeting("main")},
+            {"Second Loop version 1.1.22 (commit ab123)", Version.greeting("ab123")},
         };
         for (String[] c : cases) {
             count++;
@@ -717,8 +719,8 @@ public final class ReplTest {
         t.check("Syntax error: Too few arguments to defonce", "(defonce y)");
 
         // Version
-        t.check("{:version \"1.1.17\", :major 1.0, :minor 1.0, :patch 17.0, :commit \"main\"}", "(version)");
-        t.check("\"1.1.17\"", "(:version (version))");
+        t.check("{:version \"1.1.22\", :major 1.0, :minor 1.0, :patch 22.0, :commit \"main\"}", "(version)");
+        t.check("\"1.1.22\"", "(:version (version))");
         t.check("Execution error: Wrong number of args (1) passed to: version", "(version 1)");
 
         // Time

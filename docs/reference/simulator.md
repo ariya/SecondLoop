@@ -14,20 +14,10 @@ Then open <http://localhost:8080> in a browser. Like the Driver Hub, the page
 shows the telemetry and reads gamepad 1 from a controller plugged into the
 laptop.
 
-To connect to it, run `secondloop.py` in another terminal:
-
-```console
-$ ./secondloop.py localhost
-Connected to RobotSimulator using RC version 0.0 (SDK v0.0.0)
-Active configuration is biobuzz
-Notebook at http://localhost:4188
-Second Loop version 1.1.17
-user=>
-```
-
-Port 8080 also answers `/js/rcInfo.json`, as the robot controller does, so
-`secondloop.py` and its [notebook](../notebook.md) work against
-`RobotSimulator` unchanged.
+Like the robot, it serves the [notebook](../notebook.md), at
+<http://localhost:9002>, which it opens in the default browser, and the plain REPL for `nc localhost 9001`. Port
+8080 also answers `/js/rcInfo.json`, as the robot controller does, so the
+notebook shows the simulator's name and its active configuration.
 
 The battery is a goBILDA
 [12 V, 3000 mAh NiMH pack](https://www.gobilda.com/12v-nimh-nested-battery-3000mah-mh-fc-xt30-connector/).

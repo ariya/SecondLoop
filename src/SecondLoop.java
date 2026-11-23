@@ -23,12 +23,14 @@ import secondloop.Version;
  * Second Loop: a REPL for FTC robots.
  *
  * Select this OpMode on the Driver Hub and press INIT. From a laptop on
- * the robot's WiFi, connect with: nc ROBOT_IP 9001
- * (the address is shown on the Driver Hub telemetry).
+ * the robot's WiFi, open the notebook at http://ROBOT_IP:9002, or connect
+ * with: nc ROBOT_IP 9001 (the address is shown on the Driver Hub telemetry).
  */
 @TeleOp(name = "Second Loop", group = "Second Loop")
 public class SecondLoop extends LinearOpMode {
     public static final int PORT = 9001;
+    /** The notebook in a web browser. */
+    public static final int WEB_PORT = 9002;
 
     /** How often the Driver Hub display is redrawn. */
     private static final long STATUS_MILLIS = 100;
@@ -47,12 +49,12 @@ public class SecondLoop extends LinearOpMode {
         PinpointModule.install(globals, this);
         telemetryModule.install(globals);
         publishModule.install(globals);
-        ReplServer server = new ReplServer(globals, PORT);
+        ReplServer server = new ReplServer(globals, PORT, WEB_PORT);
         try {
             server.start();
         } catch (IOException e) {
             telemetry.addLine(Version.greeting(Version.COMMIT));
-            telemetry.addData("Second Loop", "Cannot listen on port " + PORT + ": " + e.getMessage());
+            telemetry.addData("Second Loop", "Cannot listen on port " + PORT + " or " + WEB_PORT + ": " + e.getMessage());
             telemetry.update();
             while (!isStopRequested()) {
                 sleep(100);
@@ -79,9 +81,7 @@ public class SecondLoop extends LinearOpMode {
     }
 
     private void showStatus(ReplServer server, String address) {
-        // The version first, so a team can tell which copy of this file the robot runs.
-        telemetry.addLine(Version.greeting(Version.COMMIT));
-        telemetry.addLine(ReplServer.status(address, PORT, server.clientCount()));
+        telemetryModule.setHeader(ReplServer.status(address, WEB_PORT, server.clientCount()));
         telemetryModule.render(telemetry);
         telemetry.update();
     }

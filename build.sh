@@ -17,7 +17,7 @@ python3 tools/amalgamate.py build/SecondLoop.java
 rm -rf build/classes build/check
 # The FTC stand-ins let src/ftc modules compile and be tested off the robot.
 STUBS=$(find test/ftc-stubs -name '*.java')
-"${JAVAC[@]}" -d build/classes $STUBS src/secondloop/*.java src/ftc/*.java test/secondloop/*.java
+"${JAVAC[@]}" -d build/classes $STUBS src/secondloop/*.java src/ftc/*.java build/gen/*.java test/secondloop/*.java
 cp test/secondloop/robot-simulator.html build/classes/secondloop/ # the web UI of RobotSimulator
 java -cp build/classes secondloop.ReplTest
 java -cp build/classes secondloop.GamepadTest
@@ -35,6 +35,7 @@ java -cp build/classes secondloop.PinpointTest
 java -cp build/classes secondloop.SimPinpointTest
 java -cp build/classes secondloop.SimWebUiTest
 java -cp build/classes secondloop.PublishTest
+java -cp build/classes secondloop.NotebookTest
 
 "${JAVAC[@]}" -d build/check $STUBS build/SecondLoop.java
 echo "build/SecondLoop.java compiles."

@@ -1,9 +1,8 @@
 # REPL
 
 Most of the time you use the REPL through the [Notebook](../notebook.md).
-This page explains what the REPL is, then covers the options of
-`secondloop.py`, and the other ways to connect when you want something
-different or something goes wrong.
+This page explains what the REPL is, then covers the other ways to connect
+when you want something different or something goes wrong.
 
 REPL stands for **read, evaluate, print, loop**, and it is how you work with
 Second Loop, you type a form, it runs right away, the value is printed, and
@@ -54,115 +53,51 @@ upload a new `SecondLoop.java`:
 
 ```clojure
 user=> (version)
-{:version "1.1.17", :major 1.0, :minor 1.0, :patch 17.0, :commit "main"}
+{:version "1.1.22", :major 1.0, :minor 1.0, :patch 22.0, :commit "main"}
 ```
 
 `:commit` is `"main"` for a development build.
 
-## secondloop.py
+## Netcat
 
-Download `secondloop.py` from the [Second Loop repository](https://github.com/ariya/SecondLoop).
-It needs only Python 3 and its standard library, and it runs on Linux, macOS
-and Windows.
+The REPL is plain text over TCP on port 9001, so Netcat (`nc`) works as a
+client too. It has no line editing or history, but it is available almost
+everywhere and puts nothing between you and the robot. This helps when you
+want to rule out the browser as the problem.
 
-```console
-$ ./secondloop.py                  # tries 192.168.43.1, then 192.168.49.1
-$ ./secondloop.py 192.168.49.1     # another address
-$ ./secondloop.py localhost 9001   # an address and a port
-$ ./secondloop.py localhost:9001   # the same, as HOST:PORT
-```
-
-On Windows, run it as `python secondloop.py` instead.
-
-| Option | Effect |
-| --- | --- |
-| `--no-browser` | Don't open the [notebook](../notebook.md) in the default web browser. It is still served at <http://localhost:4188>. |
-| `--no-web` | Don't serve the [notebook](../notebook.md) at all. |
-| `--history FILE` | Keep history in `FILE` instead of `~/.secondloop_history`. Pass an empty name to keep no history. |
-| `--no-color` | Never use colors in the terminal. |
-
-Keep `secondloop.py` running for as long as you use the notebook. Pressing
-`Ctrl-D` in its terminal quits it. Quitting closes only its connections, the
-OpMode keeps running, and everything you defined stays.
-
-## Other clients
-
-The [Notebook](../notebook.md) is not the only way in. The same REPL is also
-available in the terminal, and through anything that speaks plain text over
-TCP.
-
-### Terminal
-
-The terminal where `secondloop.py` runs also shows a `user=>` prompt. It is
-one more connection, like a browser tab, so it shares definitions and history
-with the notebook. History is saved in `~/.secondloop_history`, a plain text
-file with a blank line between entries, so it carries over from one session
-to the next.
-
-Lines are edited on the laptop, as with readline, and a form is sent only
-once its brackets balance. An unfinished form can span several lines, and
-history recalls it as a single entry.
-
-| Keys | Action |
-| --- | --- |
-| `Left` `Right`, `Ctrl-B` `Ctrl-F` | Move one character. |
-| `Alt-B` `Alt-F`, `Ctrl-Left` `Ctrl-Right` | Move one word. |
-| `Home` `End`, `Ctrl-A` `Ctrl-E` | Move to the start or end of the line. |
-| `Backspace` | Delete the character before the cursor. |
-| `Delete`, `Ctrl-D` | Delete the character under the cursor. |
-| `Ctrl-K` | Delete to the end of the line. |
-| `Ctrl-U` | Delete to the start of the line. |
-| `Ctrl-W`, `Alt-Backspace` | Delete the word before the cursor. |
-| `Alt-D` | Delete the word after the cursor. |
-| `Ctrl-Y` | Paste the most recently deleted text. |
-| `Up` `Down`, `Ctrl-P` `Ctrl-N` | Step through history. |
-| `Tab` | Insert two spaces. |
-| `Ctrl-L` | Clear the screen. |
-| `Ctrl-C` | Discard the line. |
-| `Ctrl-D` on an empty line | Quit. |
-
-`Ctrl-R` searches history as you type and finds the most recent entry that
-contains the text:
-
-| Keys | Action |
-| --- | --- |
-| `Ctrl-R` | Find an older match. |
-| `Ctrl-S` | Find a newer match. |
-| `Enter` | Run the entry shown. |
-| `Ctrl-G`, `Esc` | Cancel and return to what you were typing. |
-| Any other key | Keep the entry and continue editing it. |
-
-In a terminal that supports colors, the prompt, your input, errors and the
-`Ctrl-R` search each have their own color. To turn colors off, set `NO_COLOR`
-or pass `--no-color`.
-
-### nc
-
-The REPL is plain text over TCP, so `nc` also works as a client. It has no
-line editing or history, but it is available almost everywhere and puts
-nothing between you and the robot, which helps when you want to rule out
-`secondloop.py` as the problem:
+Connect with the robot's address and port 9001, then type forms after the
+prompt:
 
 ```console
 $ nc 192.168.43.1 9001
-Second Loop version 1.1.17
+Second Loop version 1.1.22
 user=> (+ 1 2)
 3.0
 ```
 
-`nc` sends each line as you type it. Closing it closes only that connection.
+- `nc` sends each line when you press Enter. A form can span several lines;
+  the prompt comes back only once the brackets are balanced.
+- Press Ctrl+C to quit. This closes only your connection, and your
+  definitions stay on the robot.
+- `nc` is built into macOS and most Linux systems. On Windows, install
+  [Nmap](https://nmap.org/download.html) and use its `ncat` the same way.
+- For line editing and history, run it as `rlwrap nc 192.168.43.1 9001`
+  where [rlwrap](https://github.com/hanslub42/rlwrap) is installed.
 
-## If it doesn't connect
+## Troubleshooting
 
 - Check that INIT has been pressed. The REPL listens from INIT until the
   OpMode stops.
-- Use the address that the Driver Hub shows after **Ready at**. It is
-  the robot's own IP address and depends on your setup. The port is always
-  9001. If the robot has several addresses, it shows the Control Hub's WiFi
-  address (`192.168.43.1`) or a phone's WiFi Direct address (`192.168.49.1`).
+- Use the address that the Driver Hub shows in its Second Loop status line. It is
+  the robot's own IP address and depends on your setup. The notebook is
+  always on port 9002, and `nc` on port 9001. If the robot has several
+  addresses, it shows the Control Hub's WiFi address (`192.168.43.1`) or a
+  phone's WiFi Direct address (`192.168.49.1`).
 - Make sure the laptop is on the robot's WiFi.
-- If the browser doesn't open, go to <http://localhost:4188> yourself while
-  `secondloop.py` is running.
+- Type the address with `http://`, by its numbers. The notebook does not
+  answer to other names for the robot.
+- Try `nc 192.168.43.1 9001`. If it connects, the robot is fine and the
+  problem is in the browser.
 - If a form is sent but nothing responds, a loop started from an earlier form
   may be keeping that connection busy. Several connections can be open at
   once, so open another browser tab, and start long loops with

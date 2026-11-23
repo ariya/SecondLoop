@@ -21,7 +21,9 @@ import java.util.Map;
 
 /**
  * Accepts TCP connections (e.g. from `nc ROBOT_IP 9001`) and gives each one
- * its own REPL. All connections share the same global definitions.
+ * its own REPL, and serves the notebook (see NotebookServer), whose browser
+ * tabs each get their own REPL too. All of them share the same global
+ * definitions.
  */
 public final class ReplServer {
     /** Deeply recursive code needs more stack than Android gives a thread by default. */
@@ -29,20 +31,28 @@ public final class ReplServer {
 
     private final Env globals;
     private final int port;
+    private final NotebookServer notebook;
     /** Each connected client and the thread running its REPL. */
     private final Map<Socket, Thread> clients = new HashMap<Socket, Thread>();
     private ServerSocket serverSocket;
     private volatile boolean running;
 
-    public ReplServer(Env globals, int port) {
+    public ReplServer(Env globals, int port, int webPort) {
         this.globals = globals;
         this.port = port;
+        this.notebook = new NotebookServer(globals, webPort, NotebookServer.RC_INFO_URL);
     }
 
     public synchronized void start() throws IOException {
         final ServerSocket socket = new ServerSocket();
         socket.setReuseAddress(true);
         socket.bind(new InetSocketAddress(port));
+        try {
+            notebook.start();
+        } catch (IOException e) {
+            closeQuietly(socket);
+            throw e;
+        }
         serverSocket = socket;
         running = true;
         Thread acceptor = new Thread(new Runnable() {
@@ -58,6 +68,7 @@ public final class ReplServer {
     public synchronized void stop() {
         running = false;
         closeQuietly(serverSocket);
+        notebook.stop();
         synchronized (clients) {
             for (Map.Entry<Socket, Thread> e : clients.entrySet()) {
                 closeQuietly(e.getKey());
@@ -68,9 +79,10 @@ public final class ReplServer {
         Future.cancelAll();
     }
 
+    /** Both nc connections and notebook tabs. */
     public int clientCount() {
         synchronized (clients) {
-            return clients.size();
+            return clients.size() + notebook.sessionCount();
         }
     }
 
@@ -128,6 +140,11 @@ public final class ReplServer {
         }
     }
 
+    /** The notebook's address, e.g. "http://192.168.43.1:9002". */
+    public static String url(String address, int webPort) {
+        return "http://" + address + ":" + webPort;
+    }
+
     /** The IPv4 addresses of this device, e.g. "192.168.43.1", for showing on telemetry. */
     public static List<String> localAddresses() {
         List<String> found = new ArrayList<String>();
@@ -162,9 +179,13 @@ public final class ReplServer {
         return addresses.isEmpty() ? null : addresses.get(0);
     }
 
-    /** The one status line on the Driver Hub, e.g. "Ready at 192.168.43.1:9001 (1 client)". */
-    public static String status(String address, int port, int clients) {
-        String where = address == null ? "on port " + port : "at " + address + ":" + port;
-        return "Ready " + where + " (" + clients + (clients == 1 ? " client)" : " clients)");
+    /**
+     * The one status line on the Driver Hub, e.g. "Second Loop 1.1.22 at
+     * http://192.168.43.1:9002 (1 client)". The version is there so a team
+     * can tell which copy of the file the robot runs.
+     */
+    public static String status(String address, int webPort, int clients) {
+        String where = address == null ? "on port " + webPort : "at " + url(address, webPort);
+        return Version.title(Version.COMMIT) + " " + where + " (" + clients + (clients == 1 ? " client)" : " clients)");
     }
 }
