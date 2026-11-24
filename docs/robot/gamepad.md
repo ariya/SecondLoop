@@ -1,6 +1,7 @@
 # Gamepad
 
-![Gamepad](gamepad.jpg){ .three-quarters }
+![An Xbox-style controller with its controls labelled: triggers, bumpers, both sticks, the D-pad, the A, B, X and Y buttons, and back, guide and start.](gamepad.svg#only-light)
+![An Xbox-style controller with its controls labelled: triggers, bumpers, both sticks, the D-pad, the A, B, X and Y buttons, and back, guide and start.](gamepad-dark.svg#only-dark)
 
 `(gamepad 1)` and `(gamepad 2)` each return a snapshot of the controller's
 current state as a map. The keys are the FTC SDK's `Gamepad` field names,

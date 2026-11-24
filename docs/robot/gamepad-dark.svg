@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13">
+  <rect width="760" height="380" rx="6" fill="#161b22"/>
+  <g transform="translate(60,0)">
+
+    <!-- Triggers and bumpers -->
+    <rect x="190" y="68" width="52" height="22" rx="10" fill="#30363d" stroke="#6e7681" stroke-width="1.5"/>
+    <rect x="398" y="68" width="52" height="22" rx="10" fill="#30363d" stroke="#6e7681" stroke-width="1.5"/>
+    <path d="M 166 122 C 172 98, 214 88, 256 98 L 254 110 C 216 102, 186 108, 178 126 Z" fill="#30363d" stroke="#6e7681" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 474 122 C 468 98, 426 88, 384 98 L 386 110 C 424 102, 454 108, 462 126 Z" fill="#30363d" stroke="#6e7681" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- Body -->
+    <path d="M 200 110 C 250 100, 390 100, 440 110 C 490 118, 515 140, 528 185 C 545 245, 565 300, 548 330 C 535 352, 500 350, 485 330 C 465 300, 450 280, 420 278 L 220 278 C 190 280, 175 300, 155 330 C 140 350, 105 352, 92 330 C 75 300, 95 245, 112 185 C 125 140, 150 118, 200 110 Z" fill="#21262d" stroke="#6e7681" stroke-width="1.5"/>
+
+    <!-- Sticks and D-pad -->
+    <circle cx="215" cy="165" r="34" fill="#30363d"/>
+    <circle cx="215" cy="165" r="24" fill="#8b949e"/>
+    <circle cx="375" cy="225" r="34" fill="#30363d"/>
+    <circle cx="375" cy="225" r="24" fill="#8b949e"/>
+    <circle cx="265" cy="225" r="30" fill="#30363d"/>
+    <path d="M 257 204 h 16 v 13 h 13 v 16 h -13 v 13 h -16 v -13 h -13 v -16 h 13 z" fill="#8b949e" stroke-linejoin="round"/>
+
+    <!-- Back, guide, start -->
+    <circle cx="285" cy="162" r="8" fill="#8b949e"/>
+    <circle cx="320" cy="134" r="13" fill="#8b949e"/>
+    <circle cx="355" cy="162" r="8" fill="#8b949e"/>
+
+    <!-- A, B, X, Y -->
+    <g font-weight="bold" font-size="12" text-anchor="middle" fill="#161b22">
+      <circle cx="425" cy="140" r="12" fill="#8b949e"/><text x="425" y="144.5">Y</text>
+      <circle cx="400" cy="165" r="12" fill="#8b949e"/><text x="400" y="169.5">X</text>
+      <circle cx="450" cy="165" r="12" fill="#8b949e"/><text x="450" y="169.5">B</text>
+      <circle cx="425" cy="190" r="12" fill="#8b949e"/><text x="425" y="194.5">A</text>
+    </g>
+
+    <!-- Leaders -->
+    <g stroke="#6e7681" stroke-width="1" fill="none">
+      <line x1="62" y1="66" x2="190" y2="79"/>
+      <line x1="62" y1="116" x2="170" y2="114"/>
+      <line x1="62" y1="166" x2="181" y2="165"/>
+      <line x1="62" y1="256" x2="235" y2="228"/>
+      <line x1="578" y1="66" x2="450" y2="79"/>
+      <line x1="578" y1="116" x2="470" y2="114"/>
+      <line x1="578" y1="166" x2="462" y2="165"/>
+      <line x1="578" y1="256" x2="409" y2="230"/>
+      <line x1="250" y1="52" x2="282" y2="154"/>
+      <line x1="320" y1="52" x2="320" y2="121"/>
+      <line x1="390" y1="52" x2="358" y2="154"/>
+    </g>
+
+    <!-- Labels -->
+    <g fill="#e6edf3" font-weight="bold">
+      <g text-anchor="end">
+        <text x="56" y="70">Left trigger</text>
+        <text x="56" y="120">Left bumper</text>
+        <text x="56" y="170">Left stick</text>
+        <text x="56" y="260">D-pad</text>
+      </g>
+      <text x="584" y="70">Right trigger</text>
+      <text x="584" y="120">Right bumper</text>
+      <text x="584" y="170">Buttons</text>
+      <text x="584" y="260">Right stick</text>
+      <g text-anchor="middle">
+        <text x="250" y="44">Back</text>
+        <text x="320" y="44">Guide</text>
+        <text x="390" y="44">Start</text>
+      </g>
+    </g>
+  </g>
+</svg>
