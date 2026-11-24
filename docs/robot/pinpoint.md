@@ -79,9 +79,10 @@ before reading.
 
 ## init
 
-`(pinpoint/init pods x-offset y-offset)` tells the Pinpoint about the pods,
-then resets the pose to 0. Call it once, before the other `pinpoint/*`
-functions.
+`(pinpoint/init pods x-offset y-offset)` or
+`(pinpoint/init pods x-offset y-offset x-direction y-direction)` tells the
+Pinpoint about the pods, then resets the pose to 0. Call it once, before the
+other `pinpoint/*` functions.
 
 - **pods:** `:swingarm` for goBILDA swingarm pods, `:4-bar` for goBILDA 4-bar
   pods, or for other encoders the number of encoder ticks per inch.
@@ -89,6 +90,8 @@ functions.
   center. Left is positive, right is negative.
 - **y-offset:** how far the Y (sideways) pod is in front of the center.
   Forward is positive, backward is negative.
+- **x-direction, y-direction:** optional, `:forward` (the default) or
+  `:reverse` for a pod that counts the wrong way. Give both or neither.
 
 `pinpoint/init` also calibrates the IMU, which takes about a quarter of a
 second, so keep the robot still while it runs. It waits for the calibration, then returns
