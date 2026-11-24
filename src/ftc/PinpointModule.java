@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * (pinpoint/init :swingarm -3.3 -6.6), (pinpoint/pose) and friends: the goBILDA
+ * (pinpoint/init :swingarm -3 -7), (pinpoint/pose) and friends: the goBILDA
  * Pinpoint odometry computer, which the robot configuration names "pinpoint".
  * Distances are in inches, the unit of the FTC field, and angles in radians,
  * as for imu/angles.

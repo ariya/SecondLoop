@@ -20,6 +20,7 @@ nav = [
     { "Mecanum Drive" = "examples/mecanum-drive.md" },
     { "Speed Adjustment" = "examples/speed-adjustment.md" },
     { "Location Tracking" = "examples/location-tracking.md" },
+    { "Pinpoint Calibration" = "examples/pinpoint-calibration.md" },
   ] },
   { "Language" = [
     { "Syntax" = "language/basics.md" },

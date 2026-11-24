@@ -8,11 +8,11 @@ port, and add it to the robot configuration as a "goBILDA Pinpoint Odometry
 Computer" named `"pinpoint"`.
 
 Before reading it, tell the Pinpoint about the pods. For goBILDA swingarm pods,
-with the X pod 3.3 inches to the right of the robot's center and the Y pod 6.6
+with the X pod 3 inches to the right of the robot's center and the Y pod 7
 inches behind it:
 
 ```clojure
-user=> (pinpoint/init :swingarm -3.3 -6.6)
+user=> (pinpoint/init :swingarm -3 -7)
 :ready
 user=> (pinpoint/pose)
 {:x 0.0, :y 0.0, :heading 0.0}
@@ -57,6 +57,9 @@ The last `x` and `y` should be within a few hundredths of an inch of 0. If they
 are about 1 inch off, an offset is wrong by about half an inch. Change one
 offset a little, run `pinpoint/init` and `check-offsets` again, and see whether
 the result moves closer to 0.
+
+With a drivetrain, the robot can also measure the offsets itself by turning on
+the spot: see [Pinpoint Calibration](../examples/pinpoint-calibration.md).
 
 ## status
 
@@ -106,7 +109,7 @@ counts the wrong way. To fix it, give the direction of each pod, `:forward` or
 `:reverse`, after the offsets. Here the X pod is reversed:
 
 ```clojure
-user=> (pinpoint/init :swingarm -3.3 -6.6 :reverse :forward)
+user=> (pinpoint/init :swingarm -3 -7 :reverse :forward)
 :ready
 ```
 

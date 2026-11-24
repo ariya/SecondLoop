@@ -103,9 +103,12 @@ speed.
 The [IMU](../robot/imu.md) and the [Pinpoint](../robot/pinpoint.md) both follow the robot. The [IMU](../robot/imu.md)'s yaw is its heading,
 which increases as it turns left; the floor is flat, so pitch and roll stay at
 0. The [Pinpoint](../robot/pinpoint.md), named `"pinpoint"`, tracks the robot exactly, as if its pods
-never slip, from where it was last reset, with `x` forward and `y` to the left. The
-pod type and offsets given to [`pinpoint/init`](../robot/pinpoint.md#init) are taken to be right, and the
-simulated pods count the right way with `:forward :forward`. Setting one to
+never slip, from where it was last reset, with `x` forward and `y` to the left. Its X pod is 3 inches to the right of the robot's center and its Y pod 7
+inches behind it, so with `(pinpoint/init :swingarm -3 -7)` it tracks the
+center. Other offsets make `x` and `y` drift as the robot turns, as on a real
+robot, which [Pinpoint Calibration](../examples/pinpoint-calibration.md) uses to find
+them. The pod type is taken to be right, and the simulated pods count the
+right way with `:forward :forward`. Setting one to
 `:reverse` flips its axis, as on a real robot whose pod is set the wrong way.
 
 With `mecanum-drive` from the example, turn on the spot for one second, then
@@ -114,7 +117,7 @@ drive forward for two:
 ```clojure
 user=> (imu/init :up :backward)
 nil
-user=> (pinpoint/init :swingarm -3.3 -6.6)
+user=> (pinpoint/init :swingarm -3 -7)
 :ready
 user=> (mecanum-drive 0 0 0.3)
 [0.3 -0.3 0.3 -0.3]

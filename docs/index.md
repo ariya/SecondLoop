@@ -9,8 +9,9 @@ rapid iteration.
 
 Setup takes [just 5 minutes](setup.md) and needs no Java coding. You
 type commands on your laptop, and the robot runs each one
-**right away**. Want to tune the launcher PID, adjust the drivetrain,
-or fix the odometry? Change the code **live** and see the results at
+**right away**. Want to [tune the launcher PID](examples/pidf-tuning.md),
+[adjust the drivetrain](examples/speed-adjustment.md), or
+[calibrate the odometry](examples/pinpoint-calibration.md)? Change the code **live** and see the results at
 once, **without waiting** to rebuild, redeploy, and restart.
 
 Once Second Loop is [running](setup.md), the robot serves the
@@ -51,6 +52,7 @@ From here, the examples build up step by step:
 [tuning its PIDF gains](examples/pidf-tuning.md), driving a
 [tank](examples/tank-drive.md) or
 [mecanum](examples/mecanum-drive.md) drivetrain from the gamepad,
-[changing the speed](examples/speed-adjustment.md) while driving, and
+[changing the speed](examples/speed-adjustment.md) while driving,
 [tracking where the robot is](examples/location-tracking.md) on the
-field.
+field, and [calibrating the Pinpoint](examples/pinpoint-calibration.md)
+pod directions and offsets.

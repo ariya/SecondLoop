@@ -10,11 +10,19 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
  * slipping, so it tracks the robot exactly, from where it was last reset:
  * x forward, y to the left, heading counterclockwise. The simulated pods count
  * the right way with :forward :forward; a pod set to :reverse flips its axis,
- * as a wrongly set pod does on a real robot. Pod type and offsets are taken to
- * be right. Its state is guarded by the robot's lock, which moves it.
+ * as a wrongly set pod does on a real robot. The pods sit where the docs put
+ * them, the X pod 3 in to the right and the Y pod 7 in behind the center,
+ * so other offsets make the pose drift as the robot turns, as on a real robot.
+ * The pod type is taken to be right. Its state is guarded by the robot's lock,
+ * which moves it.
  */
 final class SimPinpoint extends GoBildaPinpointDriver {
+    private static final double X_POD_LEFT = -3;
+    private static final double Y_POD_FORWARD = -7;
+
     private final SimRobot robot;
+    private double xOffset = X_POD_LEFT;
+    private double yOffset = Y_POD_FORWARD;
     private double xSign = 1;
     private double ySign = 1;
     private double x;
@@ -31,8 +39,9 @@ final class SimPinpoint extends GoBildaPinpointDriver {
 
     /** Called by the robot, under its lock, for each step it moves. */
     void step(double forward, double left, double turn, double dt) {
-        double f = xSign * forward;
-        double l = ySign * left;
+        // What each pod rolls, corrected by the offsets the program gave.
+        double f = xSign * (forward - turn * X_POD_LEFT) + turn * xOffset;
+        double l = ySign * (left + turn * Y_POD_FORWARD) - turn * yOffset;
         double mid = heading + turn / 2;
         double dx = f * Math.cos(mid) - l * Math.sin(mid);
         double dy = f * Math.sin(mid) + l * Math.cos(mid);
@@ -51,6 +60,12 @@ final class SimPinpoint extends GoBildaPinpointDriver {
 
     @Override
     public void setOffsets(double xOffset, double yOffset, DistanceUnit distanceUnit) {
+        synchronized (robot) {
+            robot.advance();
+            double scale = distanceUnit == DistanceUnit.MM ? 1 / 25.4 : 1;
+            this.xOffset = xOffset * scale;
+            this.yOffset = yOffset * scale;
+        }
     }
 
     @Override

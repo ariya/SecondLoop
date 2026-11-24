@@ -8,7 +8,7 @@ where the robot is, which way it faces and how fast it is moving:
 (defonce speed (atom 0.5))
 
 (defn drive-with-gamepad []
-  (pinpoint/init :swingarm -3.3 -6.6 :forward :reverse) ; set up once, robot still
+  (pinpoint/init :swingarm -3 -7 :forward :reverse) ; set up once, robot still
   (loop []
     (let [pad     (gamepad 1)
           forward (* @speed (- (:left-stick-y pad)))
@@ -29,7 +29,7 @@ where the robot is, which way it faces and how fast it is moving:
 `pinpoint/init` runs only once, before the loop, because it resets the position
 to 0 and calibrates the IMU. Keep the robot still when you start the loop.
 
-The arguments `:swingarm -3.3 -6.6 :forward :reverse` describe one particular
+The arguments `:swingarm -3 -7 :forward :reverse` describe one particular
 robot: its type of odometry pods, where they are mounted, and which way each
 pod counts. On this robot the Y pod is reversed, because `y` went down instead
 of up when the robot strafed left. Change them to match your robot, as

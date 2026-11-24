@@ -58,7 +58,7 @@ public final class SimPinpointTest {
     public static void main(String[] args) {
         SimPinpointTest t = new SimPinpointTest();
         t.check(":ready", "(pinpoint/status)");
-        t.check(":ready", "(pinpoint/init :swingarm -3.3 -6.6)");
+        t.check(":ready", "(pinpoint/init :swingarm -3 -7)");
         t.check("[0.0 0.0 0.0]", "(pose)");
 
         // Power 0.3 rolls 20.1 in/s; 3 s of driving and the coast cover 60.2 in.
@@ -94,7 +94,7 @@ public final class SimPinpointTest {
         t.check("[0.0 60.2 90.0]", "(pose)");
 
         // A Y pod set the wrong way: strafing left reads as -y, as the docs describe.
-        t.check(":ready", "(pinpoint/init :swingarm -3.3 -6.6 :forward :reverse)");
+        t.check(":ready", "(pinpoint/init :swingarm -3 -7 :forward :reverse)");
         t.feed("(drive 0 0 0.3)"); // back to facing along x
         t.clock.seconds(quarterTurn);
         t.feed("(drive 0 0 0)");
@@ -105,6 +105,15 @@ public final class SimPinpointTest {
         t.feed("(drive 0 0 0)");
         t.clock.seconds(3);
         t.check("[0.0 -60.2 0.0]", "(pose)");
+
+        // Offsets of 0 track the point between the pods, 7 in behind and 3 in
+        // to the right; a half turn on the spot moves it to twice that, ahead and left.
+        t.check(":ready", "(pinpoint/init :swingarm 0 0)");
+        t.feed("(drive 0 0 -0.3)");
+        t.clock.seconds(2 * quarterTurn);
+        t.feed("(drive 0 0 0)");
+        t.clock.seconds(3);
+        t.check("[14.0 6.0 180.0]", "(pose)");
 
         System.out.println((count - failures) + "/" + count + " passed");
         if (failures > 0) {
