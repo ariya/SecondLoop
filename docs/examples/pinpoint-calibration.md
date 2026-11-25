@@ -66,7 +66,7 @@ Try it first with the offsets you have, for example 0, and spin two turns.
 instead of printing them all:
 
 ```clojure
-user=> (pinpoint/init :swingarm 0 0)
+user=> (pinpoint/init :4-bar 0 0)
 :ready
 user=> (count (spin 2))
   -93°  x   4.39  y  10.15
@@ -121,7 +121,7 @@ seems to turn perfectly. Only driving straight shows the mistake. Give the same
 pod type and directions here, but with both offsets 0. Then turn three times:
 
 ```clojure
-user=> (pinpoint/init :swingarm 0 0)
+user=> (pinpoint/init :4-bar 0 0)
 :ready
 user=> (find-offsets 3)
   -94°  x   4.44  y  10.17
@@ -201,7 +201,7 @@ on every side. Set both pods to `:forward` first, which is what
 `pinpoint/init` does when you leave the directions out:
 
 ```clojure
-user=> (pinpoint/init :swingarm 0 0)
+user=> (pinpoint/init :4-bar 0 0)
 :ready
 user=> (find-directions)
 X pod :forward and Y pod :forward
@@ -249,7 +249,7 @@ Too much drift means that the robot slid around or did not turn on the spot.
 Put the robot on the floor and run it:
 
 ```clojure
-user=> (spin-calibrate :swingarm)
+user=> (spin-calibrate :4-bar)
 X pod :forward and Y pod :forward
   -95°  x   4.71  y  10.55
  -182°  x  14.16  y   6.04
@@ -270,7 +270,7 @@ Checking with one more turn
  -278°  x  -0.01  y  -0.00
  -364°  x   0.00  y  -0.00
 Drift at most 0.01 in
-OK, use (pinpoint/init :swingarm -3.01 -7.00 :forward :forward)
+OK, use (pinpoint/init :4-bar -3.01 -7.00 :forward :forward)
 nil
 ```
 

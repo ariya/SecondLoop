@@ -13,18 +13,23 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
  * as a wrongly set pod does on a real robot. The pods sit where the docs put
  * them, the X pod 3 in to the right and the Y pod 7 in behind the center,
  * so other offsets make the pose drift as the robot turns, as on a real robot.
- * The pod type is taken to be right. Its state is guarded by the robot's lock,
- * which moves it.
+ * The pods are goBILDA 4-bar pods, so another pod type or resolution scales
+ * the distances they count. Its state is guarded by the robot's lock, which
+ * moves it.
  */
 final class SimPinpoint extends GoBildaPinpointDriver {
     private static final double X_POD_LEFT = -3;
     private static final double Y_POD_FORWARD = -7;
+    // Encoder ticks per mm, as in the SDK.
+    private static final double SWINGARM_TICKS_PER_MM = 13.26291192;
+    private static final double FOUR_BAR_TICKS_PER_MM = 19.89436789;
 
     private final SimRobot robot;
     private double xOffset = X_POD_LEFT;
     private double yOffset = Y_POD_FORWARD;
     private double xSign = 1;
     private double ySign = 1;
+    private double ticksPerMm = FOUR_BAR_TICKS_PER_MM;
     private double x;
     private double y;
     private double heading;
@@ -40,8 +45,10 @@ final class SimPinpoint extends GoBildaPinpointDriver {
     /** Called by the robot, under its lock, for each step it moves. */
     void step(double forward, double left, double turn, double dt) {
         // What each pod rolls, corrected by the offsets the program gave.
-        double f = xSign * (forward - turn * X_POD_LEFT) + turn * xOffset;
-        double l = ySign * (left + turn * Y_POD_FORWARD) - turn * yOffset;
+        // The heading comes from the IMU, so a wrong resolution scales only the pods.
+        double scale = FOUR_BAR_TICKS_PER_MM / ticksPerMm;
+        double f = scale * xSign * (forward - turn * X_POD_LEFT) + turn * xOffset;
+        double l = scale * ySign * (left + turn * Y_POD_FORWARD) - turn * yOffset;
         double mid = heading + turn / 2;
         double dx = f * Math.cos(mid) - l * Math.sin(mid);
         double dy = f * Math.sin(mid) + l * Math.cos(mid);
@@ -89,10 +96,19 @@ final class SimPinpoint extends GoBildaPinpointDriver {
 
     @Override
     public void setEncoderResolution(GoBildaOdometryPods pods) {
+        synchronized (robot) {
+            robot.advance();
+            ticksPerMm = pods == GoBildaOdometryPods.goBILDA_SWINGARM_POD
+                    ? SWINGARM_TICKS_PER_MM : FOUR_BAR_TICKS_PER_MM;
+        }
     }
 
     @Override
     public void setEncoderResolution(double ticksPerUnit, DistanceUnit distanceUnit) {
+        synchronized (robot) {
+            robot.advance();
+            ticksPerMm = distanceUnit == DistanceUnit.MM ? ticksPerUnit : ticksPerUnit / 25.4;
+        }
     }
 
     @Override

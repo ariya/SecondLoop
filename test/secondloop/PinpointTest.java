@@ -160,7 +160,7 @@ public final class PinpointTest {
         String notSetUp = "Execution error: The Pinpoint is not set up: first call pinpoint/init";
         String noDevice = "Execution error: No Pinpoint named \"pinpoint\" in the robot configuration";
 
-        t.check(":not-configured", "(pinpoint/init :swingarm -3.3 -6.6)");
+        t.check(":not-configured", "(pinpoint/init :4-bar -3.3 -6.6)");
         t.check(":not-configured", "(pinpoint/status)");
         // Even after pinpoint/init, reading names the missing device.
         t.check(noDevice, "(pinpoint/pose)");
@@ -183,13 +183,13 @@ public final class PinpointTest {
                 "(pinpoint/init :odometry -3.3 -6.6)");
         t.check("Execution error: pinpoint/init expects the pods as :swingarm, :4-bar or encoder ticks per inch, got: -500.0",
                 "(pinpoint/init -500 -3.3 -6.6)");
-        t.check("Execution error: pinpoint/init expects numbers, got: \"3\"", "(pinpoint/init :swingarm \"3\" -6.6)");
-        t.check("Execution error: pinpoint/init expects a finite Y offset, got: ##NaN", "(pinpoint/init :swingarm -3.3 (Math/sqrt -1))");
+        t.check("Execution error: pinpoint/init expects numbers, got: \"3\"", "(pinpoint/init :4-bar \"3\" -6.6)");
+        t.check("Execution error: pinpoint/init expects a finite Y offset, got: ##NaN", "(pinpoint/init :4-bar -3.3 (Math/sqrt -1))");
         t.check("Execution error: pinpoint/init expects a pod direction as :forward or :reverse, got: :reversed",
-                "(pinpoint/init :swingarm -3.3 -6.6 :reversed :forward)");
+                "(pinpoint/init :4-bar -3.3 -6.6 :reversed :forward)");
         t.check("Execution error: pinpoint/init expects both the X and the Y pod direction, or neither",
-                "(pinpoint/init :swingarm -3.3 -6.6 :reverse)");
-        t.check("Execution error: Wrong number of args (2) passed to: pinpoint/init", "(pinpoint/init :swingarm -3.3)");
+                "(pinpoint/init :4-bar -3.3 -6.6 :reverse)");
+        t.check("Execution error: Wrong number of args (2) passed to: pinpoint/init", "(pinpoint/init :4-bar -3.3)");
         check("", p.setup, "nothing sent to the Pinpoint after a bad pinpoint/init");
         t.check(notSetUp, "(pinpoint/pose)");
 
@@ -209,20 +209,20 @@ public final class PinpointTest {
         // pinpoint/init waits for the IMU calibration, then returns the status.
         p.calibratingUpdates = 3;
         int before = p.updates;
-        t.check(":ready", "(pinpoint/init :swingarm -3.3 -6.6)");
+        t.check(":ready", "(pinpoint/init :4-bar -3.3 -6.6)");
         check("4", String.valueOf(p.updates - before), "pinpoint/init polls until the calibration is done");
         p.status = GoBildaPinpointDriver.DeviceStatus.FAULT_Y_POD_NOT_DETECTED;
-        t.check(":fault-y-pod-not-detected", "(pinpoint/init :swingarm -3.3 -6.6)");
+        t.check(":fault-y-pod-not-detected", "(pinpoint/init :4-bar -3.3 -6.6)");
         p.status = GoBildaPinpointDriver.DeviceStatus.READY;
         // A calibration that never ends gives up after the timeout.
         p.calibratingUpdates = Integer.MAX_VALUE;
         long started = System.nanoTime();
-        t.check(":calibrating", "(pinpoint/init :swingarm -3.3 -6.6)");
+        t.check(":calibrating", "(pinpoint/init :4-bar -3.3 -6.6)");
         long waited = (System.nanoTime() - started) / 1000000;
         check("true", String.valueOf(waited >= PinpointModule.CALIBRATION_TIMEOUT_MILLIS && waited < 3000),
                 "pinpoint/init gives up after the timeout: " + waited + " ms");
         p.calibratingUpdates = 0;
-        t.check(":ready", "(pinpoint/init :swingarm -3.3 -6.6)");
+        t.check(":ready", "(pinpoint/init :4-bar -3.3 -6.6)");
 
         p.x = 12.5;
         p.y = -3.25;

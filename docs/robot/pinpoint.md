@@ -7,12 +7,12 @@ unit), and works out where the robot is on the field. Plug it into an I2C
 port, and add it to the robot configuration as a "goBILDA Pinpoint Odometry
 Computer" named `"pinpoint"`.
 
-Before reading it, tell the Pinpoint about the pods. For goBILDA swingarm pods,
+Before reading it, tell the Pinpoint about the pods. For goBILDA 4-bar pods,
 with the X pod 3 inches to the right of the robot's center and the Y pod 7
 inches behind it:
 
 ```clojure
-user=> (pinpoint/init :swingarm -3 -7)
+user=> (pinpoint/init :4-bar -3 -7)
 :ready
 user=> (pinpoint/pose)
 {:x 0.0, :y 0.0, :heading 0.0}
@@ -109,7 +109,7 @@ counts the wrong way. To fix it, give the direction of each pod, `:forward` or
 `:reverse`, after the offsets. Here the X pod is reversed:
 
 ```clojure
-user=> (pinpoint/init :swingarm -3 -7 :reverse :forward)
+user=> (pinpoint/init :4-bar -3 -7 :reverse :forward)
 :ready
 ```
 
