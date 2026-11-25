@@ -14,8 +14,6 @@ down together, so the robot still moves in the direction you asked for:
 
 ```clojure
 (defn mecanum-drive [forward strafe rotate]
-  (motor/set-direction "front_left_drive" :reverse)
-  (motor/set-direction "back_left_drive" :reverse)
   (let [d           (max (+ (abs forward) (abs strafe) (abs rotate)) 1)
         front-left  (/ (+ forward strafe rotate) d)
         front-right (/ (- forward strafe rotate) d)
@@ -28,8 +26,19 @@ down together, so the robot still moves in the direction you asked for:
     [front-left front-right back-left back-right]))
 ```
 
-The two motors on the left are mounted the other way round, so the function
-reverses them first.
+The two motors on the left are mounted the other way round, so reverse them
+and keep the two on the right forward:
+
+```clojure
+(motor/set-direction "front_left_drive" :reverse)
+(motor/set-direction "back_left_drive" :reverse)
+(motor/set-direction "front_right_drive" :forward)
+(motor/set-direction "back_right_drive" :forward)
+```
+
+If the robot later drives backward when it should go forward, swap the
+directions. Set the two left motors to `:forward` and the two right motors to
+`:reverse`.
 
 Also make all four motors brake when their power is 0, so the robot stops
 where you stop it instead of rolling on (see
@@ -42,7 +51,7 @@ where you stop it instead of rolling on (see
 (motor/set-zero-power-behavior "back_right_drive" :brake)
 ```
 
-Paste both into the notebook and run them.
+Paste all three into the notebook and run them.
 
 Now drive the robot by hand, one move at a time.
 
