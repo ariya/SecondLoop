@@ -1,8 +1,7 @@
 # Pinpoint Calibration
 
 The [Pinpoint](../robot/pinpoint.md) needs to know where its two pods are, the
-X offset, how far the X (forward) pod is to the left of the robot's center, and
-the Y offset, how far the Y (sideways) pod is in front of it. Instead of
+offsets given to [`pinpoint/init`](../robot/pinpoint.md#init). Instead of
 measuring them with a ruler, let the robot measure them by turning on the spot
 a few times.
 
@@ -10,19 +9,30 @@ This example uses `mecanum-drive` from [Mecanum Drive](mecanum-drive.md).
 
 ## How it works
 
-Set both offsets to 0. The Pinpoint then thinks both pods sit at the center, so
-it tracks the wrong point, the one ahead of the center by the Y offset and to
-the left by the X offset. When the robot turns on the spot, the center stays
-where it is, but that point goes round it in a circle. The size of the circle
-and where it lies give both offsets.
+When the robot turns on the spot, its center does not move. So with the right
+offsets, x and y of [`pinpoint/pose`](../robot/pinpoint.md#pose) stay at
+(0, 0) the whole turn. The Pinpoint only sees its pods, which roll along as the
+robot turns, and it uses the offsets to take that rolling away. With a wrong
+offset, some is left, so x and y drift away during the turn and come back only
+when the turn is complete.
 
-![Top view of the robot: with both offsets 0, the Pinpoint tracks the point P where the lines of the two pods cross. As the robot turns around its center C, P goes round C in a circle, and after half a turn it is on the far side of C.](pinpoint-calibration.svg#only-light)
-![Top view of the robot: with both offsets 0, the Pinpoint tracks the point P where the lines of the two pods cross. As the robot turns around its center C, P goes round C in a circle, and after half a turn it is on the far side of C.](pinpoint-calibration-dark.svg#only-dark)
+So the robot can measure its own offsets. Set both to 0 in `pinpoint/init`,
+turn on the spot, and watch x and y go up and down. How far they go gives the
+offsets, and that is what [`find-offsets`](#find-the-offsets) measures.
 
-In the drawing, the X pod is 3 inches to the right of the center and the Y
-pod 7 inches behind it. P is where the line of each pod crosses the other, 3
-inches to the right and 7 inches behind. After half a turn it is at P′, 6 inches to the left and 14
-inches ahead of where it started, twice the offsets.
+The drawing shows it for the X pod alone, with the Y offset already right. The
+X pod is 3 inches to the right of the center C, so its offset should be −3 in,
+but it is set to 0. The Pinpoint then tracks P, 3 inches to the right of C:
+
+![Left: top view of the robot, front up. The X pod is 3 inches to the right of the center C, but its offset is set to 0, so the Pinpoint tracks the point P, 3 inches to the right of C. As the robot turns right, P goes round C, and it is behind C at −90°, on the left at −180° and in front at −270°. Right: x of the tracked point during three turns, on the same scale. With the x offset set to 0, x follows a wave that goes down to −3 inches at −90° and up to +3 inches at −270°, once per turn, so the wave is as high as the x offset. With the x offset set to −3 inches, the Pinpoint tracks C and x stays at 0.](pinpoint-calibration.svg#only-light)
+![Left: top view of the robot, front up. The X pod is 3 inches to the right of the center C, but its offset is set to 0, so the Pinpoint tracks the point P, 3 inches to the right of C. As the robot turns right, P goes round C, and it is behind C at −90°, on the left at −180° and in front at −270°. Right: x of the tracked point during three turns, on the same scale. With the x offset set to 0, x follows a wave that goes down to −3 inches at −90° and up to +3 inches at −270°, once per turn, so the wave is as high as the x offset. With the x offset set to −3 inches, the Pinpoint tracks C and x stays at 0.](pinpoint-calibration-dark.svg#only-dark)
+
+As the robot turns right, P goes round C, and x, how far P is to the front,
+goes up and down once per turn. After a quarter turn, at −90°, P is behind C
+and x is −3 in, exactly the X offset. After three quarters, at −270°, P is in
+front and x is +3 in. With the offset set to −3 in, the Pinpoint tracks C
+itself, which does not move, so x stays at 0. So the height of the wave is the
+X offset, and three turns give three waves to measure it from.
 
 ## Spin and record
 
@@ -75,8 +85,9 @@ stops.
 
 ## Find the offsets
 
-`find-offsets` spins, then fits a circle to the poses. It prints the offsets
-and also returns them, so that a program can use them:
+`find-offsets` spins, then fits the poses to the path the tracked point
+follows. It prints the offsets and also returns them, so that a program can
+use them:
 
 ```clojure
 (defn find-offsets [turns]
@@ -98,8 +109,9 @@ and also returns them, so that a program can use them:
     {:x-offset x-offset, :y-offset y-offset}))
 ```
 
-The fit is a least-squares fit of the poses to a circle. It does not need the
-poses to be spread evenly around the turn, nor the robot to start at 0.
+The fit is a least-squares fit of x and y to waves of the heading, explained
+below. It does not need the poses to be spread evenly around the turn, nor the
+robot to start at 0.
 
 Put the robot on the floor with room to turn. Check first that the pods count
 the right way (see [init](../robot/pinpoint.md#init)), since turning on the
@@ -131,6 +143,27 @@ x offset -3.00  y offset -7.00
 The wrong point goes round in a circle and comes back near 0 after every full
 turn. After half a turn it is farthest away, at twice the offsets, since 14 is
 twice 7, and 6 is twice 3.
+
+As the drawing in [How it works](#how-it-works) shows, with the x offset at 0,
+x of the pose follows a wave whose height is the x offset. `find-offsets`
+does not trust one point, since noise or a little slip can move any of them.
+It looks for the wave that passes as close as possible to all the points, the
+one with the smallest sum of squared misses, and takes its height.
+
+When both offsets are wrong, each one adds its own wave to x and to y. For a
+heading θ, the tracked point is at
+
+```
+x = Cx + (y offset) cos θ − (x offset) sin θ
+y = Cy + (y offset) sin θ + (x offset) cos θ
+```
+
+where Cx and Cy are where the center C is. The x offset gives the sin wave in
+x, as in the drawing, and the y offset gives the cos wave. `find-offsets`
+finds the four numbers Cx, Cy, x offset and y offset that fit all the x and y
+points best, at once. The heading is read from the Pinpoint, so it is not part
+of the guess, and every pose counts the same, wherever in the turn it was
+read.
 
 The offsets are measured from the point the robot turns around, which for a
 mecanum drivetrain is close to the middle of the four wheels. That is the point
