@@ -114,6 +114,7 @@ def amalgamate(page):
 
     header = [
         "// GENERATED FILE - DO NOT EDIT.",
+        "// Check https://secondloop.io for more details.",
         "// Built from src/ by tools/amalgamate.py. Upload this file through OnBot Java.",
         "",
         "package org.firstinspires.ftc.teamcode;",
