@@ -57,9 +57,9 @@ public final class ImuTest {
                 return type.isInstance(device) ? type.cast(device) : null;
             }
         };
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         ImuModule.install(globals, opMode);
-        repl = new Repl(globals, new PrintWriter(buffer));
+        repl = new ClojureRepl(globals, new PrintWriter(buffer));
     }
 
     private void check(String expected, String line) {

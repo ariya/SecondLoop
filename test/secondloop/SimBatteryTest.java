@@ -16,10 +16,10 @@ public final class SimBatteryTest {
     private final Repl repl;
 
     private SimBatteryTest() {
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         BatteryModule.install(globals, RobotSimulator.createOpMode());
         buffer = new StringWriter();
-        repl = new Repl(globals, new PrintWriter(buffer));
+        repl = new ClojureRepl(globals, new PrintWriter(buffer));
     }
 
     private SimBatteryTest(Repl repl, StringWriter buffer) {
@@ -48,10 +48,10 @@ public final class SimBatteryTest {
         SimMotorTest.StepClock clock = new SimMotorTest.StepClock();
         SimBattery battery = new SimBattery(12.8, SimBattery.CAPACITY, SimBattery.RESISTANCE);
         SimRobot robot = new SimRobot(battery, clock);
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         BatteryModule.install(globals, RobotSimulator.createOpMode(robot));
         StringWriter out = new StringWriter();
-        Repl repl = new Repl(globals, new PrintWriter(out));
+        Repl repl = new ClojureRepl(globals, new PrintWriter(out));
         SimBatteryTest t = new SimBatteryTest(repl, out);
 
         t.check("12.8", "(battery/voltage)");

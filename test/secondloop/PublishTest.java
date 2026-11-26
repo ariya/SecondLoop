@@ -19,9 +19,9 @@ public final class PublishTest {
     private final Repl repl;
 
     private PublishTest() {
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         module.install(globals);
-        repl = new Repl(globals, new PrintWriter(buffer));
+        repl = new ClojureRepl(globals, new PrintWriter(buffer));
     }
 
     private void feed(String expectedResult, String line) {

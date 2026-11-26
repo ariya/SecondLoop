@@ -33,11 +33,11 @@ public final class SimDrivetrainTest {
 
     private SimDrivetrainTest() {
         drivetrain = new SimRobot(new SimBattery(12, Double.POSITIVE_INFINITY, 0), clock); // no sag or drain, for numbers worked out by hand
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         com.qualcomm.robotcore.eventloop.opmode.OpMode opMode = RobotSimulator.createOpMode(drivetrain);
         MotorModule.install(globals, opMode);
         ImuModule.install(globals, opMode);
-        repl = new Repl(globals, new PrintWriter(out));
+        repl = new ClojureRepl(globals, new PrintWriter(out));
         repl.feed(MECANUM_DRIVE);
         repl.feed("(imu/init :up :backward)");
     }

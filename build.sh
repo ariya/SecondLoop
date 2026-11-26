@@ -14,10 +14,12 @@ JAVAC+=(-source 8 -target 8 -Xlint:-options -encoding UTF-8)
 
 python3 tools/amalgamate.py build/SecondLoop.java
 
-rm -rf build/classes build/check
+rm -rf build/classes build/check build/runtime-check
 # The FTC stand-ins let src/ftc modules compile and be tested off the robot.
 STUBS=$(find test/ftc-stubs -name '*.java')
-"${JAVAC[@]}" -d build/classes $STUBS src/secondloop/*.java src/ftc/*.java build/gen/*.java test/secondloop/*.java
+"${JAVAC[@]}" -d build/classes $STUBS src/secondloop/*.java src/clojure/*.java src/ftc/*.java build/gen/*.java test/secondloop/*.java
+# The runtime and the modules must not depend on Clojure, so another language can reuse them.
+"${JAVAC[@]}" -d build/runtime-check $STUBS src/secondloop/*.java src/ftc/*.java build/gen/*.java
 cp test/secondloop/robot-simulator.html build/classes/secondloop/ # the web UI of RobotSimulator
 java -cp build/classes secondloop.ReplTest
 java -cp build/classes secondloop.GamepadTest

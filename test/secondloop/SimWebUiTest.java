@@ -67,10 +67,10 @@ public final class SimWebUiTest {
                 return 12.74;
             }
         };
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         GamepadModule.install(globals, opMode);
         StringWriter out = new StringWriter();
-        Repl repl = new Repl(globals, new PrintWriter(out));
+        Repl repl = new ClojureRepl(globals, new PrintWriter(out));
         SimTelemetry telemetry = new SimTelemetry(new PrintStream(new ByteArrayOutputStream()));
         SimGamepads gamepads = new SimGamepads(opMode);
         SimWebUi ui = new SimWebUi(telemetry, battery, gamepads);

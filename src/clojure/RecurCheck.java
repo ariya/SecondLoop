@@ -74,7 +74,7 @@ public final class RecurCheck {
                 return;
             case "->":
             case "->>":
-                visit(Interp.thread(list), tail);
+                visit(ClojureInterp.thread(list), tail);
                 return;
             case "cond":
                 for (int i = 1; i < list.size(); i++) {

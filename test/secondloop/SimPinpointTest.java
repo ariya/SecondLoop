@@ -17,11 +17,11 @@ public final class SimPinpointTest {
 
     private SimPinpointTest() {
         SimRobot drivetrain = new SimRobot(new SimBattery(12, Double.POSITIVE_INFINITY, 0), clock); // no sag or drain, for numbers worked out by hand
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         com.qualcomm.robotcore.eventloop.opmode.OpMode opMode = RobotSimulator.createOpMode(drivetrain);
         MotorModule.install(globals, opMode);
         PinpointModule.install(globals, opMode);
-        repl = new Repl(globals, new PrintWriter(out));
+        repl = new ClojureRepl(globals, new PrintWriter(out));
         // Same powers as mecanum-drive in the docs, without the scaling.
         feed("(defn drive [f s r]"
                 + "  (motor/set-direction \"front_left_drive\" :reverse)"

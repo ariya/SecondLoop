@@ -13,6 +13,11 @@ public abstract class Builtin implements Fn {
         return name;
     }
 
+    @Override
+    public boolean named() {
+        return true;
+    }
+
     protected void checkArity(Object[] args, int min, int max) {
         if (args.length < min || (max >= 0 && args.length > max)) {
             throw new ScriptError("Wrong number of args (" + args.length + ") passed to: " + name);

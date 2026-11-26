@@ -9,7 +9,7 @@ public final class ReplTest {
     private static int count;
 
     private final StringWriter buffer = new StringWriter();
-    private final Repl repl = new Repl(Builtins.createGlobals(), new PrintWriter(buffer));
+    private final Repl repl = new ClojureRepl(new Clojure().createGlobals(), new PrintWriter(buffer));
 
     /** Feeds each line and expects the output of the last one. */
     private void check(String expected, String... lines) {
@@ -44,8 +44,8 @@ public final class ReplTest {
     /** restart() (START on the robot) brings time/elapsed back to zero. */
     private static void checkTimeRestart() {
         ReplTest t = new ReplTest();
-        Env globals = Builtins.createGlobals();
-        Repl repl = new Repl(globals, new PrintWriter(t.buffer));
+        Env globals = new Clojure().createGlobals();
+        Repl repl = new ClojureRepl(globals, new PrintWriter(t.buffer));
         repl.feed("(time/sleep 0.1)");
         TimeModule.restart(globals);
         t.buffer.getBuffer().setLength(0);
@@ -84,12 +84,12 @@ public final class ReplTest {
 
     /** Two sessions sharing globals each run swap! 10000 times; no update may be lost. */
     private static void checkConcurrentSwaps() {
-        Env globals = Builtins.createGlobals();
-        final Repl setup = new Repl(globals, new PrintWriter(new StringWriter()));
+        Env globals = new Clojure().createGlobals();
+        final Repl setup = new ClojureRepl(globals, new PrintWriter(new StringWriter()));
         setup.feed("(def counter (atom 0))");
         Thread[] sessions = new Thread[2];
         for (int i = 0; i < sessions.length; i++) {
-            final Repl session = new Repl(globals, new PrintWriter(new StringWriter()));
+            final Repl session = new ClojureRepl(globals, new PrintWriter(new StringWriter()));
             sessions[i] = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -106,7 +106,7 @@ public final class ReplTest {
             throw new RuntimeException(e);
         }
         StringWriter result = new StringWriter();
-        new Repl(globals, new PrintWriter(result)).feed("@counter");
+        new ClojureRepl(globals, new PrintWriter(result)).feed("@counter");
         count++;
         if (!result.toString().trim().equals("20000.0")) {
             failures++;

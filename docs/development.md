@@ -11,7 +11,8 @@ project.
 
 | Path | Contents |
 | --- | --- |
-| `src/secondloop/` | The interpreter. Plain Java, no FTC dependency. |
+| `src/secondloop/` | The runtime that any language can share: builtins, futures, the REPL servers and the printer. Plain Java, no FTC dependency. |
+| `src/clojure/` | The Clojure front end: the reader, the evaluator (`ClojureInterp`), closures, destructuring, the REPL and the Prelude. |
 | `src/ftc/` | Modules that use the FTC SDK, such as `GamepadModule`, `MotorModule`, `ServoModule`, `BatteryModule`, `ImuModule`, `PinpointModule` and `TelemetryModule`. |
 | `src/SecondLoop.java` | The OpMode template. The sources are inserted at `// @@SECONDLOOP_SOURCES@@`. |
 | `tools/amalgamate.py` | Merges everything into `build/SecondLoop.java`. |
@@ -25,14 +26,21 @@ Functions live in `Builtins`, `MathBuiltins`, `StringBuiltins` and
 `Prelude.java`. Each file's top-level types become static nested classes of
 `SecondLoop` in the combined file.
 
+The runtime doesn't depend on any one language, so another language can reuse
+it. A language implements `Language`, which creates the globals and a `Repl`
+for each session, and extends `Interp`, which is what builtins see when they
+call back into the language. The build checks this split: it also compiles
+`src/secondloop/` and `src/ftc/` without `src/clojure/`.
+
 ## Build
 
 ```console
 $ ./build.sh
 ```
 
-The script amalgamates, compiles against the FTC stand-ins, runs every test,
-and then compile-checks the single file. It needs Python 3 and a JDK, and if
+The script amalgamates, compiles against the FTC stand-ins, checks that the
+runtime compiles without the Clojure front end, runs every test, and then
+compile-checks the single file. It needs Python 3 and a JDK, and if
 there is no `javac` binary it uses the JDK's compiler module instead.
 
 The tests pair a REPL form with its expected printed output:

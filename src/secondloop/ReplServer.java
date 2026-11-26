@@ -29,6 +29,7 @@ public final class ReplServer {
     /** Deeply recursive code needs more stack than Android gives a thread by default. */
     static final long THREAD_STACK_SIZE = 16L * 1024 * 1024;
 
+    private final Language language;
     private final Env globals;
     private final int port;
     private final NotebookServer notebook;
@@ -37,10 +38,11 @@ public final class ReplServer {
     private ServerSocket serverSocket;
     private volatile boolean running;
 
-    public ReplServer(Env globals, int port, int webPort) {
+    public ReplServer(Language language, Env globals, int port, int webPort) {
+        this.language = language;
         this.globals = globals;
         this.port = port;
-        this.notebook = new NotebookServer(globals, webPort, NotebookServer.RC_INFO_URL);
+        this.notebook = new NotebookServer(language, globals, webPort, NotebookServer.RC_INFO_URL);
     }
 
     public synchronized void start() throws IOException {
@@ -118,7 +120,7 @@ public final class ReplServer {
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream(), "UTF-8"));
             PrintWriter out = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), "UTF-8"));
             out.println(Version.greeting(Version.COMMIT));
-            new Repl(globals, out).run(in);
+            language.newRepl(globals, out).run(in);
         } catch (IOException e) {
             // The client disconnected.
         } finally {

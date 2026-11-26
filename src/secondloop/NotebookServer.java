@@ -43,6 +43,7 @@ final class NotebookServer {
     /** The robot controller's web server; the page shows its name and configuration. */
     static final String RC_INFO_URL = "http://127.0.0.1:8080/js/rcInfo.json";
 
+    private final Language language;
     private final Env globals;
     private final int port;
     private final String rcInfoUrl;
@@ -54,7 +55,8 @@ final class NotebookServer {
     private volatile boolean running;
     private volatile String rcInfoCache;
 
-    NotebookServer(Env globals, int port, String rcInfoUrl) {
+    NotebookServer(Language language, Env globals, int port, String rcInfoUrl) {
+        this.language = language;
         this.globals = globals;
         this.port = port;
         this.rcInfoUrl = rcInfoUrl;
@@ -246,9 +248,9 @@ final class NotebookServer {
 
         /** Like Repl.run, with the code coming from /eval. */
         void run() throws IOException {
-            Repl repl = new Repl(globals, out);
+            Repl repl = language.newRepl(globals, out);
             out.println(Version.greeting(Version.COMMIT));
-            out.print(Repl.PROMPT);
+            out.print(repl.prompt());
             out.flush();
             while (running) {
                 String code;
@@ -266,7 +268,7 @@ final class NotebookServer {
                     done = repl.feed(line);
                 }
                 if (done) {
-                    out.print(Repl.PROMPT);
+                    out.print(repl.prompt());
                 }
                 out.flush();
                 if (events.failed) {

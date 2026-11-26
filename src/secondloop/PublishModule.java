@@ -50,7 +50,6 @@ public final class PublishModule {
     private final int defaultPort;
     /** Guarded by this. The port serverSocket was asked for, which is 0 for any free port. */
     private int listenPort;
-    private Env env;
 
     // Guarded by this. feed stays after the stream ends, so FIELDS still lists the fields.
     private Feed feed;
@@ -151,7 +150,6 @@ public final class PublishModule {
     }
 
     public void install(Env env) {
-        this.env = env;
         Builtins.define(env, new Builtin("publish/start") {
             @Override
             public Object invoke(Interp interp, Object[] args) {
@@ -445,13 +443,7 @@ public final class PublishModule {
                 if (!on || anyFailed() || closed || subscribed.isEmpty()) {
                     return;
                 }
-                FormList call = new FormList();
-                call.add(handler);
-                call.add(this);
-                call.add(feed);
-                List<Object> body = new ArrayList<Object>();
-                body.add(call);
-                started = new Future(feed.owner, body, env);
+                started = new Future(feed.owner, handler, new Object[] {this, feed});
                 task = started;
                 for (Iterator<Future> it = tasks.iterator(); it.hasNext(); ) {
                     Future old = it.next();

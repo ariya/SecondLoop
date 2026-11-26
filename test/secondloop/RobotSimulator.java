@@ -33,7 +33,8 @@ public final class RobotSimulator {
     private static final SimTelemetry telemetry = new SimTelemetry(System.out);
 
     public static void main(String[] args) throws Exception {
-        Env globals = Builtins.createGlobals();
+        Language language = new Clojure();
+        Env globals = language.createGlobals();
         new PublishModule().install(globals); // (publish/setup ...) serves on port 5599, like the robot
         telemetryModule.install(globals);
         SimRobot robot = new SimRobot(new SimBattery(new Random()), new SimMotor.Clock());
@@ -55,14 +56,14 @@ public final class RobotSimulator {
         }
         if (stdin) {
             startDisplay(gamepads, ui, null);
-            new Repl(globals, new PrintWriter(System.out)).run(
+            language.newRepl(globals, new PrintWriter(System.out)).run(
                     new BufferedReader(new InputStreamReader(System.in, "UTF-8")));
             showTelemetry(); // the last lines, in case input ended within a frame
             ui.stop();
             return;
         }
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 9001;
-        ReplServer server = new ReplServer(globals, port, WEB_PORT);
+        ReplServer server = new ReplServer(language, globals, port, WEB_PORT);
         server.start();
         startDisplay(gamepads, ui, server);
         System.out.println(Version.greeting(Version.COMMIT));

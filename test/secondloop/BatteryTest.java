@@ -32,9 +32,9 @@ public final class BatteryTest {
     private final Repl repl;
 
     private BatteryTest() {
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         BatteryModule.install(globals, opMode);
-        repl = new Repl(globals, new PrintWriter(buffer));
+        repl = new ClojureRepl(globals, new PrintWriter(buffer));
     }
 
     private void check(String expected, String line) {

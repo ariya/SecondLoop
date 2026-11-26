@@ -6,11 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import java.io.IOException;
 
 import secondloop.BatteryModule;
-import secondloop.Builtins;
+import secondloop.Clojure;
 import secondloop.PublishModule;
 import secondloop.Env;
 import secondloop.GamepadModule;
 import secondloop.ImuModule;
+import secondloop.Language;
 import secondloop.MotorModule;
 import secondloop.PinpointModule;
 import secondloop.ReplServer;
@@ -40,7 +41,8 @@ public class SecondLoop extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        Env globals = Builtins.createGlobals();
+        Language language = new Clojure();
+        Env globals = language.createGlobals();
         GamepadModule.install(globals, this);
         MotorModule.install(globals, this);
         ServoModule.install(globals, this);
@@ -49,7 +51,7 @@ public class SecondLoop extends LinearOpMode {
         PinpointModule.install(globals, this);
         telemetryModule.install(globals);
         publishModule.install(globals);
-        ReplServer server = new ReplServer(globals, PORT, WEB_PORT);
+        ReplServer server = new ReplServer(language, globals, PORT, WEB_PORT);
         try {
             server.start();
         } catch (IOException e) {

@@ -114,11 +114,11 @@ public final class ServoTest {
                 return type.isInstance(device) ? type.cast(device) : null;
             }
         };
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         ServoModule.install(globals, opMode);
         GamepadModule.install(globals, opMode);
         new TelemetryModule().install(globals);
-        repl = new Repl(globals, new PrintWriter(buffer));
+        repl = new ClojureRepl(globals, new PrintWriter(buffer));
     }
 
     private void check(String expected, String line) {

@@ -12,9 +12,9 @@ public final class SimImuTest {
     private final Repl repl;
 
     private SimImuTest() {
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         ImuModule.install(globals, RobotSimulator.createOpMode());
-        repl = new Repl(globals, new PrintWriter(buffer));
+        repl = new ClojureRepl(globals, new PrintWriter(buffer));
     }
 
     private void check(String expected, String line) {

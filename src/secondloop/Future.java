@@ -20,11 +20,12 @@ public final class Future {
     private Object value;
     private RuntimeException error;
 
-    public Future(final Interp interp, final List<Object> body, final Env env) {
+    /** A future that calls (fn args...) on its own thread once started. */
+    public Future(final Interp interp, final Fn fn, final Object[] args) {
         thread = new Thread(null, new Runnable() {
             @Override
             public void run() {
-                execute(interp, body, env);
+                execute(interp, fn, args);
             }
         }, "SecondLoop-future", ReplServer.THREAD_STACK_SIZE);
         thread.setDaemon(true);
@@ -49,11 +50,11 @@ public final class Future {
         }
     }
 
-    private void execute(Interp interp, List<Object> body, Env env) {
+    private void execute(Interp interp, Fn fn, Object[] args) {
         Object result = null;
         RuntimeException failure = null;
         try {
-            result = interp.evalBody(body, 0, env);
+            result = interp.apply(fn, args);
         } catch (RuntimeException e) {
             failure = e;
         } catch (StackOverflowError e) {
@@ -75,7 +76,7 @@ public final class Future {
         if (reportFailure) {
             // Say so at once: a control loop that died silently is dangerous.
             interp.out.println();
-            interp.out.println("Future failed. " + Repl.describe(failure));
+            interp.out.println("Future failed. " + interp.describe(failure));
             interp.out.flush();
         }
     }

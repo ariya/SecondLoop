@@ -134,10 +134,10 @@ public final class SimMotorTest {
 
         // Through the REPL, by the name in RobotSimulator's configuration.
         StepClock replClock = new StepClock();
-        Env globals = Builtins.createGlobals();
+        Env globals = new Clojure().createGlobals();
         MotorModule.install(globals, RobotSimulator.createOpMode(replClock));
         StringWriter out = new StringWriter();
-        Repl repl = new Repl(globals, new PrintWriter(out));
+        Repl repl = new ClojureRepl(globals, new PrintWriter(out));
         repl.feed("(motor/set-velocity \"flywheel\" 1500)");
         replClock.seconds(0.4);
         out.getBuffer().setLength(0);

@@ -14,7 +14,7 @@ public final class Builtins {
     private Builtins() {
     }
 
-    /** A fresh global environment containing every builtin. */
+    /** A fresh global environment with every builtin written in Java. Language.createGlobals adds the rest. */
     public static Env createGlobals() {
         Env globals = new Env(null);
         install(globals);
@@ -23,7 +23,6 @@ public final class Builtins {
         StringBuiltins.install(globals);
         TimeModule.install(globals);
         Version.install(globals);
-        Prelude.load(globals);
         return globals;
     }
 
@@ -444,11 +443,8 @@ public final class Builtins {
                     return ((Symbol) x).name;
                 }
                 // Not in Clojure: task/start uses it to tell loops apart.
-                if (x instanceof Closure) {
-                    return ((Closure) x).named() ? ((Closure) x).name() : null;
-                }
                 if (x instanceof Fn) {
-                    return ((Fn) x).name();
+                    return ((Fn) x).named() ? ((Fn) x).name() : null;
                 }
                 throw new ScriptError("name expects a string, keyword, symbol or function, got: " + Printer.print(x));
             }

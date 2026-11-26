@@ -43,7 +43,7 @@ public final class Closure implements Fn {
         return name != null ? name.name : "fn";
     }
 
-    /** False for (fn [] ...) and #(...), which have no name of their own. */
+    @Override
     public boolean named() {
         return name != null;
     }
@@ -63,7 +63,9 @@ public final class Closure implements Fn {
     }
 
     @Override
-    public Object invoke(Interp interp, Object[] args) {
+    public Object invoke(Interp caller, Object[] args) {
+        // A build has one language, so a closure is always called from Clojure.
+        ClojureInterp interp = (ClojureInterp) caller;
         Arity arity = select(args.length);
         List<Object> argList = Arrays.asList(args);
         while (true) {

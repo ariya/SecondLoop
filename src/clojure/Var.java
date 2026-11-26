@@ -7,4 +7,10 @@ public final class Var {
     public Var(Symbol symbol) {
         this.symbol = symbol;
     }
+
+    /** The Printer shows this, since it does not know about Var. */
+    @Override
+    public String toString() {
+        return "#'user/" + symbol.name;
+    }
 }

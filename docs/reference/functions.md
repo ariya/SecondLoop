@@ -60,7 +60,7 @@ the row for the area where you will reach for them.
 
 `clamp`, `deadband`, `lerp`, `wrap-degrees`, `wrap-radians`, `partial`, `comp`,
 `constantly`, the `task/*` functions and `publish/setup` are written in
-the REPL language itself, in `src/secondloop/Prelude.java`. They are ordinary
+the REPL language itself, in `src/clojure/Prelude.java`. They are ordinary
 definitions, so you can read them with `(doc name)` and redefine them from the
 REPL.
 

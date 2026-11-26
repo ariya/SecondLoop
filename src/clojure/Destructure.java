@@ -87,7 +87,7 @@ public final class Destructure {
     }
 
     /** Binds a pattern that has already passed check(). */
-    public static void bind(Interp interp, Object pattern, Object value, Env env) {
+    public static void bind(ClojureInterp interp, Object pattern, Object value, Env env) {
         if (pattern instanceof Symbol) {
             env.define((Symbol) pattern, value);
         } else if (pattern instanceof FormVector) {
@@ -97,7 +97,7 @@ public final class Destructure {
         }
     }
 
-    private static void bindSequential(Interp interp, FormVector pattern, Object value, Env env) {
+    private static void bindSequential(ClojureInterp interp, FormVector pattern, Object value, Env env) {
         if (value != null && !(value instanceof FormList) && !(value instanceof FormVector)) {
             throw new ScriptError("Cannot destructure as a sequence: " + Printer.print(value));
         }
@@ -119,7 +119,7 @@ public final class Destructure {
         }
     }
 
-    private static void bindMap(Interp interp, FormMap pattern, Object value, Env env) {
+    private static void bindMap(ClojureInterp interp, FormMap pattern, Object value, Env env) {
         FormMap map = toMap(value);
         Object defaults = pattern.get(OR);
         for (Map.Entry<Object, Object> e : pattern.entrySet()) {
@@ -139,7 +139,7 @@ public final class Destructure {
     }
 
     /** The value for key, or the :or default when the map has no such key. */
-    private static Object lookup(Interp interp, FormMap map, Object key, Object pattern, Object defaults, Env env) {
+    private static Object lookup(ClojureInterp interp, FormMap map, Object key, Object pattern, Object defaults, Env env) {
         if (map.containsKey(key)) {
             return map.get(key);
         }

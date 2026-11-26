@@ -160,7 +160,7 @@ public final class Prelude {
     }
 
     public static void load(Env globals) {
-        Interp interp = new Interp(globals, new PrintWriter(new StringWriter()));
+        ClojureInterp interp = new ClojureInterp(globals, new PrintWriter(new StringWriter()));
         for (Object form : Reader.readAll(SOURCE)) {
             interp.evalTopLevel(form);
         }

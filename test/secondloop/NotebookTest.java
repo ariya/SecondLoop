@@ -82,7 +82,7 @@ public final class NotebookTest {
         /** Output events until one ends with the prompt, joined and decoded. */
         String untilPrompt() throws Exception {
             StringBuilder sb = new StringBuilder();
-            while (!sb.toString().endsWith(Repl.PROMPT)) {
+            while (!sb.toString().endsWith(ClojureRepl.PROMPT)) {
                 String event = next();
                 if (!event.startsWith("output ")) {
                     return sb + " [" + event + "]";
@@ -129,8 +129,8 @@ public final class NotebookTest {
                 NotebookServer.rcFields("{\"deviceName\":\"Robot\",\"x\":1,\"activeConfigName\":\"a \\\"b\\\"\",\"other\":\"z\"}"),
                 "rcFields keeps only what the page shows");
 
-        Env globals = Builtins.createGlobals();
-        NotebookServer server = new NotebookServer(globals, 0, null);
+        Env globals = new Clojure().createGlobals();
+        NotebookServer server = new NotebookServer(new Clojure(), globals, 0, null);
         server.start();
         int port = server.port();
         String host = "localhost:" + port;
@@ -147,15 +147,15 @@ public final class NotebookTest {
             Matcher m = Pattern.compile("session \\{\"id\":\"([0-9a-f]{32})\",\"rc\":null\\}").matcher(session);
             check(true, m.matches(), "the session event: " + session);
             String id = m.matches() ? m.group(1) : "";
-            check(Version.greeting(Version.COMMIT) + "\n" + Repl.PROMPT, events.untilPrompt(), "the greeting");
+            check(Version.greeting(Version.COMMIT) + "\n" + ClojureRepl.PROMPT, events.untilPrompt(), "the greeting");
             check(1, server.sessionCount(), "one session");
 
             check("200 OK", request(port, "POST", "/eval?session=" + id, host, "(+ 1 2)"), "eval");
-            check("3.0\n" + Repl.PROMPT, events.untilPrompt(), "the result");
+            check("3.0\n" + ClojureRepl.PROMPT, events.untilPrompt(), "the result");
             check("200 OK", request(port, "POST", "/eval?session=" + id, host, "(def x\n  \"h\u00e9\")"), "a form over two lines");
-            check("#'user/x\n" + Repl.PROMPT, events.untilPrompt(), "two lines make one form");
+            check("#'user/x\n" + ClojureRepl.PROMPT, events.untilPrompt(), "two lines make one form");
             request(port, "POST", "/eval?session=" + id, host, "x");
-            check("\"h\u00e9\"\n" + Repl.PROMPT, events.untilPrompt(), "UTF-8 both ways");
+            check("\"h\u00e9\"\n" + ClojureRepl.PROMPT, events.untilPrompt(), "UTF-8 both ways");
             request(port, "POST", "/eval?session=" + id, host, "(/ 1 0)");
             check(true, events.untilPrompt().startsWith("Execution error"), "an error");
 

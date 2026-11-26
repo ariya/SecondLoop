@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Combine src/ into one SecondLoop.java that can be uploaded through OnBot Java.
 
-Every top-level type in src/secondloop/*.java (the interpreter) and
-src/ftc/*.java (modules that use the FTC SDK) becomes a static nested class of
+Every top-level type in src/secondloop/*.java (the runtime shared by every
+language), src/clojure/*.java (the Clojure front end) and src/ftc/*.java
+(modules that use the FTC SDK) becomes a static nested class of
 SecondLoop, so nothing clashes with other files in the teamcode package. Their
 imports are merged into the single import list at the top of the output.
 
@@ -16,7 +17,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "src" / "SecondLoop.java"
-SOURCE_DIRS = [ROOT / "src" / "secondloop", ROOT / "src" / "ftc"]
+SOURCE_DIRS = [ROOT / "src" / "secondloop", ROOT / "src" / "clojure", ROOT / "src" / "ftc"]
 MARKER = "// @@SECONDLOOP_SOURCES@@"
 INTERNAL_IMPORT = "import secondloop."
 PAGE = ROOT / "src" / "notebook.html"

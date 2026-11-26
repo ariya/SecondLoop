@@ -72,8 +72,6 @@ public final class Printer {
                 write(sb, ((ExInfo) e).data, readably);
             }
             sb.append('}');
-        } else if (x instanceof Var) {
-            sb.append("#'user/").append(((Var) x).symbol.name);
         } else if (x instanceof Fn) {
             sb.append("#function[").append(((Fn) x).name()).append(']');
         } else {
