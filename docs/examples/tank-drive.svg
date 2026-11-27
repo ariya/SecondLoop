@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13">
+  <rect width="720" height="420" rx="6" fill="#ffffff"/>
+  <text x="180" y="34" text-anchor="middle" font-weight="bold" fill="#24292f">Left stick: drive forward</text>
+  <rect x="40" y="50" width="280" height="230" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1.5"/>
+  <g transform="translate(180,175) rotate(0) scale(1.4)">
+    <rect x="-34" y="-30" width="10" height="20" rx="2" fill="#0969da"/>
+    <rect x="-34" y="10" width="10" height="20" rx="2" fill="#0969da"/>
+    <rect x="24" y="-30" width="10" height="20" rx="2" fill="#0969da"/>
+    <rect x="24" y="10" width="10" height="20" rx="2" fill="#0969da"/>
+    <rect x="-24" y="-32" width="48" height="64" rx="4" fill="#d0d7de" stroke="#57606a" stroke-width="1.5"/>
+    <path d="M -12 -18 L 0 -28 L 12 -18 Z" fill="#57606a"/>
+    <line x1="-44.0" y1="14.0" x2="-44.0" y2="-9.2" stroke="#0969da" stroke-width="2.2"/><path d="M 0 0 l -8.4 -4.5 v 9.0 z" transform="translate(-44.0,-14.0) rotate(-90.0)" fill="#0969da"/>
+    <line x1="44.0" y1="14.0" x2="44.0" y2="-9.2" stroke="#0969da" stroke-width="2.2"/><path d="M 0 0 l -8.4 -4.5 v 9.0 z" transform="translate(44.0,-14.0) rotate(-90.0)" fill="#0969da"/>
+  </g>
+  <line x1="180.0" y1="115.0" x2="180.0" y2="74.2" stroke="#cf222e" stroke-width="3.5"/><path d="M 0 0 l -12.6 -6.8 v 13.5 z" transform="translate(180.0,67.0) rotate(-90.0)" fill="#cf222e"/>
+  <g opacity="0.35" transform="translate(52.0,268.8) scale(0.4)">
+<!-- Triggers and bumpers -->
+    <rect x="190" y="68" width="52" height="22" rx="10" fill="#d0d7de" stroke="#8c959f" stroke-width="1.5"/>
+    <rect x="398" y="68" width="52" height="22" rx="10" fill="#d0d7de" stroke="#8c959f" stroke-width="1.5"/>
+    <path d="M 166 122 C 172 98, 214 88, 256 98 L 254 110 C 216 102, 186 108, 178 126 Z" fill="#d0d7de" stroke="#8c959f" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 474 122 C 468 98, 426 88, 384 98 L 386 110 C 424 102, 454 108, 462 126 Z" fill="#d0d7de" stroke="#8c959f" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- Body -->
+    <path d="M 200 110 C 250 100, 390 100, 440 110 C 490 118, 515 140, 528 185 C 545 245, 565 300, 548 330 C 535 352, 500 350, 485 330 C 465 300, 450 280, 420 278 L 220 278 C 190 280, 175 300, 155 330 C 140 350, 105 352, 92 330 C 75 300, 95 245, 112 185 C 125 140, 150 118, 200 110 Z" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+
+    <!-- Sticks and D-pad -->
+    <circle cx="215" cy="165" r="34" fill="#d0d7de"/>
+    <circle cx="215" cy="165" r="24" fill="#57606a"/>
+    <circle cx="375" cy="225" r="34" fill="#d0d7de"/>
+    <circle cx="375" cy="225" r="24" fill="#57606a"/>
+    <circle cx="265" cy="225" r="30" fill="#d0d7de"/>
+    <path d="M 257 204 h 16 v 13 h 13 v 16 h -13 v 13 h -16 v -13 h -13 v -16 h 13 z" fill="#57606a" stroke-linejoin="round"/>
+
+    <!-- Back, guide, start -->
+    <circle cx="285" cy="162" r="8" fill="#57606a"/>
+    <circle cx="320" cy="134" r="13" fill="#57606a"/>
+    <circle cx="355" cy="162" r="8" fill="#57606a"/>
+
+    <!-- A, B, X, Y -->
+    <g font-weight="bold" font-size="12" text-anchor="middle" fill="#ffffff">
+      <circle cx="425" cy="140" r="12" fill="#57606a"/><text x="425" y="144.5">Y</text>
+      <circle cx="400" cy="165" r="12" fill="#57606a"/><text x="400" y="169.5">X</text>
+      <circle cx="450" cy="165" r="12" fill="#57606a"/><text x="450" y="169.5">B</text>
+      <circle cx="425" cy="190" r="12" fill="#57606a"/><text x="425" y="194.5">A</text>
+    </g>
+  </g>
+  <circle cx="138.0" cy="334.8" r="13.6" fill="none" stroke="#0969da" stroke-width="1.5"/>
+  <circle cx="138.0" cy="330.8" r="9.6" fill="#0969da"/>
+  <line x1="112.0" y1="342.8" x2="112.0" y2="322.8" stroke="#0969da" stroke-width="2.5"/>
+  <path d="M 112.0 314.8 l -6 10 h 12 z" fill="#0969da"/>
+
+  <text x="540" y="34" text-anchor="middle" font-weight="bold" fill="#24292f">Right stick: turn right</text>
+  <rect x="400" y="50" width="280" height="230" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1.5"/>
+  <g transform="translate(540,175) rotate(20) scale(1.4)">
+    <rect x="-34" y="-30" width="10" height="20" rx="2" fill="#0969da"/>
+    <rect x="-34" y="10" width="10" height="20" rx="2" fill="#0969da"/>
+    <rect x="24" y="-30" width="10" height="20" rx="2" fill="#0969da"/>
+    <rect x="24" y="10" width="10" height="20" rx="2" fill="#0969da"/>
+    <rect x="-24" y="-32" width="48" height="64" rx="4" fill="#d0d7de" stroke="#57606a" stroke-width="1.5"/>
+    <path d="M -12 -18 L 0 -28 L 12 -18 Z" fill="#57606a"/>
+    <line x1="-44.0" y1="14.0" x2="-44.0" y2="-9.2" stroke="#0969da" stroke-width="2.2"/><path d="M 0 0 l -8.4 -4.5 v 9.0 z" transform="translate(-44.0,-14.0) rotate(-90.0)" fill="#0969da"/>
+    <line x1="44.0" y1="-14.0" x2="44.0" y2="9.2" stroke="#0969da" stroke-width="2.2"/><path d="M 0 0 l -8.4 -4.5 v 9.0 z" transform="translate(44.0,14.0) rotate(90.0)" fill="#0969da"/>
+  </g>
+  <path d="M 465.5 132.0 A 86 86 0 0 1 532.5 89.3" fill="none" stroke="#cf222e" stroke-width="3.5"/>
+  <path d="M 0 0 l -13 -7 v 14 z" transform="translate(535.5,89.3) rotate(1.0)" fill="#cf222e"/>
+  <g opacity="0.35" transform="translate(412.0,268.8) scale(0.4)">
+<!-- Triggers and bumpers -->
+    <rect x="190" y="68" width="52" height="22" rx="10" fill="#d0d7de" stroke="#8c959f" stroke-width="1.5"/>
+    <rect x="398" y="68" width="52" height="22" rx="10" fill="#d0d7de" stroke="#8c959f" stroke-width="1.5"/>
+    <path d="M 166 122 C 172 98, 214 88, 256 98 L 254 110 C 216 102, 186 108, 178 126 Z" fill="#d0d7de" stroke="#8c959f" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 474 122 C 468 98, 426 88, 384 98 L 386 110 C 424 102, 454 108, 462 126 Z" fill="#d0d7de" stroke="#8c959f" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- Body -->
+    <path d="M 200 110 C 250 100, 390 100, 440 110 C 490 118, 515 140, 528 185 C 545 245, 565 300, 548 330 C 535 352, 500 350, 485 330 C 465 300, 450 280, 420 278 L 220 278 C 190 280, 175 300, 155 330 C 140 350, 105 352, 92 330 C 75 300, 95 245, 112 185 C 125 140, 150 118, 200 110 Z" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+
+    <!-- Sticks and D-pad -->
+    <circle cx="215" cy="165" r="34" fill="#d0d7de"/>
+    <circle cx="215" cy="165" r="24" fill="#57606a"/>
+    <circle cx="375" cy="225" r="34" fill="#d0d7de"/>
+    <circle cx="375" cy="225" r="24" fill="#57606a"/>
+    <circle cx="265" cy="225" r="30" fill="#d0d7de"/>
+    <path d="M 257 204 h 16 v 13 h 13 v 16 h -13 v 13 h -16 v -13 h -13 v -16 h 13 z" fill="#57606a" stroke-linejoin="round"/>
+
+    <!-- Back, guide, start -->
+    <circle cx="285" cy="162" r="8" fill="#57606a"/>
+    <circle cx="320" cy="134" r="13" fill="#57606a"/>
+    <circle cx="355" cy="162" r="8" fill="#57606a"/>
+
+    <!-- A, B, X, Y -->
+    <g font-weight="bold" font-size="12" text-anchor="middle" fill="#ffffff">
+      <circle cx="425" cy="140" r="12" fill="#57606a"/><text x="425" y="144.5">Y</text>
+      <circle cx="400" cy="165" r="12" fill="#57606a"/><text x="400" y="169.5">X</text>
+      <circle cx="450" cy="165" r="12" fill="#57606a"/><text x="450" y="169.5">B</text>
+      <circle cx="425" cy="190" r="12" fill="#57606a"/><text x="425" y="194.5">A</text>
+    </g>
+  </g>
+  <circle cx="562.0" cy="358.8" r="13.6" fill="none" stroke="#0969da" stroke-width="1.5"/>
+  <circle cx="566.0" cy="358.8" r="9.6" fill="#0969da"/>
+  <line x1="550.0" y1="384.8" x2="570.0" y2="384.8" stroke="#0969da" stroke-width="2.5"/>
+  <path d="M 578.0 384.8 l -10 -6 v 12 z" fill="#0969da"/>
+</svg>
