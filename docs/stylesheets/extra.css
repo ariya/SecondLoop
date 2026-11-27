@@ -7,9 +7,14 @@
   width: 75%;
 }
 
+.md-typeset img.half {
+  width: 50%;
+}
+
 /* Phone form factor: use the full column width */
 @media screen and (max-width: 44.984375em) {
-  .md-typeset img.three-quarters {
+  .md-typeset img.three-quarters,
+  .md-typeset img.half {
     width: 100%;
   }
 }

@@ -1,8 +1,17 @@
 # Mecanum Drive
 
-This example assumes your motors are named `"front_left_drive"`,
-`"front_right_drive"`, `"back_left_drive"` and `"back_right_drive"`. If yours
+This example assumes your motors are named `front_left_drive`,
+`front_right_drive`, `back_left_drive` and `back_right_drive`. If yours
 have other names, change the code to match.
+
+The rollers of a mecanum wheel sit at 45°, so each wheel pushes the robot
+diagonally (the blue arrows). When all four wheels spin forward, their sideways
+pushes cancel, and the robot drives forward. When the front-left and back-right
+wheels spin backward, the forward pushes cancel instead, and the robot strafes
+to the left:
+
+![Two top views of a mecanum robot, with a gamepad below each. Each wheel shows its rollers at 45 degrees, forming an X, and a blue arrow for the diagonal push of that wheel. On the left, the left stick is pushed forward: all four wheels push forward and to the side, the sideways parts cancel, and the robot, turned slightly to the right, drives forward. On the right, the left stick is pushed to the left: the front-left and back-right wheels spin backward, the forward parts cancel, and the robot strafes to the left.](mecanum-drive.svg#only-light)
+![Two top views of a mecanum robot, with a gamepad below each. Each wheel shows its rollers at 45 degrees, forming an X, and a blue arrow for the diagonal push of that wheel. On the left, the left stick is pushed forward: all four wheels push forward and to the side, the sideways parts cancel, and the robot, turned slightly to the right, drives forward. On the right, the left stick is pushed to the left: the front-left and back-right wheels spin backward, the forward parts cancel, and the robot strafes to the left.](mecanum-drive-dark.svg#only-dark)
 
 ## Wheel powers
 
@@ -86,7 +95,7 @@ user=> (mecanum-drive 0 0 0)
 [0.0 0.0 0.0 0.0]
 ```
 
-If a wheel turns the wrong way, fix its direction with `motor/set-direction`
+If a wheel turns the wrong way, fix its direction with [`motor/set-direction`](../robot/motors.md#set-direction)
 and try again.
 
 ## Drive a square
@@ -94,6 +103,9 @@ and try again.
 Instead of typing each move, put them in a function. This one drives forward,
 strafes right, drives backward, then strafes left, each for 3 seconds at power
 0.3, so the robot ends up roughly where it started:
+
+![A top view of a mecanum robot driving a square while always facing forward. From the solid robot at the bottom left, it drives forward, strafes right, drives backward, then strafes left, and ends where it started.](drive-square.svg#only-light){ .half }
+![A top view of a mecanum robot driving a square while always facing forward. From the solid robot at the bottom left, it drives forward, strafes right, drives backward, then strafes left, and ends where it started.](drive-square-dark.svg#only-dark){ .half }
 
 ```clojure
 (defn drive-square []
@@ -121,11 +133,11 @@ The robot drives the square, but you have to wait the full 12 seconds. The
 result appears only after the robot stops, and nothing else you run gets a
 turn in the meantime.
 
-**While it drives, the robot can't do anything else.** Each `time/sleep` holds
-the notebook, so you can't spin the launcher, read the gamepad or change the
+**While it drives, the robot can't do anything else.** Each [`time/sleep`](../robot/time.md#sleep) holds
+the notebook, so you can't spin the launcher, read the [gamepad](../robot/gamepad.md) or change the
 speed until the square is done.
 
-To keep typing while the robot drives, use `task/start` instead. It runs
+To keep typing while the robot drives, use [`task/start`](../robot/task.md#start) instead. It runs
 the function in the background and returns at once:
 
 ```clojure
@@ -140,9 +152,12 @@ background work like this.
 
 ## Driver control
 
-Now hand the robot over to the gamepad. This loop reads gamepad 1 fifty times
+Now hand the robot over to the [gamepad](../robot/gamepad.md). This loop reads gamepad 1 fifty times
 a second: the left stick drives forward, backward and sideways, and the right
 stick turns:
+
+![Three top views of a mecanum robot, with a gamepad below each. On the left, the left stick is pushed up, and the robot drives forward. In the middle, the left stick is pushed to the left, and the robot strafes to the left. On the right, the right stick is pushed to the right, and the robot turns clockwise in place.](driver-control.svg#only-light)
+![Three top views of a mecanum robot, with a gamepad below each. On the left, the left stick is pushed up, and the robot drives forward. In the middle, the left stick is pushed to the left, and the robot strafes to the left. On the right, the right stick is pushed to the right, and the robot turns clockwise in place.](driver-control-dark.svg#only-dark)
 
 ```clojure
 (defn drive-with-gamepad []
@@ -156,7 +171,7 @@ stick turns:
     (recur)))
 ```
 
-Start it with `(task/start drive-with-gamepad)` and end it with `(task/stop)`.
+Start it with `(task/start drive-with-gamepad)` and end it with [`(task/stop)`](../robot/task.md#stop).
 The wheels keep their last power after the loop ends, so stop them with
 `(mecanum-drive 0 0 0)`. Pressing STOP on the Driver Hub stops them too.
 

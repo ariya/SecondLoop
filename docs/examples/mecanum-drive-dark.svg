@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="Roboto, Helvetica, Arial, sans-serif" font-size="13">
+  <rect width="720" height="420" rx="6" fill="#161b22"/>
+  <text x="180" y="34" text-anchor="middle" font-weight="bold" fill="#e6edf3">Driving forward</text>
+  <rect x="40" y="50" width="280" height="230" rx="6" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+  <g transform="translate(180,170) rotate(15)">
+    <rect x="-38.400000000000006" y="-51.2" width="76.80000000000001" height="102.4" rx="6" fill="#30363d" stroke="#6e7681" stroke-width="1.5"/>
+    <path d="M -19.200000000000003 -28.8 L 0 -44.800000000000004 L 19.200000000000003 -28.8 Z" fill="#6e7681"/>
+    <clipPath id="wafl"><rect x="-54.4" y="-49.6" width="16.0" height="35.2" rx="3"/></clipPath>
+    <rect x="-54.4" y="-49.6" width="16.0" height="35.2" rx="3" fill="#6e7681"/>
+    <g clip-path="url(#wafl)" stroke="#30363d" stroke-width="2.5"><line x1="-62.4" y1="-76.0" x2="-30.4" y2="-44.0"/><line x1="-62.4" y1="-69.0" x2="-30.4" y2="-37.0"/><line x1="-62.4" y1="-62.0" x2="-30.4" y2="-30.0"/><line x1="-62.4" y1="-55.0" x2="-30.4" y2="-23.0"/><line x1="-62.4" y1="-48.0" x2="-30.4" y2="-16.0"/><line x1="-62.4" y1="-41.0" x2="-30.4" y2="-9.0"/><line x1="-62.4" y1="-34.0" x2="-30.4" y2="-2.0"/><line x1="-62.4" y1="-27.0" x2="-30.4" y2="5.0"/><line x1="-62.4" y1="-20.0" x2="-30.4" y2="12.0"/></g>
+    <line x1="-79.3" y1="-22.1" x2="-64.6" y2="-36.8" stroke="#58a6ff" stroke-width="3"/><path d="M 0 0 l -9 -5.0 v 9.9 z" transform="translate(-59.5,-41.9) rotate(-45.0)" fill="#58a6ff"/>
+    <clipPath id="wafr"><rect x="38.4" y="-49.6" width="16.0" height="35.2" rx="3"/></clipPath>
+    <rect x="38.4" y="-49.6" width="16.0" height="35.2" rx="3" fill="#6e7681"/>
+    <g clip-path="url(#wafr)" stroke="#30363d" stroke-width="2.5"><line x1="30.4" y1="-44.0" x2="62.4" y2="-76.0"/><line x1="30.4" y1="-37.0" x2="62.4" y2="-69.0"/><line x1="30.4" y1="-30.0" x2="62.4" y2="-62.0"/><line x1="30.4" y1="-23.0" x2="62.4" y2="-55.0"/><line x1="30.4" y1="-16.0" x2="62.4" y2="-48.0"/><line x1="30.4" y1="-9.0" x2="62.4" y2="-41.0"/><line x1="30.4" y1="-2.0" x2="62.4" y2="-34.0"/><line x1="30.4" y1="5.0" x2="62.4" y2="-27.0"/><line x1="30.4" y1="12.0" x2="62.4" y2="-20.0"/></g>
+    <line x1="79.3" y1="-22.1" x2="64.6" y2="-36.8" stroke="#58a6ff" stroke-width="3"/><path d="M 0 0 l -9 -5.0 v 9.9 z" transform="translate(59.5,-41.9) rotate(-135.0)" fill="#58a6ff"/>
+    <clipPath id="wabl"><rect x="-54.4" y="14.4" width="16.0" height="35.2" rx="3"/></clipPath>
+    <rect x="-54.4" y="14.4" width="16.0" height="35.2" rx="3" fill="#6e7681"/>
+    <g clip-path="url(#wabl)" stroke="#30363d" stroke-width="2.5"><line x1="-62.4" y1="20.0" x2="-30.4" y2="-12.0"/><line x1="-62.4" y1="27.0" x2="-30.4" y2="-5.0"/><line x1="-62.4" y1="34.0" x2="-30.4" y2="2.0"/><line x1="-62.4" y1="41.0" x2="-30.4" y2="9.0"/><line x1="-62.4" y1="48.0" x2="-30.4" y2="16.0"/><line x1="-62.4" y1="55.0" x2="-30.4" y2="23.0"/><line x1="-62.4" y1="62.0" x2="-30.4" y2="30.0"/><line x1="-62.4" y1="69.0" x2="-30.4" y2="37.0"/><line x1="-62.4" y1="76.0" x2="-30.4" y2="44.0"/></g>
+    <line x1="-59.5" y1="41.9" x2="-74.2" y2="27.2" stroke="#58a6ff" stroke-width="3"/><path d="M 0 0 l -9 -5.0 v 9.9 z" transform="translate(-79.3,22.1) rotate(-135.0)" fill="#58a6ff"/>
+    <clipPath id="wabr"><rect x="38.4" y="14.4" width="16.0" height="35.2" rx="3"/></clipPath>
+    <rect x="38.4" y="14.4" width="16.0" height="35.2" rx="3" fill="#6e7681"/>
+    <g clip-path="url(#wabr)" stroke="#30363d" stroke-width="2.5"><line x1="30.4" y1="-12.0" x2="62.4" y2="20.0"/><line x1="30.4" y1="-5.0" x2="62.4" y2="27.0"/><line x1="30.4" y1="2.0" x2="62.4" y2="34.0"/><line x1="30.4" y1="9.0" x2="62.4" y2="41.0"/><line x1="30.4" y1="16.0" x2="62.4" y2="48.0"/><line x1="30.4" y1="23.0" x2="62.4" y2="55.0"/><line x1="30.4" y1="30.0" x2="62.4" y2="62.0"/><line x1="30.4" y1="37.0" x2="62.4" y2="69.0"/><line x1="30.4" y1="44.0" x2="62.4" y2="76.0"/></g>
+    <line x1="59.5" y1="41.9" x2="74.2" y2="27.2" stroke="#58a6ff" stroke-width="3"/><path d="M 0 0 l -9 -5.0 v 9.9 z" transform="translate(79.3,22.1) rotate(-45.0)" fill="#58a6ff"/>
+  </g>
+  <line x1="195.0" y1="114.0" x2="203.0" y2="84.2" stroke="#ff7b72" stroke-width="4"/><path d="M 0 0 l -14 -7.7 v 15.4 z" transform="translate(205.9,73.4) rotate(-75.0)" fill="#ff7b72"/>
+  <text x="216" y="80" text-anchor="start" font-size="12" fill="#ff7b72">forward</text>
+  <g opacity="0.35" transform="translate(52.0,268.8) scale(0.4)">
+<!-- Triggers and bumpers -->
+    <rect x="190" y="68" width="52" height="22" rx="10" fill="#30363d" stroke="#6e7681" stroke-width="1.5"/>
+    <rect x="398" y="68" width="52" height="22" rx="10" fill="#30363d" stroke="#6e7681" stroke-width="1.5"/>
+    <path d="M 166 122 C 172 98, 214 88, 256 98 L 254 110 C 216 102, 186 108, 178 126 Z" fill="#30363d" stroke="#6e7681" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 474 122 C 468 98, 426 88, 384 98 L 386 110 C 424 102, 454 108, 462 126 Z" fill="#30363d" stroke="#6e7681" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- Body -->
+    <path d="M 200 110 C 250 100, 390 100, 440 110 C 490 118, 515 140, 528 185 C 545 245, 565 300, 548 330 C 535 352, 500 350, 485 330 C 465 300, 450 280, 420 278 L 220 278 C 190 280, 175 300, 155 330 C 140 350, 105 352, 92 330 C 75 300, 95 245, 112 185 C 125 140, 150 118, 200 110 Z" fill="#21262d" stroke="#6e7681" stroke-width="1.5"/>
+
+    <!-- Sticks and D-pad -->
+    <circle cx="215" cy="165" r="34" fill="#30363d"/>
+    <circle cx="215" cy="165" r="24" fill="#8b949e"/>
+    <circle cx="375" cy="225" r="34" fill="#30363d"/>
+    <circle cx="375" cy="225" r="24" fill="#8b949e"/>
+    <circle cx="265" cy="225" r="30" fill="#30363d"/>
+    <path d="M 257 204 h 16 v 13 h 13 v 16 h -13 v 13 h -16 v -13 h -13 v -16 h 13 z" fill="#8b949e" stroke-linejoin="round"/>
+
+    <!-- Back, guide, start -->
+    <circle cx="285" cy="162" r="8" fill="#8b949e"/>
+    <circle cx="320" cy="134" r="13" fill="#8b949e"/>
+    <circle cx="355" cy="162" r="8" fill="#8b949e"/>
+
+    <!-- A, B, X, Y -->
+    <g font-weight="bold" font-size="12" text-anchor="middle" fill="#161b22">
+      <circle cx="425" cy="140" r="12" fill="#8b949e"/><text x="425" y="144.5">Y</text>
+      <circle cx="400" cy="165" r="12" fill="#8b949e"/><text x="400" y="169.5">X</text>
+      <circle cx="450" cy="165" r="12" fill="#8b949e"/><text x="450" y="169.5">B</text>
+      <circle cx="425" cy="190" r="12" fill="#8b949e"/><text x="425" y="194.5">A</text>
+    </g>
+  </g>
+  <circle cx="138.0" cy="334.8" r="13.6" fill="none" stroke="#58a6ff" stroke-width="1.5"/>
+  <circle cx="138.0" cy="330.8" r="9.6" fill="#58a6ff"/>
+  <line x1="112.0" y1="342.8" x2="112.0" y2="322.8" stroke="#58a6ff" stroke-width="2.5"/>
+  <path d="M 112.0 314.8 l -6 10 h 12 z" fill="#58a6ff"/>
+
+  <text x="540" y="34" text-anchor="middle" font-weight="bold" fill="#e6edf3">Strafing to the left</text>
+  <rect x="400" y="50" width="280" height="230" rx="6" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+  <g transform="translate(540,170) rotate(0)">
+    <rect x="-38.400000000000006" y="-51.2" width="76.80000000000001" height="102.4" rx="6" fill="#30363d" stroke="#6e7681" stroke-width="1.5"/>
+    <path d="M -19.200000000000003 -28.8 L 0 -44.800000000000004 L 19.200000000000003 -28.8 Z" fill="#6e7681"/>
+    <clipPath id="wbfl"><rect x="-54.4" y="-49.6" width="16.0" height="35.2" rx="3"/></clipPath>
+    <rect x="-54.4" y="-49.6" width="16.0" height="35.2" rx="3" fill="#6e7681"/>
+    <g clip-path="url(#wbfl)" stroke="#30363d" stroke-width="2.5"><line x1="-62.4" y1="-76.0" x2="-30.4" y2="-44.0"/><line x1="-62.4" y1="-69.0" x2="-30.4" y2="-37.0"/><line x1="-62.4" y1="-62.0" x2="-30.4" y2="-30.0"/><line x1="-62.4" y1="-55.0" x2="-30.4" y2="-23.0"/><line x1="-62.4" y1="-48.0" x2="-30.4" y2="-16.0"/><line x1="-62.4" y1="-41.0" x2="-30.4" y2="-9.0"/><line x1="-62.4" y1="-34.0" x2="-30.4" y2="-2.0"/><line x1="-62.4" y1="-27.0" x2="-30.4" y2="5.0"/><line x1="-62.4" y1="-20.0" x2="-30.4" y2="12.0"/></g>
+    <line x1="-59.5" y1="-41.9" x2="-74.2" y2="-27.2" stroke="#58a6ff" stroke-width="3"/><path d="M 0 0 l -9 -5.0 v 9.9 z" transform="translate(-79.3,-22.1) rotate(135.0)" fill="#58a6ff"/>
+    <clipPath id="wbfr"><rect x="38.4" y="-49.6" width="16.0" height="35.2" rx="3"/></clipPath>
+    <rect x="38.4" y="-49.6" width="16.0" height="35.2" rx="3" fill="#6e7681"/>
+    <g clip-path="url(#wbfr)" stroke="#30363d" stroke-width="2.5"><line x1="30.4" y1="-44.0" x2="62.4" y2="-76.0"/><line x1="30.4" y1="-37.0" x2="62.4" y2="-69.0"/><line x1="30.4" y1="-30.0" x2="62.4" y2="-62.0"/><line x1="30.4" y1="-23.0" x2="62.4" y2="-55.0"/><line x1="30.4" y1="-16.0" x2="62.4" y2="-48.0"/><line x1="30.4" y1="-9.0" x2="62.4" y2="-41.0"/><line x1="30.4" y1="-2.0" x2="62.4" y2="-34.0"/><line x1="30.4" y1="5.0" x2="62.4" y2="-27.0"/><line x1="30.4" y1="12.0" x2="62.4" y2="-20.0"/></g>
+    <line x1="79.3" y1="-22.1" x2="64.6" y2="-36.8" stroke="#58a6ff" stroke-width="3"/><path d="M 0 0 l -9 -5.0 v 9.9 z" transform="translate(59.5,-41.9) rotate(-135.0)" fill="#58a6ff"/>
+    <clipPath id="wbbl"><rect x="-54.4" y="14.4" width="16.0" height="35.2" rx="3"/></clipPath>
+    <rect x="-54.4" y="14.4" width="16.0" height="35.2" rx="3" fill="#6e7681"/>
+    <g clip-path="url(#wbbl)" stroke="#30363d" stroke-width="2.5"><line x1="-62.4" y1="20.0" x2="-30.4" y2="-12.0"/><line x1="-62.4" y1="27.0" x2="-30.4" y2="-5.0"/><line x1="-62.4" y1="34.0" x2="-30.4" y2="2.0"/><line x1="-62.4" y1="41.0" x2="-30.4" y2="9.0"/><line x1="-62.4" y1="48.0" x2="-30.4" y2="16.0"/><line x1="-62.4" y1="55.0" x2="-30.4" y2="23.0"/><line x1="-62.4" y1="62.0" x2="-30.4" y2="30.0"/><line x1="-62.4" y1="69.0" x2="-30.4" y2="37.0"/><line x1="-62.4" y1="76.0" x2="-30.4" y2="44.0"/></g>
+    <line x1="-59.5" y1="41.9" x2="-74.2" y2="27.2" stroke="#58a6ff" stroke-width="3"/><path d="M 0 0 l -9 -5.0 v 9.9 z" transform="translate(-79.3,22.1) rotate(-135.0)" fill="#58a6ff"/>
+    <clipPath id="wbbr"><rect x="38.4" y="14.4" width="16.0" height="35.2" rx="3"/></clipPath>
+    <rect x="38.4" y="14.4" width="16.0" height="35.2" rx="3" fill="#6e7681"/>
+    <g clip-path="url(#wbbr)" stroke="#30363d" stroke-width="2.5"><line x1="30.4" y1="-12.0" x2="62.4" y2="20.0"/><line x1="30.4" y1="-5.0" x2="62.4" y2="27.0"/><line x1="30.4" y1="2.0" x2="62.4" y2="34.0"/><line x1="30.4" y1="9.0" x2="62.4" y2="41.0"/><line x1="30.4" y1="16.0" x2="62.4" y2="48.0"/><line x1="30.4" y1="23.0" x2="62.4" y2="55.0"/><line x1="30.4" y1="30.0" x2="62.4" y2="62.0"/><line x1="30.4" y1="37.0" x2="62.4" y2="69.0"/><line x1="30.4" y1="44.0" x2="62.4" y2="76.0"/></g>
+    <line x1="79.3" y1="22.1" x2="64.6" y2="36.8" stroke="#58a6ff" stroke-width="3"/><path d="M 0 0 l -9 -5.0 v 9.9 z" transform="translate(59.5,41.9) rotate(135.0)" fill="#58a6ff"/>
+  </g>
+  <line x1="480.0" y1="170.0" x2="439.2" y2="170.0" stroke="#ff7b72" stroke-width="4"/><path d="M 0 0 l -14 -7.7 v 15.4 z" transform="translate(428.0,170.0) rotate(180.0)" fill="#ff7b72"/>
+  <text x="440" y="160" text-anchor="start" font-size="12" fill="#ff7b72">left</text>
+  <g opacity="0.35" transform="translate(412.0,268.8) scale(0.4)">
+<!-- Triggers and bumpers -->
+    <rect x="190" y="68" width="52" height="22" rx="10" fill="#30363d" stroke="#6e7681" stroke-width="1.5"/>
+    <rect x="398" y="68" width="52" height="22" rx="10" fill="#30363d" stroke="#6e7681" stroke-width="1.5"/>
+    <path d="M 166 122 C 172 98, 214 88, 256 98 L 254 110 C 216 102, 186 108, 178 126 Z" fill="#30363d" stroke="#6e7681" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 474 122 C 468 98, 426 88, 384 98 L 386 110 C 424 102, 454 108, 462 126 Z" fill="#30363d" stroke="#6e7681" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- Body -->
+    <path d="M 200 110 C 250 100, 390 100, 440 110 C 490 118, 515 140, 528 185 C 545 245, 565 300, 548 330 C 535 352, 500 350, 485 330 C 465 300, 450 280, 420 278 L 220 278 C 190 280, 175 300, 155 330 C 140 350, 105 352, 92 330 C 75 300, 95 245, 112 185 C 125 140, 150 118, 200 110 Z" fill="#21262d" stroke="#6e7681" stroke-width="1.5"/>
+
+    <!-- Sticks and D-pad -->
+    <circle cx="215" cy="165" r="34" fill="#30363d"/>
+    <circle cx="215" cy="165" r="24" fill="#8b949e"/>
+    <circle cx="375" cy="225" r="34" fill="#30363d"/>
+    <circle cx="375" cy="225" r="24" fill="#8b949e"/>
+    <circle cx="265" cy="225" r="30" fill="#30363d"/>
+    <path d="M 257 204 h 16 v 13 h 13 v 16 h -13 v 13 h -16 v -13 h -13 v -16 h 13 z" fill="#8b949e" stroke-linejoin="round"/>
+
+    <!-- Back, guide, start -->
+    <circle cx="285" cy="162" r="8" fill="#8b949e"/>
+    <circle cx="320" cy="134" r="13" fill="#8b949e"/>
+    <circle cx="355" cy="162" r="8" fill="#8b949e"/>
+
+    <!-- A, B, X, Y -->
+    <g font-weight="bold" font-size="12" text-anchor="middle" fill="#161b22">
+      <circle cx="425" cy="140" r="12" fill="#8b949e"/><text x="425" y="144.5">Y</text>
+      <circle cx="400" cy="165" r="12" fill="#8b949e"/><text x="400" y="169.5">X</text>
+      <circle cx="450" cy="165" r="12" fill="#8b949e"/><text x="450" y="169.5">B</text>
+      <circle cx="425" cy="190" r="12" fill="#8b949e"/><text x="425" y="194.5">A</text>
+    </g>
+  </g>
+  <circle cx="498.0" cy="334.8" r="13.6" fill="none" stroke="#58a6ff" stroke-width="1.5"/>
+  <circle cx="494.0" cy="334.8" r="9.6" fill="#58a6ff"/>
+  <line x1="506.0" y1="310.8" x2="486.0" y2="310.8" stroke="#58a6ff" stroke-width="2.5"/>
+  <path d="M 478.0 310.8 l 10 -6 v 12 z" fill="#58a6ff"/>
+</svg>
